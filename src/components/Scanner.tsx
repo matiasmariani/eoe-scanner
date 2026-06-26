@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import Quagga, { QuaggaJSResultObject } from "@ericblade/quagga2";
@@ -15,12 +15,15 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
     const isInitializedRef = useRef(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
+    // Tracks sequential frame outputs to eliminate misfires
+    const scanHistoryRef = useRef<{ [code: string]: number }>({});
+    const lastScannedCodeRef = useRef<string>("");
+    const lastScanTimeRef = useRef<number>(0);
+
     useEffect(() => {
-        // Ensure execution only happens on the client side
         if (typeof window === "undefined" || isInitializedRef.current) return;
 
         const initScanner = async () => {
-            // Guarantee the DOM node is fully mounted and available
             if (!containerRef.current) {
                 setStatus("error");
                 return;
@@ -31,28 +34,36 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
                     {
                         inputStream: {
                             type: "LiveStream",
-                            // Pass the direct element reference instead of a query string
                             target: containerRef.current,
                             constraints: {
-                                width: 640,
-                                height: 480,
-                                facingMode: "environment"
-                            }
+                                // Upgraded resolution for sharper line distinction
+                                width: { min: 640, ideal: 1280, max: 1920 },
+                                height: { min: 480, ideal: 720, max: 1080 },
+                                facingMode: "environment",
+                                // Helps mobile phone browsers focus sharply on close objects
+                                ...({ focusMode: "continuous" } as Record<string, unknown>)
+                            },
+                            singleChannel: false // Set to true only if dealing strictly with black & white inputs
                         },
+                        // Tells the engine to dynamically scan parts of the frame
+                        locate: true,
+                        locator: {
+                            halfSample: true, // Speeds up calculation processing significantly
+                            patchSize: "medium" // "small", "medium", "large", "x-large"
+                        },
+                        // Limits calculation cycles strictly to performance configurations
+                        numOfWorkers: typeof navigator !== 'undefined' ? Math.min(navigator.hardwareConcurrency || 2, 4) : 2,
                         decoder: {
+                            // ⚠️ REDUCED: Only look for standard retail and asset tracking items
                             readers: [
-                                "code_128_reader",
                                 "ean_reader",
                                 "ean_8_reader",
-                                "code_39_reader",
-                                "code_39_vin_reader",
-                                "codabar_reader",
                                 "upc_reader",
                                 "upc_e_reader",
-                                "i2of5_reader"
-                            ]
-                        },
-                        locate: true
+                                "code_128_reader"
+                            ],
+                            multiple: false // Stop checking frame after a single match is found
+                        }
                     },
                     (err) => {
                         if (err) {
@@ -65,9 +76,33 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
                         isInitializedRef.current = true;
                         Quagga.start();
 
+                        // Advanced verification filter logic
                         Quagga.onDetected((result: QuaggaJSResultObject) => {
-                            if (result.codeResult && result.codeResult.code) {
-                                onScan(result.codeResult.code);
+                            const code = result.codeResult?.code;
+
+                            if (!code) return;
+
+                            // 1. Guardrail: Basic data integrity check
+                            // Cast explicitly to include the fallback property type to satisfy ESLint
+                            if ((result.codeResult as { fallback?: boolean }).fallback || !result.codeResult.format) return;
+                            const now = Date.now();
+
+                            // 2. Guardrail: Anti-spam timeout (Prevents firing multiple scans of the same item within 3 seconds)
+                            if (code === lastScannedCodeRef.current && now - lastScanTimeRef.current < 3000) {
+                                return;
+                            }
+
+                            // 3. Guardrail: Sequential Frame Mode Validation Check
+                            // Increment how many times this specific string has been read across frames
+                            scanHistoryRef.current[code] = (scanHistoryRef.current[code] || 0) + 1;
+
+                            // REQUIREMENT: Must be verified across 3 distinct video frames to confirm accuracy
+                            if (scanHistoryRef.current[code] >= 3) {
+                                lastScannedCodeRef.current = code;
+                                lastScanTimeRef.current = now;
+                                scanHistoryRef.current = {}; // Flush the buffer cache
+
+                                onScan(code);
                             }
                         });
 
@@ -81,7 +116,6 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
             }
         };
 
-        // Execution delay to allow React DOM paint cycles to complete
         const timer = setTimeout(initScanner, 300);
 
         return () => {
@@ -100,11 +134,11 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
 
     return (
         <div className="relative w-full max-w-md mx-auto overflow-hidden rounded-[3rem] border-8 border-blue-400 bg-white shadow-xl flex flex-col items-center justify-center min-h-[400px]">
-            {/* The Target Node must stay permanently in the DOM so Quagga can inject the stream */}
+            {/* Custom overlay rules for Quagga injected video element */}
             <div
                 ref={containerRef}
                 id="reader"
-                className={`w-full h-full ${status === "ready" ? "block" : "hidden"}`}
+                className={`w-full h-full [&>video]:w-full [&>video]:h-full [&>video]:object-cover ${status === "ready" ? "block" : "hidden"}`}
             />
 
             {status === "loading" && (
