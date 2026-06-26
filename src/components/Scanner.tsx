@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Html5Qrcode } from "html5-qrcode";
 import { ScanError } from "@/lib/scanner-types";
 import { AlertCircle } from "lucide-react";
 
@@ -9,45 +9,59 @@ interface ScannerProps {
 }
 
 export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const hasRendered = useRef(false);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
-    if (hasRendered.current) return;
+    // Use a small timeout to ensure the DOM element is actually present in the window
+    const initScanner = () => {
+      const readerElement = document.getElementById("reader");
 
-    const scanner = new Html5QrcodeScanner(
-      "reader",
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0,
-      },
-      false, // Show audio
-      (decodedText) => {
-        onScan(decodedText);
-      },
-      (error) => {
-        if (!error.message.includes("No QR code found")) {
-          if (onError) onError(error as ScanError);
-          console.error(error);
-        }
-      }
-    );
-
-    scanner.render();
-    scannerRef.current = scanner;
-    hasRendered.current = true;
-
-    const timer = setTimeout(() => {
-      if (scannerRef.current && !scannerRef.current.is_scanning && scannerRef.current.error) {
+      if (!readerElement) {
         setStatus("error");
-      } else if (scannerRef.current && scannerRef.current.is_scanning) {
-        setStatus("ready");
-      } else if (scannerRef.current && !scannerRef.current.is_scanning && !scannerRef.current.error) {
-        setStatus("ready");
+        return;
       }
-    }, 3000);
+
+      try {
+        const scanner = new Html5Qrcode("reader");
+        scannerRef.current = scanner;
+
+        scanner.onScanSuccess = (decodedText) => {
+          onScan(decodedText);
+        };
+
+        scanner.onScanError = (error) => {
+          if (!error.message.includes("No QR code found")) {
+            if (onError) onError(error as ScanError);
+            console.error(error);
+          }
+        };
+
+        scanner.start(
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0,
+          },
+          {
+            facingMode: "environment",
+          },
+          {
+            aspectRatio: 1.0,
+          }
+        ).then(() => {
+          setStatus("ready");
+        }).catch((err) => {
+          console.error("Scanner start error:", err);
+          setStatus("error");
+        });
+      } catch (e) {
+        console.error("Failed to initialize scanner:", e);
+        setStatus("error");
+      }
+    };
+
+    const timer = setTimeout(initScanner, 100);
 
     return () => {
       clearTimeout(timer);
