@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
-import { ScannerEvent, ScanError } from "@/lib/scanner-types";
+import { ScanError } from "@/lib/scanner-types";
 import { AlertCircle } from "lucide-react";
 
 interface ScannerProps {

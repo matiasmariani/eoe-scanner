@@ -4,7 +4,11 @@
       "Bash(npm run *)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(npm install *)",
+      "Bash(npx husky *)",
+      "Bash(echo \"npx lint-staged\")",
+      "Bash(chmod +x .husky/pre-commit)"
     ]
   }
 }
