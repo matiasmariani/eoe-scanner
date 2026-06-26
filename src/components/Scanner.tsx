@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Html5QrcodeScanner, Html5QrcodeEvent } from "html5-qrcode";
+import { Html5QrcodeScanner } from "html5-qrcode";
 import { ScannerEvent, ScanError } from "@/lib/scanner-types";
+import { AlertCircle } from "lucide-react";
 
 interface ScannerProps {
   onScan: (barcode: string) => void;
@@ -9,7 +10,7 @@ interface ScannerProps {
 
 export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const hasRendered = useRef(false);
 
   useEffect(() => {
@@ -38,17 +39,18 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
     scannerRef.current = scanner;
     hasRendered.current = true;
 
-    // Simple check to see if camera is actually available
-    // The library usually handles this, but we can provide a fallback
-    // if the reader div stays empty.
-    const checkCamera = setTimeout(() => {
-      if (!scannerRef.current || !scannerRef.current.is_scanning) {
-        // This is a rough check, but helps if nothing happens
+    const timer = setTimeout(() => {
+      if (scannerRef.current && !scannerRef.current.is_scanning && scannerRef.current.error) {
+        setStatus("error");
+      } else if (scannerRef.current && scannerRef.current.is_scanning) {
+        setStatus("ready");
+      } else if (scannerRef.current && !scannerRef.current.is_scanning && !scannerRef.current.error) {
+        setStatus("ready");
       }
-    }, 2000);
+    }, 3000);
 
     return () => {
-      clearTimeout(checkCamera);
+      clearTimeout(timer);
       if (scannerRef.current) {
         scannerRef.current.clear().catch((err) => {
           console.error("Failed to clear scanner:", err);
@@ -60,15 +62,25 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
 
   return (
     <div className="relative w-full max-w-md mx-auto overflow-hidden rounded-[3rem] border-8 border-blue-400 bg-white shadow-xl flex flex-col items-center justify-center min-h-[400px]">
-      <div id="reader" className="w-full h-full flex items-center justify-center" />
-
-      {/* Overlay for No Camera Found / Errors */}
-      {errorMessage && (
-        <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center p-8 text-center">
-          <AlertCircle className="w-16 h-16 text-rose-500 mb-4" />
-          <h3 className="text-2xl font-black text-gray-800 mb-2">Oops!</h3>
-          <p className="text-lg text-gray-600">We couldn't find a camera. You can still use the barcode entry below!</p>
+      {status === "loading" && (
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-xl font-bold text-blue-600">Finding your camera...</p>
         </div>
+      )}
+
+      {status === "error" && (
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <AlertCircle className="w-20 h-20 text-rose-500 mb-4" />
+          <h3 className="text-3xl font-black text-gray-800 mb-2">Oops!</h3>
+          <p className="text-xl text-gray-600 font-bold">
+            We couldn't find a camera. You can still type in a barcode below!
+          </p>
+        </div>
+      )}
+
+      {status === "ready" && (
+        <div id="reader" className="w-full h-full" />
       )}
 
       <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
