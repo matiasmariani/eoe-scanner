@@ -14,7 +14,8 @@
       "WebSearch",
       "Bash(npm list *)",
       "WebFetch(domain:github.com)",
-      "Bash(npm view *)"
+      "Bash(npm view *)",
+      "Bash(npm uninstall *)"
     ]
   }
 }
