@@ -1,6 +1,5 @@
 "use client";
 
-// Fix 1: Added missing 'useState' import from React
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -16,10 +15,6 @@ import { Scanner } from "@/components/Scanner";
 import { ResultCard } from "@/components/ResultCard";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-
-function cn(...inputs: (string | boolean | undefined)[]) {
-    return twMerge(clsx(inputs));
-}
 
 export default function Home() {
     const [mode, setMode] = useState<"idle" | "scanning" | "loading" | "result" | "error">("idle");
@@ -99,7 +94,7 @@ export default function Home() {
                                     <span className="text-blue-500">Made Easy!</span>
                                 </h2>
                                 <p className="text-2xl text-gray-600 font-bold">
-                                    Scan a barcode to see if it's safe!
+                                    Scan a barcode to see if it&apos;s safe!
                                 </p>
                             </div>
 
@@ -109,7 +104,7 @@ export default function Home() {
                                     className="group relative flex items-center justify-center gap-5 w-full bg-blue-500 text-white p-10 rounded-[3rem] text-4xl font-black shadow-[0_12px_0_0_rgba(37,99,235,1)] active:shadow-none active:translate-y-[8px] transition-all"
                                 >
                                     <Camera className="w-14 h-14 group-hover:scale-110 transition-transform" />
-                                    Scan Now!
+                                    Scan Now&apos;
                                 </button>
 
                                 <div className="flex items-center gap-4">

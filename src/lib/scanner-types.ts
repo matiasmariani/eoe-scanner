@@ -1,5 +1,3 @@
-import { ProductResult } from "@/lib/open-food-facts";
-
 export interface ScanResult {
   barcode: string;
 }
