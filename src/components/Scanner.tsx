@@ -13,41 +13,29 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
-    // Use a small timeout to ensure the DOM element is actually present in the window
+    let scanner: Html5Qrcode | null = null;
+
     const initScanner = () => {
-      const readerElement = document.getElementById("reader");
-
-      if (!readerElement) {
-        setStatus("error");
-        return;
-      }
-
       try {
-        const scanner = new Html5Qrcode("reader");
+        scanner = new Html5Qrcode("reader");
         scannerRef.current = scanner;
 
-        scanner.onScanSuccess = (decodedText) => {
-          onScan(decodedText);
-        };
-
-        scanner.onScanError = (error) => {
-          if (!error.message.includes("No QR code found")) {
-            if (onError) onError(error as ScanError);
-            console.error(error);
-          }
-        };
-
+        // Correct API for the base Html5Qrcode class:
+        // .start(config, onScanSuccess, onScanError)
         scanner.start(
           {
             fps: 10,
             qrbox: { width: 250, height: 250 },
             aspectRatio: 1.0,
           },
-          {
-            facingMode: "environment",
+          (decodedText) => {
+            onScan(decodedText);
           },
-          {
-            aspectRatio: 1.0,
+          (error) => {
+            if (!error.message.includes("No QR code found")) {
+              if (onError) onError(error as ScanError);
+              console.error(error);
+            }
           }
         ).then(() => {
           setStatus("ready");
