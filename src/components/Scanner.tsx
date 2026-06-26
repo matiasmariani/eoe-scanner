@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
@@ -22,8 +22,9 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
         scanner = new Html5Qrcode("reader");
         scannerRef.current = scanner;
 
+        // Use the correct API for html5-qrcode - start with just video element ID
         await scanner.start(
-          undefined,
+          "reader",
           {
             fps: 10,
             qrbox: { width: 250, height: 250 },
@@ -55,11 +56,13 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
     return () => {
       clearTimeout(timer);
       if (scannerRef.current) {
-        scannerRef.current.clear().then(() => {
-          scannerRef.current = null;
-        }).catch((err: any) => {
+        try {
+          // The clear method might not return a promise in some versions
+          scannerRef.current.clear();
+        } catch (err) {
           console.error("Failed to clear scanner:", err);
-        });
+        }
+        scannerRef.current = null;
       }
     };
   }, [onScan, onError]);
