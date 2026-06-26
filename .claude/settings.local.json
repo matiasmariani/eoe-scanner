@@ -8,7 +8,13 @@
       "Bash(npm install *)",
       "Bash(npx husky *)",
       "Bash(echo \"npx lint-staged\")",
-      "Bash(chmod +x .husky/pre-commit)"
+      "Bash(chmod +x .husky/pre-commit)",
+      "Bash(git config *)",
+      "Bash(npx tsc *)",
+      "WebSearch",
+      "Bash(npm list *)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm view *)"
     ]
   }
 }
