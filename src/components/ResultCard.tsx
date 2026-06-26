@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -15,11 +13,6 @@ import { ProductResult } from "@/lib/open-food-facts";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-interface ResultCardProps {
-  result: ProductResult;
-  onReset: () => void;
-}
-
 function cn(...inputs: (string | boolean | undefined)[]) {
   return twMerge(clsx(inputs));
 }
@@ -30,7 +23,7 @@ const ALLERGEN_ICONS: Record<string, React.ReactNode> = {
   "Egg": <Egg className="w-10 h-10 text-yellow-500" />,
 };
 
-export const ResultCard: React.FC<ResultCardProps> = ({ result, onReset }) => {
+export const ResultCard: React.FC<{result: ProductResult, onReset: () => void}> = ({ result, onReset }) => {
   const { isSafe, allergensFound, name, brand } = result;
 
   return (
@@ -46,7 +39,6 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, onReset }) => {
         )}
       >
         <div className="p-10 flex flex-col items-center text-center">
-          {/* Status Icon */}
           <motion.div
             initial={{ y: -30 }}
             animate={{ y: 0 }}
@@ -62,7 +54,6 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, onReset }) => {
             )}
           </motion.div>
 
-          {/* Product Info */}
           <h2 className="text-4xl font-black text-gray-900 mb-2 leading-tight">
             {name}
           </h2>
@@ -70,7 +61,6 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, onReset }) => {
             {brand}
           </p>
 
-          {/* Allergens Display */}
           <div className="w-full space-y-6 mb-10">
             {isSafe ? (
               <div className="flex items-center justify-center gap-3 text-emerald-700 font-black text-3xl py-4">
@@ -99,7 +89,6 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, onReset }) => {
             )}
           </div>
 
-          {/* Reset Button */}
           <button
             onClick={onReset}
             className="flex items-center gap-3 bg-gray-800 text-white px-10 py-6 rounded-full text-2xl font-black hover:bg-gray-700 transition-all active:scale-95 shadow-xl"

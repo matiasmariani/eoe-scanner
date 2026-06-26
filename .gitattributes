@@ -1,0 +1,16 @@
+# Set default behavior for all files
+* text=auto eol=lf
+
+# Explicitly set binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.doc binary
+*.xls binary
+*.ppt binary
+
+# Set specific files to LF line endings
+src/components/Scanner.tsx text eol=lf

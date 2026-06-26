@@ -1,3 +1,5 @@
+"use client"; 
+
 import React, { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { ScanError } from "@/lib/scanner-types";
@@ -15,36 +17,35 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
   useEffect(() => {
     let scanner: Html5Qrcode | null = null;
 
-    const initScanner = () => {
+    const initScanner = async () => {
       try {
         scanner = new Html5Qrcode("reader");
         scannerRef.current = scanner;
 
-        // Correct API for the base Html5Qrcode class:
-        // .start(config, onScanSuccess, onScanError)
-        scanner.start(
+        await scanner.start(
+          undefined,
           {
             fps: 10,
             qrbox: { width: 250, height: 250 },
             aspectRatio: 1.0,
           },
-          (decodedText) => {
+          (decodedText: string) => {
             onScan(decodedText);
           },
-          (error) => {
-            if (!error.message.includes("No QR code found")) {
+          (error: any) => {
+            if (error && typeof error === 'object' && error.message && !error.message.includes("No QR code found")) {
               if (onError) onError(error as ScanError);
               console.error(error);
+            } else if (typeof error === 'string' && !error.includes("No QR code found")) {
+               if (onError) onError({ message: error } as unknown as ScanError);
+               console.error(error);
             }
           }
-        ).then(() => {
-          setStatus("ready");
-        }).catch((err) => {
-          console.error("Scanner start error:", err);
-          setStatus("error");
-        });
-      } catch (e) {
-        console.error("Failed to initialize scanner:", e);
+        );
+
+        setStatus("ready");
+      } catch (err) {
+        console.error("Scanner start error:", err);
         setStatus("error");
       }
     };
@@ -54,13 +55,14 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
     return () => {
       clearTimeout(timer);
       if (scannerRef.current) {
-        scannerRef.current.clear().catch((err) => {
+        scannerRef.current.clear().then(() => {
+          scannerRef.current = null;
+        }).catch((err: any) => {
           console.error("Failed to clear scanner:", err);
         });
-        scannerRef.current = null;
       }
     };
-  }, []);
+  }, [onScan, onError]);
 
   return (
     <div className="relative w-full max-w-md mx-auto overflow-hidden rounded-[3rem] border-8 border-blue-400 bg-white shadow-xl flex flex-col items-center justify-center min-h-[400px]">

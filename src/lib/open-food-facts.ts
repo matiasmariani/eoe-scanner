@@ -1,5 +1,3 @@
-import { ProductResult } from "./open-food-facts";
-
 export interface ProductResult {
   name: string;
   brand: string;
@@ -9,7 +7,7 @@ export interface ProductResult {
 }
 
 export interface OpenFoodFactsResponse {
-  status: 1;
+  status: number;
   product: {
     product_name?: string;
     brands?: string;
