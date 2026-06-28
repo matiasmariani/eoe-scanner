@@ -1,11 +1,9 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { AlertCircle, RefreshCcw } from 'lucide-react'
-import { clsx } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-import { logError } from '@/lib/errorHandling'
+import { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { AlertCircle, RefreshCcw } from 'lucide-react';
+import { logError } from '@/lib/errorHandling';
 
 export default function Error({
   error,

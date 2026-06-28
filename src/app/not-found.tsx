@@ -1,10 +1,8 @@
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
-import { Search, ArrowLeft } from 'lucide-react'
-import { clsx } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-import Link from 'next/link'
+import { motion } from 'framer-motion';
+import { Search, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 export default function NotFound() {
   return (
@@ -30,7 +28,7 @@ export default function NotFound() {
           </h2>
 
           <p className="text-xl text-gray-600 mb-6">
-            The page you're looking for doesn't exist or has been moved.
+            The page you&apos;re looking for doesn&apos;t exist or has been moved.
           </p>
 
           <Link

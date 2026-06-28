@@ -1,46 +1,44 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fredoka, Nunito, Andika, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AllergyProvider } from "@/contexts/AllergyContext";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const fredoka = Fredoka({
+  variable: "--font-display",
   subsets: ["latin"],
+  weight: ["400", "700"],
   display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const nunito = Nunito({
+  variable: "--font-body",
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
+  display: 'swap',
+});
+
+const andika = Andika({
+  variable: "--font-data",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
   display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: "Allergy Scout - Scan Products for Allergens",
-  description: "Scan any product barcode to instantly check for allergens like dairy, wheat, and eggs. Safe snacking made easy!",
+  title: "Allergy Scout - Find Food Clues!",
+  description: "Scan any product barcode to instantly check for allergens like dairy, wheat, and eggs.",
   keywords: ['allergy', 'scanner', 'food', 'nutrition', 'allergen', 'safe snacking', 'scan barcode'],
   authors: [{ name: 'Allergy Scout Team' }],
   openGraph: {
-    title: 'Allergy Scout - Scan Products for Allergens',
-    description: 'Scan any product barcode to instantly check for allergens like dairy, wheat, and eggs',
+    title: 'Allergy Scout - Find Food Clues!',
+    description: 'Scan any product barcode to instantly check for allergens like dairy, wheat, and eggs.',
     type: 'website',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Allergy Scout App',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Allergy Scout - Scan Products for Allergens',
-    description: 'Scan any product barcode to instantly check for allergens',
-  },
-  robots: {
-    index: true,
-    follow: true,
   },
 };
 
@@ -52,7 +50,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fredoka.variable} ${nunito.variable} ${andika.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AllergyProvider>

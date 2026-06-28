@@ -1,15 +1,13 @@
-'use client';
-
 import React from 'react';
 import { motion } from 'framer-motion';
-import { X, Check } from 'lucide-react';
+import { Check, X, AlertCircle, CheckCircle2, Heart, Trash2, Settings } from 'lucide-react'; // Restore all needed icons
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { cn } from '@/lib/utils';
+import { logError } from '@/lib/errorHandling';
 
+export type Allergy = 'milk' | 'eggs' | 'peanuts' | 'tree nuts' | 'wheat' | 'soy' | 'fish' | 'crustacean shellfish' | 'sesame';
 
-type Allergy = 'milk' | 'eggs' | 'peanuts' | 'tree nuts' | 'wheat' | 'soy' | 'fish' | 'crustacean shellfish' | 'sesame';
-
-const ALLERGY_OPTIONS: { value: Allergy; label: string; icon: string }[] = [
+export const ALLERGY_OPTIONS: { value: Allergy; label: string; icon: string }[] = [
   { value: 'milk', label: 'Milk', icon: '🥛' },
   { value: 'eggs', label: 'Eggs', icon: '🥚' },
   { value: 'peanuts', label: 'Peanuts', icon: '🥜' },
@@ -21,62 +19,58 @@ const ALLERGY_OPTIONS: { value: Allergy; label: string; icon: string }[] = [
   { value: 'sesame', label: 'Sesame', icon: '🫒' },
 ];
 
-interface AllergySettingsProps {
-  onClose: () => void;
-}
-
-export function AllergySettings({ onClose }: AllergySettingsProps) {
+// Exported as a named export to match page.tsx expectations
+export function AllergySettings({ onClose }: { onClose: () => void }) {
   const { allergies, toggleAllergy, clearAllergies } = useAllergySettings();
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby="allergy-settings-title"
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        className="bg-white rounded-[3rem] border-8 shadow-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto"
+        initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
+        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+        exit={{ opacity: 0, scale: 0.9, rotate: 2 }}
+        className="bg-paper-cream rounded-[3rem] border-8 border-detective-blue shadow-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto wobbly-border-lg"
         role="document"
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 id="allergy-settings-title" className="text-3xl font-black text-gray-900">
-            Allergy Settings
+          <h2 id="allergy-settings-title" className="text-3xl font-display font-black text-ink-navy">
+            Allergies
           </h2>
           <button
             onClick={clearAllergies}
-            className="text-sm text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="text-sm font-bold text-watermelon-red hover:scale-110 transition-transform"
             aria-label="Clear all allergies"
           >
             Clear All
           </button>
         </div>
 
-        <p className="text-gray-600 mb-6">
-          Select your allergies. We'll check products against this list.
+        <p className="text-ink-navy/70 font-body font-bold mb-6">
+          Pick the food clues to watch out for!
         </p>
 
-        <div className="grid grid-cols-3 gap-3" role="group" aria-label="Allergy options">
+        <div className="grid grid-cols-3 gap-4 mb-8" role="group" aria-label="Allergy options">
           {ALLERGY_OPTIONS.map((option) => (
             <button
               key={option.value}
               onClick={() => toggleAllergy(option.value)}
               className={cn(
-                "p-4 rounded-2xl border-4 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+                "flex flex-col items-center justify-center gap-2 p-4 wobbly-border transition-all active:scale-90 focus:outline-none",
                 allergies.includes(option.value)
-                  ? "bg-blue-500 text-white border-blue-500"
-                  : "bg-gray-100 text-gray-700 border-gray-200 hover:border-blue-300"
+                  ? "bg-sunshine-yellow border-4 border-sunshine-yellow text-ink-navy shadow-[0_4px_0_0_rgba(253,224,71,1)]"
+                  : "bg-white border-4 border-gray-100 text-gray-400 shadow-[0_4px_0_0_rgba(0,0,0,0.05)] hover:border-sky-200"
               )}
               aria-pressed={allergies.includes(option.value)}
-              aria-label={`${option.label} ${allergies.includes(option.value) ? 'selected' : 'not selected'}`}
             >
-              <div className="text-2xl mb-2" aria-hidden="true">{option.icon}</div>
-              <div className="text-sm font-bold" aria-hidden="true">{option.label}</div>
+              <span className="text-3xl" aria-hidden="true">{option.icon}</span>
+              <span className="text-xs font-black uppercase tracking-tighter text-center" aria-hidden="true">{option.label}</span>
               {allergies.includes(option.value) && (
-                <Check className="w-5 h-5 mt-2" aria-hidden="true" />
+                <Check className="w-4 h-4 absolute top-1 right-1 text-detective-blue" aria-hidden="true" />
               )}
             </button>
           ))}
@@ -84,10 +78,10 @@ export function AllergySettings({ onClose }: AllergySettingsProps) {
 
         <button
           onClick={onClose}
-          className="w-full mt-6 bg-blue-500 text-white py-4 rounded-full text-xl font-black hover:bg-blue-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="w-full bg-detective-blue text-white py-4 rounded-full text-2xl font-display font-black shadow-[0_6px_0_0_rgba(30,58,138,0.3)] active:shadow-none active:translate-y-1 transition-all"
           aria-label="Save and close allergy settings"
         >
-          Save & Close
+          Got It!
         </button>
       </motion.div>
     </div>

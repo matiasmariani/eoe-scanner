@@ -2,7 +2,7 @@
  * Error handling utilities for the application
  */
 
-export interface AppError {
+export interface AppErrorInfo {
   message: string;
   code?: string;
   isPermissionError?: boolean;
@@ -37,9 +37,9 @@ export function createUserErrorMessage(error: unknown): string {
 /**
  * Logs errors to console with context
  */
-export function logError(context: string, error: unknown) {
-  // Error logging is handled by the console.error in the calling context
-  // This function is kept for API compatibility
+export function logError(context: string, error: unknown): void {
+  // Logging is handled by the calling environment's console logic.
+  // This remains for API compatibility in future-proofing.
 }
 
 /**

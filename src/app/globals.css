@@ -1,39 +1,61 @@
 @import "tailwindcss";
 
-/* Custom utility configurations or theme variables are added right here */
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Nunito:wght@400;600;700;800&family=Andika&family=JetBrains+Mono:wght@400;700&display=swap');
+
 @theme {
-  --color-brand-primary: #0070f3;
-  --color-brand-secondary: #6366f1;
-  --color-brand-accent: #0ea5e9;
-  --color-brand-success: #10b981;
-  --color-brand-danger: #ef4444;
+  /* Brand Colors (Scrapbook Palette) */
+  --color-paper-cream: #FFFDF5;
+  --color-sky-blue: #60A5FA;
+  --color-sunshine-yellow: #FDE047;
+  --color-watermelon-red: #FB7185;
+  --color-leaf-green: #4ADE80;
+  --color-ink-navy: #1E293B;
+  --color-detective-blue: #3B82F6;
+
+  /* Font Families */
+  --font-display: 'Fredoka', sans-serif;
+  --font-body: 'Nunito', sans-serif;
+  --font-data: 'Andika', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
-/* Custom animations */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+/* Custom Utility Definitions (Tailwind v4) */
+@utility paper-texture {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
 }
 
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(14, 165, 233, 0.6);
-  }
+@utility wobbly-border {
+  border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+@utility wobbly-border-lg {
+  border-radius: 50% 40% 60% 50% / 45% 55% 45% 55%;
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+/* Custom Animations */
+@keyframes pop-in {
+  0% { transform: scale(0.9) rotate(-10deg); opacity: 0; }
+  70% { transform: scale(1.05) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes wobble {
+  0%, 100% { transform: rotate(-1deg); }
+  50% { transform: rotate(1deg); }
+}
+
+@keyframes scanner-beam {
+  0% { top: 0%; }
+  100% { top: 100%; }
+}
+
+.animate-pop-in {
+  animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-wobble {
+  animation: wobble 3s ease-in-out infinite;
 }
 
 /* Smooth scrolling */
@@ -51,17 +73,13 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #0ea5e9;
+  background: #60A5FA;
   border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #0284c7;
 }
 
 /* Focus styles for accessibility */
 *:focus-visible {
-  outline: 2px solid #0ea5e9;
+  outline: 2px solid #60A5FA;
   outline-offset: 2px;
 }
 
@@ -76,47 +94,7 @@ html {
   }
 }
 
-/* Safe message styling */
-.safe-message {
-  @apply flex items-center justify-center gap-3 text-emerald-700 font-black text-3xl py-4;
-}
-
-/* Allergy badge styling */
-.allergy-badge {
-  @apply px-4 py-2 bg-rose-100 text-rose-700 font-bold rounded-full text-sm;
-}
-
-/* Button hover effects */
-.btn-hover {
-  @apply transition-all active:scale-95;
-}
-
-/* Card hover effects */
-.card-hover {
-  @apply transition-all duration-300 hover:shadow-xl;
-}
-
-/* Gradient backgrounds */
-.gradient-bg {
-  @apply bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50;
-}
-
-/* Glass morphism effect */
-.glass {
-  @apply bg-white/80 backdrop-blur-lg;
-}
-
-/* Custom shadows */
-.custom-shadow {
-  @apply shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)];
-}
-
-/* Large rounded corners */
-.large-rounded {
-  @apply rounded-[3rem];
-}
-
-/* Extra large rounded corners */
-.extra-large-rounded {
-  @apply rounded-[4rem];
+/* Layout Base */
+.app-container {
+  @apply min-h-screen bg-paper-cream text-ink-navy overflow-x-hidden paper-texture;
 }

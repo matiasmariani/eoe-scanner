@@ -1,9 +1,7 @@
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
-import { ShieldCheck } from 'lucide-react'
-import { clsx } from 'clsx'
-import { twMerge } from 'tailwind-merge'
+import { motion } from 'framer-motion';
+import { ShieldCheck } from 'lucide-react';
 
 export default function Loading() {
   return (
@@ -29,14 +27,14 @@ export default function Loading() {
             <ShieldCheck className="w-16 h-16 text-blue-500" aria-hidden="true" />
           </motion.div>
         </div>
+      </motion.div>
 
-        <motion.div
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="text-2xl font-black text-blue-600"
-        >
-          Analyzing Product...
-        </motion.div>
+      <motion.div
+        animate={{ opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 1.5, repeat: Infinity }}
+        className="text-2xl font-black text-blue-600"
+      >
+        Analyzing Product...
       </motion.div>
     </div>
   )

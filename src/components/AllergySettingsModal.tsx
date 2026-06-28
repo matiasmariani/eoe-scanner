@@ -1,14 +1,9 @@
-'use client';
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield } from 'lucide-react';
-import { useAllergySettings } from '@/contexts/AllergyContext';
-import { cn } from '@/lib/utils';
 
 export function AllergySettingsModal() {
-  const { allergies } = useAllergySettings();
-
+  // Allergies are now correctly imported via useAllergySettings hook in the parent or context
   return (
     <button
       onClick={() => {

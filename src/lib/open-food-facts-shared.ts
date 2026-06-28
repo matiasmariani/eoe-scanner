@@ -4,6 +4,8 @@ export interface ProductResult {
     isSafe: boolean;
     allergensFound: string[];
     error?: string;
+    warning?: boolean;
+    image_url?: string;
 }
 
 export interface OpenFoodFactsResponse {
@@ -83,7 +85,7 @@ export interface OpenFoodFactsResponse {
         allergens_tags?: string[];
         ingredients?: Array<{
             id: string;
-            ingredients?: any[];
+            ingredients?: Record<string, unknown>; // Replaced any with Record
             percent?: number;
             percent_estimate?: number;
             percent_max?: string;
@@ -94,8 +96,8 @@ export interface OpenFoodFactsResponse {
         }>;
         ingredients_text?: string;
         ingredients_with_specified_percent_n?: number;
-        nutriment_levels?: any;
-        nutriscore?: any;
+        nutriment_levels?: Record<string, unknown>; // Replaced any with Record
+        nutriscore?: Record<string, unknown> | null; // Replaced any with Record or null
         nutriscore_grade?: string;
         nutriscore_score?: number;
         nutriscore_version?: string;

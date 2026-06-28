@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import Quagga, { QuaggaJSResultObject } from "@ericblade/quagga2";
 import { ScanError } from "@/lib/scanner-types";
 import { AlertCircle } from "lucide-react";
@@ -14,7 +15,7 @@ interface ScannerProps {
 export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
     const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
     const isInitializedRef = useRef(false);
-    const isActiveRef = useRef(true); // Track if the current effect cycle is still active
+    const isActiveRef = useRef(true);
     const containerRef = useRef<HTMLDivElement>(null);
 
     const scanHistoryRef = useRef<{ [code: string]: number }>({});
@@ -22,7 +23,6 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
     const lastScanTimeRef = useRef<number>(0);
 
     useEffect(() => {
-        // Set to true when the effect mounts
         isActiveRef.current = true;
 
         if (typeof window === "undefined" || isInitializedRef.current) return;
@@ -64,7 +64,6 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
                         }
                     },
                     (err) => {
-                        // CRITICAL CHECK: If React unmounted this instance during initialization, stop immediately!
                         if (!isActiveRef.current) {
                             try { Quagga.stop(); } catch (e) { }
                             return;
@@ -126,7 +125,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
 
         return () => {
             clearTimeout(timer);
-            isActiveRef.current = false; // Mark this specific hook sequence cycle as dead
+            isActiveRef.current = false;
 
             if (isInitializedRef.current) {
                 try {
@@ -141,33 +140,52 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
     }, [onScan, onError]);
 
     return (
-        <div className="relative w-full max-w-md mx-auto overflow-hidden rounded-[3rem] border-8 border-blue-400 bg-white shadow-xl flex flex-col items-center justify-center min-h-[400px]">
+        <div className="relative w-full max-w-md mx-auto overflow-hidden wobbly-border-lg border-8 border-detective-blue bg-white shadow-2xl flex flex-col items-center justify-center min-h-[400px]">
             <div
                 ref={containerRef}
                 id="reader"
                 className={`w-full h-full [&>video]:w-full [&>video]:h-full [&>video]:object-cover ${status === "ready" ? "block" : "hidden"}`}
             />
 
+            {/* Crayon Viewfinder Overlay */}
+            {status === "ready" && (
+                <div className="absolute inset-0 pointer-events-none z-20">
+                    <div className="absolute top-6 left-6 w-16 h-16 border-8 border-detective-blue/50 wobbly-border" />
+                    <div className="absolute top-6 right-6 w-16 h-16 border-8 border-detective-blue/50 wobbly-border" />
+                    <div className="absolute bottom-6 left-6 w-16 h-16 border-8 border-detective-blue/50 wobbly-border" />
+                    <div className="absolute bottom-6 right-6 w-16 h-16 border-8 border-detective-blue/50 wobbly-border" />
+
+                    {/* Scanning Line */}
+                    <motion.div
+                        className="absolute w-full h-1 bg-detective-blue/40 z-10"
+                        animate={{ top: ['0%', '100%'] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    />
+                </div>
+            )}
+
             {status === "loading" && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-white z-10" role="status" aria-live="polite" aria-label="Loading">
-                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
-                    <p className="text-xl font-bold text-blue-600">Finding your camera...</p>
+                    <div className="w-16 h-16 border-8 border-sky-blue/20 border-t-detective-blue rounded-full animate-spin mb-4" />
+                    <p className="text-2xl font-display font-bold text-detective-blue">Looking for clues...</p>
                 </div>
             )}
 
             {status === "error" && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-white z-10" role="alert" aria-live="assertive">
-                    <AlertCircle className="w-20 h-20 text-rose-500 mb-4" />
-                    <h3 className="text-3xl font-black text-gray-800 mb-2">Oops!</h3>
-                    <p className="text-xl text-gray-600 font-bold mb-4"> We couldn&apos;t find a camera. </p>
+                    <AlertCircle className="w-20 h-20 text-watermelon-red mb-4" />
+                    <h3 className="text-3xl font-display font-black text-ink-navy mb-2">Oops!</h3>
+                    <p className="text-xl text-gray-600 font-body font-bold mb-4"> We couldn&apos;t find a camera. </p>
                     <p className="text-sm text-gray-500 mb-6"> Please allow camera access or use the manual barcode entry below. </p>
                     <p className="text-sm text-gray-400"> Tip: Camera access requires HTTPS or localhost </p>
                 </div>
             )}
 
             {status === "ready" && (
-                <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none z-20">
-                    <span className="bg-black/50 text-white px-4 py-1 rounded-full text-sm"> Align barcode within the frame </span>
+                <div className="absolute bottom-10 left-0 right-0 text-center pointer-events-none z-30">
+                    <span className="bg-inknavy/80 text-white px-6 py-2 wobbly-border font-display font-bold text-lg">
+                        Align the barcode!
+                    </span>
                 </div>
             )}
         </div>
