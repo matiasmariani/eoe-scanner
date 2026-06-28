@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ericblade/quagga2": "^1.12.1",
+    "@sentry/nextjs": "^10.62.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.42.0",
     "html5-qrcode": "^2.3.8",
@@ -23,6 +24,9 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -30,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "^15.0.0",
     "husky": "^9.1.7",
+    "jest": "^30.4.2",
     "lint-staged": "^17.0.8",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",

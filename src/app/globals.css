@@ -3,4 +3,120 @@
 /* Custom utility configurations or theme variables are added right here */
 @theme {
   --color-brand-primary: #0070f3;
+  --color-brand-secondary: #6366f1;
+  --color-brand-accent: #0ea5e9;
+  --color-brand-success: #10b981;
+  --color-brand-danger: #ef4444;
+}
+
+/* Custom animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(14, 165, 233, 0.6);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0ea5e9;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0284c7;
+}
+
+/* Focus styles for accessibility */
+*:focus-visible {
+  outline: 2px solid #0ea5e9;
+  outline-offset: 2px;
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Safe message styling */
+.safe-message {
+  @apply flex items-center justify-center gap-3 text-emerald-700 font-black text-3xl py-4;
+}
+
+/* Allergy badge styling */
+.allergy-badge {
+  @apply px-4 py-2 bg-rose-100 text-rose-700 font-bold rounded-full text-sm;
+}
+
+/* Button hover effects */
+.btn-hover {
+  @apply transition-all active:scale-95;
+}
+
+/* Card hover effects */
+.card-hover {
+  @apply transition-all duration-300 hover:shadow-xl;
+}
+
+/* Gradient backgrounds */
+.gradient-bg {
+  @apply bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50;
+}
+
+/* Glass morphism effect */
+.glass {
+  @apply bg-white/80 backdrop-blur-lg;
+}
+
+/* Custom shadows */
+.custom-shadow {
+  @apply shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)];
+}
+
+/* Large rounded corners */
+.large-rounded {
+  @apply rounded-[3rem];
+}
+
+/* Extra large rounded corners */
+.extra-large-rounded {
+  @apply rounded-[4rem];
 }

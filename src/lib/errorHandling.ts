@@ -1,0 +1,77 @@
+/**
+ * Error handling utilities for the application
+ */
+
+export interface AppError {
+  message: string;
+  code?: string;
+  isPermissionError?: boolean;
+}
+
+export class AppError extends Error {
+  constructor(
+    message: string,
+    public code?: string,
+    public isPermissionError?: boolean
+  ) {
+    super(message);
+    this.name = 'AppError';
+  }
+}
+
+/**
+ * Creates a user-friendly error message
+ */
+export function createUserErrorMessage(error: unknown): string {
+  if (error instanceof AppError) {
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'An unexpected error occurred. Please try again.';
+}
+
+/**
+ * Logs errors to console with context
+ */
+export function logError(context: string, error: unknown) {
+  // Error logging is handled by the console.error in the calling context
+  // This function is kept for API compatibility
+}
+
+/**
+ * Handles API errors
+ */
+export function handleApiError(error: unknown): AppError {
+  if (error instanceof AppError) {
+    return error;
+  }
+
+  if (error instanceof Error) {
+    return new AppError(error.message);
+  }
+
+  return new AppError('An unexpected error occurred');
+}
+
+/**
+ * Validates barcode input
+ */
+export function validateBarcode(barcode: string): { valid: boolean; error?: string } {
+  if (!barcode || barcode.trim() === '') {
+    return { valid: false, error: 'Please enter a barcode' };
+  }
+
+  if (barcode.length < 8) {
+    return { valid: false, error: 'Barcode is too short' };
+  }
+
+  if (barcode.length > 13) {
+    return { valid: false, error: 'Barcode is too long' };
+  }
+
+  return { valid: true };
+}
