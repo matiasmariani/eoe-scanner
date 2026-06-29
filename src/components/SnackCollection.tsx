@@ -3,7 +3,11 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, CheckCircle2 } from 'lucide-react';
-import { useSnackCollection, scoutRank, CollectedSnack } from '@/hooks/useSnackCollection';
+import {
+  useSnackCollection,
+  scoutRank,
+  CollectedSnack,
+} from '@/hooks/useSnackCollection';
 import { SnackScout } from '@/components/SnackScout';
 
 interface SnackCollectionProps {
@@ -12,11 +16,26 @@ interface SnackCollectionProps {
 
 // A spread of treat stickers; chosen deterministically per snack so each card
 // keeps the same sticker across renders without needing stored state.
-const STICKERS = ['🍪', '🍫', '🍬', '🍭', '🧃', '🍿', '🍎', '🥨', '🧀', '🍩', '🍓', '🍌'];
+const STICKERS = [
+  '🍪',
+  '🍫',
+  '🍬',
+  '🍭',
+  '🧃',
+  '🍿',
+  '🍎',
+  '🥨',
+  '🧀',
+  '🍩',
+  '🍓',
+  '🍌',
+];
 
 function stickerFor(snack: CollectedSnack): string {
-  const seed = (snack.barcode || snack.name).split('').reduce((sum, c) => sum + c.charCodeAt(0), 0);
-  return STICKERS[seed % STICKERS.length];
+  const seed = (snack.barcode || snack.name)
+    .split('')
+    .reduce((sum, c) => sum + c.charCodeAt(0), 0);
+  return STICKERS[seed % STICKERS.length] ?? '🍪';
 }
 
 export function SnackCollection({ onClose }: SnackCollectionProps) {
@@ -37,7 +56,9 @@ export function SnackCollection({ onClose }: SnackCollectionProps) {
 
       <div className="flex-1 w-full max-w-md mx-auto px-4 pb-16">
         <div className="text-center mb-6">
-          <h2 className="text-3xl font-display font-black text-block-white">My Safe Snacks</h2>
+          <h2 className="text-3xl font-display font-black text-block-white">
+            My Safe Snacks
+          </h2>
           <p className="text-lg font-bold text-grass-green mt-1">
             {snacks.length > 0
               ? `${snacks.length} collected · ${scoutRank(snacks.length)} 🎖️`
@@ -47,10 +68,16 @@ export function SnackCollection({ onClose }: SnackCollectionProps) {
 
         {snacks.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[360px] text-center">
-            <span className="text-7xl mb-6" role="img" aria-label="Empty shelf">🗃️</span>
-            <h3 className="text-2xl font-display font-black text-block-white mb-2">No snacks yet</h3>
+            <span className="text-7xl mb-6" role="img" aria-label="Empty shelf">
+              🗃️
+            </span>
+            <h3 className="text-2xl font-display font-black text-block-white mb-2">
+              No snacks yet
+            </h3>
             <p className="text-lg text-gray-300 font-bold px-6">
-              Scan a snack — if it&apos;s safe, tap <span className="text-grass-green">Collect</span> to add a sticker here!
+              Scan a snack — if it&apos;s safe, tap{' '}
+              <span className="text-grass-green">Collect</span> to add a sticker
+              here!
             </p>
           </div>
         ) : (
@@ -79,7 +106,9 @@ export function SnackCollection({ onClose }: SnackCollectionProps) {
                   <h3 className="text-base font-display font-black text-ink-navy leading-tight line-clamp-2">
                     {snack.name}
                   </h3>
-                  <p className="text-xs font-bold text-gray-500 truncate w-full mt-0.5">{snack.brand}</p>
+                  <p className="text-xs font-bold text-gray-500 truncate w-full mt-0.5">
+                    {snack.brand}
+                  </p>
                   <div className="flex items-center gap-1 text-grass-green text-xs font-black uppercase mt-2">
                     <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
                     Safe

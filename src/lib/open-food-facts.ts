@@ -13,9 +13,15 @@ export type ApiResponse<T> = {
  * @param barcode The barcode to search
  * @param userAllergies List of allergies to check against product info
  */
-export async function fetchProductByBarcode(barcode: string, userAllergies: string[] = []): Promise<ApiResponse<ProductResult>> {
+export async function fetchProductByBarcode(
+  barcode: string,
+  userAllergies: string[] = [],
+): Promise<ApiResponse<ProductResult>> {
   try {
-    const allergyQuery = userAllergies.length > 0 ? `?allergies=${encodeURIComponent(userAllergies.join(','))}` : '';
+    const allergyQuery =
+      userAllergies.length > 0
+        ? `?allergies=${encodeURIComponent(userAllergies.join(','))}`
+        : '';
     const response = await fetch(`/api/product/${barcode}${allergyQuery}`);
 
     if (!response.ok) {
@@ -26,7 +32,7 @@ export async function fetchProductByBarcode(barcode: string, userAllergies: stri
     }
 
     const data = await response.json();
-    
+
     // If the API returns an object with an error property (like in some failure cases)
     if (data.error) {
       return {
@@ -40,12 +46,10 @@ export async function fetchProductByBarcode(barcode: string, userAllergies: stri
       error: null,
     };
   } catch (error) {
-    console.error("Error in fetchProductByBarcode (client side):", error);
+    console.error('Error in fetchProductByBarcode (client side):', error);
     return {
       data: null,
-      error: "An unexpected error occurred. Please try again.",
+      error: 'An unexpected error occurred. Please try again.',
     };
   }
 }
-
-

@@ -1,70 +1,76 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchProductFromOpenFoodFacts, ProductResult } from '@/lib/open-food-facts-shared';
+import {
+  fetchProductFromOpenFoodFacts,
+  ProductResult,
+} from '@/lib/open-food-facts-shared';
 import { findFoodByBarcode } from '@/services/usdaService';
 
 const NOT_FOUND_MSG = "I can't find that product. Ask a grown-up for help";
 
 export async function GET(
-    request: NextRequest,
-    { params }: { params: Promise<{ barcode: string }> }
+  request: NextRequest,
+  { params }: { params: Promise<{ barcode: string }> },
 ) {
-    const { barcode } = await params;
-    const allergies = (request.nextUrl.searchParams.get('allergies') || '')
-        .split(',')
-        .map((a) => a.trim())
-        .filter((a) => a !== '');
+  const { barcode } = await params;
+  const allergies = (request.nextUrl.searchParams.get('allergies') || '')
+    .split(',')
+    .map((a) => a.trim())
+    .filter((a) => a !== '');
 
-    let openfoodError: string | undefined;
-    let usdaError: string | undefined;
+  let openfoodError: string | undefined;
+  let usdaError: string | undefined;
 
-    // 1. Try Open Food Facts.
-    let result: ProductResult = await fetchProductFromOpenFoodFacts(barcode, allergies);
-    const offFound = result.name !== 'Unknown Product' && result.name !== 'Error';
-    if (offFound) {
-        result.source = 'openfooddata';
-    } else {
-        openfoodError = result.error;
+  // 1. Try Open Food Facts.
+  let result: ProductResult = await fetchProductFromOpenFoodFacts(
+    barcode,
+    allergies,
+  );
+  const offFound = result.name !== 'Unknown Product' && result.name !== 'Error';
+  if (offFound) {
+    result.source = 'openfooddata';
+  } else {
+    openfoodError = result.error;
+  }
+
+  // 2. Fall back to USDA FoodData Central.
+  if (!offFound) {
+    try {
+      const apiKey = process.env.USDA_API_KEY || '';
+      const food = await findFoodByBarcode({ apiKey }, barcode, allergies);
+
+      if (food) {
+        const foundAllergens = food.foundAllergens ?? [];
+        result = {
+          name: food.description?.trim() || 'Unknown Product',
+          brand: food.brandName || food.brandOwner || 'Unknown Brand',
+          isSafe: foundAllergens.length === 0,
+          allergensFound: foundAllergens,
+          openfoodError,
+          source: 'usda',
+          ingredients: food.ingredients || '',
+        };
+      } else {
+        usdaError = 'USDA returned no results';
+      }
+    } catch (error) {
+      usdaError = error instanceof Error ? error.message : 'USDA Service Error';
     }
+  }
 
-    // 2. Fall back to USDA FoodData Central.
-    if (!offFound) {
-        try {
-            const apiKey = process.env.USDA_API_KEY || '';
-            const food = await findFoodByBarcode({ apiKey }, barcode, allergies);
+  // 3. Neither source found the product. Surface "unknown" — never "safe".
+  if (result.name === 'Error' || result.name === 'Unknown Product') {
+    return NextResponse.json({
+      name: 'Unknown Product',
+      brand: 'Unknown',
+      isSafe: false,
+      allergensFound: [],
+      error: result.error || NOT_FOUND_MSG,
+      openfoodError,
+      usdaError,
+      source: 'none',
+      ingredients: result.ingredients || '',
+    });
+  }
 
-            if (food) {
-                const foundAllergens = food.foundAllergens ?? [];
-                result = {
-                    name: food.description?.trim() || 'Unknown Product',
-                    brand: food.brandName || food.brandOwner || 'Unknown Brand',
-                    isSafe: foundAllergens.length === 0,
-                    allergensFound: foundAllergens,
-                    openfoodError,
-                    source: 'usda',
-                    ingredients: food.ingredients || '',
-                };
-            } else {
-                usdaError = 'USDA returned no results';
-            }
-        } catch (error) {
-            usdaError = error instanceof Error ? error.message : 'USDA Service Error';
-        }
-    }
-
-    // 3. Neither source found the product. Surface "unknown" — never "safe".
-    if (result.name === 'Error' || result.name === 'Unknown Product') {
-        return NextResponse.json({
-            name: 'Unknown Product',
-            brand: 'Unknown',
-            isSafe: false,
-            allergensFound: [],
-            error: result.error || NOT_FOUND_MSG,
-            openfoodError,
-            usdaError,
-            source: 'none',
-            ingredients: result.ingredients || '',
-        });
-    }
-
-    return NextResponse.json(result);
+  return NextResponse.json(result);
 }

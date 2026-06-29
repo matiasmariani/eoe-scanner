@@ -9,56 +9,45 @@ export default function Error({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }) {
   useEffect(() => {
     logError('AppError', error);
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-deep-stone text-block-white flex items-center justify-center p-4 app-container">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        className="w-full max-w-md space-y-6"
+        className="w-full max-w-md"
       >
-        <div className="bg-white rounded-[3rem] border-8 border-rose-200 p-10 text-center shadow-2xl">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mb-6 inline-flex items-center justify-center w-24 h-24 bg-rose-100 rounded-full"
-          >
-            <AlertCircle className="w-12 h-12 text-rose-500" aria-hidden="true" />
-          </motion.div>
+        <div className="bg-block-white border-4 border-ink-navy p-10 text-center shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-[3rem]">
+          <div className="mb-6 inline-flex items-center justify-center w-24 h-24 bg-redstone-red/10 rounded-full">
+            <AlertCircle
+              className="w-12 h-12 text-redstone-red"
+              aria-hidden="true"
+            />
+          </div>
 
-          <h2 className="text-4xl font-black text-gray-900 mb-2">
-            Oops! Something went wrong
+          <h2 className="text-4xl font-display font-black text-ink-navy mb-2 uppercase tracking-tighter">
+            Oops! Something broke
           </h2>
 
-          <p className="text-xl text-gray-600 mb-6">
-            We encountered an error while scanning your product. Please try again.
+          <p className="text-xl text-gray-600 font-body font-bold mb-6">
+            Ask a grown-up for help, or try again.
           </p>
 
-          {error.message && (
-            <p className="text-sm text-gray-500 mb-6">
-              Error: {error.message}
-            </p>
-          )}
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={reset}
-            className="inline-flex items-center gap-3 bg-rose-500 text-white px-8 py-4 rounded-full text-xl font-black hover:bg-rose-600 transition-all shadow-lg"
+            className="inline-flex items-center gap-3 bg-grass-green border-4 border-ink-navy text-block-white px-8 py-4 rounded-full text-xl font-display font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] hover:-translate-y-[2px] transition-all"
           >
-            <RefreshCcw className="w-5 h-5" aria-hidden="true" />
+            <RefreshCcw className="w-6 h-6" aria-hidden="true" />
             Try Again
-          </motion.button>
+          </button>
         </div>
       </motion.div>
     </div>
-  )
+  );
 }

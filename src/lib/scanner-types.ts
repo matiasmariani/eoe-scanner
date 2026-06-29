@@ -7,8 +7,9 @@ export interface ScanError {
   isPermissionError?: boolean;
 }
 
-export type ScanEvent = {
-  type: "success";
-  data: ScanResult;
-} |
-  { type: "error"; error: ScanError };
+export type ScanEvent =
+  | {
+      type: 'success';
+      data: ScanResult;
+    }
+  | { type: 'error'; error: ScanError };

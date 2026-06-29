@@ -1,19 +1,17 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import { logError } from '@/lib/errorHandling';
 import { checkAllergens } from '@/lib/allergen-utils';
+import type { Allergy } from '@/lib/constants';
 
-export type Allergy =
-  | 'milk'
-  | 'eggs'
-  | 'peanuts'
-  | 'tree nuts'
-  | 'wheat'
-  | 'soy'
-  | 'fish'
-  | 'crustacean shellfish'
-  | 'sesame';
+export type { Allergy };
 
 interface AllergyContextType {
   allergies: Allergy[];
@@ -40,11 +38,14 @@ export function AllergyProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const toggleAllergy = (allergy: Allergy) => {
-    setAllergies(prev => {
+    setAllergies((prev) => {
       const nextAllergies = prev.includes(allergy)
-        ? prev.filter(item => item !== allergy)
+        ? prev.filter((item) => item !== allergy)
         : [...prev, allergy];
-      localStorage.setItem('allergy-scout-allergies', JSON.stringify(nextAllergies));
+      localStorage.setItem(
+        'allergy-scout-allergies',
+        JSON.stringify(nextAllergies),
+      );
       return nextAllergies;
     });
   };
@@ -75,9 +76,11 @@ export function AllergyProvider({ children }: { children: ReactNode }) {
 
 // Custom hook for easier access
 export function useAllergySettings() {
-    const context = useContext(AllergyContext);
+  const context = useContext(AllergyContext);
   if (context === undefined) {
-    throw new Error('useAllergySettings must be used within an AllergyProvider');
+    throw new Error(
+      'useAllergySettings must be used within an AllergyProvider',
+    );
   }
   return context;
 }

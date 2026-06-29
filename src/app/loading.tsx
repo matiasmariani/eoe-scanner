@@ -5,37 +5,28 @@ import { ShieldCheck } from 'lucide-react';
 
 export default function Loading() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="flex flex-col items-center space-y-6"
-      >
-        <div className="relative">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            className="w-32 h-32 border-8 border-blue-100 border-t-blue-500 rounded-full"
+    <div className="min-h-screen bg-deep-stone text-block-white flex flex-col items-center justify-center p-4 app-container">
+      <div className="relative">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          className="w-32 h-32 border-8 border-grass-green/30 border-t-ink-navy rounded-full"
+        />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <ShieldCheck
+            className="w-12 h-12 text-grass-green"
+            aria-hidden="true"
           />
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.3 }}
-            className="absolute inset-0 flex items-center justify-center"
-          >
-            <ShieldCheck className="w-16 h-16 text-blue-500" aria-hidden="true" />
-          </motion.div>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div
+      <motion.p
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ duration: 1.5, repeat: Infinity }}
-        className="text-2xl font-black text-blue-600"
+        className="mt-8 text-3xl font-display font-black text-block-white"
       >
-        Analyzing Product...
-      </motion.div>
+        Looking for clues...
+      </motion.p>
     </div>
-  )
+  );
 }

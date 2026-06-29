@@ -1,24 +1,9 @@
 'use client';
 
-'use client';
-
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAllergySettings } from '@/contexts/AllergyContext';
-
-type Allergy = 'milk' | 'eggs' | 'peanuts' | 'tree nuts' | 'wheat' | 'soy' | 'fish' | 'crustacean shellfish' | 'sesame';
-
-const ALLERGY_OPTIONS: { value: Allergy; label: string; icon: string }[] = [
-  { value: 'milk', label: 'Milk', icon: '🥛' },
-  { value: 'eggs', label: 'Eggs', icon: '🥚' },
-  { value: 'peanuts', label: 'Peanuts', icon: '🥜' },
-  { value: 'tree nuts', label: 'Tree Nuts', icon: '🥜' },
-  { value: 'wheat', label: 'Wheat', icon: '🌾' },
-  { value: 'soy', label: 'Soy', icon: '🫘' },
-  { value: 'fish', label: 'Fish', icon: '🐟' },
-  { value: 'crustacean shellfish', label: 'Crustaceans', icon: '🦐' },
-  { value: 'sesame', label: 'Sesame', icon: '🫒' },
-];
+import { ALLERGY_OPTIONS } from '@/lib/constants';
 
 export function SelectedAllergiesHeader() {
   const { allergies } = useAllergySettings();
@@ -27,7 +12,9 @@ export function SelectedAllergiesHeader() {
 
   return (
     <div className="w-full px-4 py-6 flex flex-col items-center justify-center">
-      <h2 className="text-3xl font-display font-black text-yellow-400 mb-4">Your Allergies</h2>
+      <h2 className="text-3xl font-display font-black text-yellow-400 mb-4">
+        Your Allergies
+      </h2>
       <div className="flex flex-wrap justify-center gap-3 max-w-md">
         <AnimatePresence mode="popLayout">
           {allergies.map((allergy) => {

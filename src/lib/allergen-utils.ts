@@ -1,8 +1,8 @@
-import { ALLERGEN_KEYWORDS } from "@/lib/constants";
+import { ALLERGEN_KEYWORDS } from '@/lib/constants';
 
 // Escape a string so it can be embedded literally in a RegExp.
 function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 // A keyword matches on a word boundary, tolerating a trailing plural
@@ -10,7 +10,7 @@ function escapeRegExp(s: string): string {
 // The leading boundary prevents false positives like "fish" in "shellfish"
 // or "egg" in "eggplant".
 function keywordRegex(keyword: string): RegExp {
-  return new RegExp(`\\b${escapeRegExp(keyword)}(?:s|es)?\\b`, "i");
+  return new RegExp(`\\b${escapeRegExp(keyword)}(?:s|es)?\\b`, 'i');
 }
 
 /**
@@ -25,13 +25,19 @@ function keywordRegex(keyword: string): RegExp {
  * @param userAllergies The list of user-defined allergies.
  * @returns The subset of `userAllergies` found in the text (original casing).
  */
-export function checkAllergens(text: string | undefined, userAllergies: string[] = []): string[] {
+export function checkAllergens(
+  text: string | undefined,
+  userAllergies: string[] = [],
+): string[] {
   if (!text || userAllergies.length === 0) return [];
 
   return userAllergies.filter((allergy) => {
     const key = allergy.toLowerCase().trim();
     // Fall back to the allergy term itself if we have no keyword mapping.
-    const keywords = ALLERGEN_KEYWORDS[key] ?? [key];
+    // `userAllergies` is loosely-typed string[], so index via a string view.
+    const keywords = (ALLERGEN_KEYWORDS as Record<string, string[]>)[key] ?? [
+      key,
+    ];
     return keywords.some((keyword) => keywordRegex(keyword).test(text));
   });
 }

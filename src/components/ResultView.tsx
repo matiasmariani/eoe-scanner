@@ -1,6 +1,6 @@
-import React from "react";
-import { ResultCard } from "./ResultCard";
-import { ProductResult } from "@/lib/open-food-facts-shared";
+import React from 'react';
+import { ResultCard } from './ResultCard';
+import { ProductResult } from '@/lib/open-food-facts-shared';
 
 interface ResultViewProps {
   result: ProductResult;
@@ -9,7 +9,12 @@ interface ResultViewProps {
   isCollected: boolean;
 }
 
-export function ResultView({ result, onReset, onCollect, isCollected }: ResultViewProps) {
+export function ResultView({
+  result,
+  onReset,
+  onCollect,
+  isCollected,
+}: ResultViewProps) {
   return (
     <ResultCard
       result={result}

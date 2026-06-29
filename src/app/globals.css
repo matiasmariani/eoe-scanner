@@ -1,24 +1,40 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-/* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Nunito:wght@400;600;700;800&family=Andika&family=JetBrains+Mono:wght@400;700&display=swap');
+/* Fonts are loaded + optimized via next/font in app/layout.tsx — do not @import
+   them here (that would add a render-blocking request and defeat next/font). */
 
 @theme {
   /* Brand Colors (Pixel-Craft Palette) */
-  --color-dirt-brown: #4A3B32;
+  --color-dirt-brown: #4a3b32;
   --color-wood-brown: #866043;
-  --color-grass-green: #4C9E38;
-  --color-diamond-blue: #4DFFF3;
-  --color-redstone-red: #FF2200;
+  --color-grass-green: #4c9e38;
+  --color-diamond-blue: #4dfff3;
+  --color-redstone-red: #ff2200;
   --color-deep-stone: #313131;
-  --color-block-white: #FFFFFF;
-  --color-ink-navy: #1A1A1A;
+  --color-block-white: #ffffff;
+  --color-ink-navy: #1a1a1a;
+  --color-pikachu-yellow: #ffde00;
 
-  /* Font Families */
+  /* Font Families (variables provided by next/font) */
   --font-display: 'Fredoka', sans-serif;
   --font-body: 'Nunito', sans-serif;
   --font-data: 'Andika', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* Voxel/arcade design tokens */
+  --shadow-voxel: 4px 4px 0px var(--color-ink-navy);
+  --animate-pop: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Custom Utility Definitions (Tailwind v4) */
@@ -36,19 +52,37 @@
 
 /* Custom Animations */
 @keyframes pop-in {
-  0% { transform: scale(0.9) rotate(-10deg); opacity: 0; }
-  70% { transform: scale(1.05) rotate(2deg); opacity: 1; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  0% {
+    transform: scale(0.9) rotate(-10deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.05) rotate(2deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
 }
 
 @keyframes wobble {
-  0%, 100% { transform: rotate(-1deg); }
-  50% { transform: rotate(1deg); }
+  0%,
+  100% {
+    transform: rotate(-1deg);
+  }
+  50% {
+    transform: rotate(1deg);
+  }
 }
 
 @keyframes scanner-beam {
-  0% { top: 0%; }
-  100% { top: 100%; }
+  0% {
+    top: 0%;
+  }
+  100% {
+    top: 100%;
+  }
 }
 
 .animate-pop-in {
@@ -70,17 +104,17 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--color-deep-stone);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #60A5FA;
+  background: var(--color-grass-green);
   border-radius: 5px;
 }
 
 /* Focus styles for accessibility */
 *:focus-visible {
-  outline: 2px solid #60A5FA;
+  outline: 2px solid var(--color-grass-green);
   outline-offset: 2px;
 }
 

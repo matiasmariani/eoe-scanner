@@ -1,4 +1,4 @@
-import { checkAllergens } from "../lib/allergen-utils";
+import { checkAllergens } from '../lib/allergen-utils';
 
 export interface USDAConfig {
   apiKey: string;
@@ -65,17 +65,25 @@ export interface USDAErrorResponse {
 
 const BASE_URL = 'https://api.nal.usda.gov/fdc/v1';
 
-export async function searchFood(config: USDAConfig, query: string, dataType: string[], userAllergies: string[] = []): Promise<USDAFoodSearchResponse> {
-  const response = await fetch(`${BASE_URL}/foods/search?api_key=${config.apiKey}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+export async function searchFood(
+  config: USDAConfig,
+  query: string,
+  dataType: string[],
+  userAllergies: string[] = [],
+): Promise<USDAFoodSearchResponse> {
+  const response = await fetch(
+    `${BASE_URL}/foods/search?api_key=${config.apiKey}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query,
+        dataType,
+      }),
     },
-    body: JSON.stringify({
-      query,
-      dataType,
-    }),
-  });
+  );
 
   if (!response.ok) {
     throw new Error(response.statusText);
@@ -99,14 +107,26 @@ export async function searchFood(config: USDAConfig, query: string, dataType: st
  * whose `gtinUpc` exactly matches the barcode and only fall back to the top hit.
  * Returns null when nothing is found.
  */
-export async function findFoodByBarcode(config: USDAConfig, barcode: string, userAllergies: string[] = []): Promise<USDAFood | null> {
+export async function findFoodByBarcode(
+  config: USDAConfig,
+  barcode: string,
+  userAllergies: string[] = [],
+): Promise<USDAFood | null> {
   const data = await searchFood(config, barcode, ['Branded'], userAllergies);
   if (!data.foods || data.foods.length === 0) return null;
-  return data.foods.find((food) => food.gtinUpc === barcode) ?? data.foods[0];
+  return (
+    data.foods.find((food) => food.gtinUpc === barcode) ?? data.foods[0] ?? null
+  );
 }
 
-export async function getFoodDetails(config: USDAConfig, fdcId: string, userAllergies: string[] = []): Promise<USDAFood> {
-  const response = await fetch(`${BASE_URL}/food/${fdcId}?api_key=${config.apiKey}`);
+export async function getFoodDetails(
+  config: USDAConfig,
+  fdcId: string,
+  userAllergies: string[] = [],
+): Promise<USDAFood> {
+  const response = await fetch(
+    `${BASE_URL}/food/${fdcId}?api_key=${config.apiKey}`,
+  );
 
   if (!response.ok) {
     throw new Error(response.statusText);

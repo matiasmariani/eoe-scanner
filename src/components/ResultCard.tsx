@@ -1,9 +1,14 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import {
+  CheckCircle2,
+  AlertTriangle,
+  AlertCircle,
+  Star,
+  RefreshCcw,
+} from 'lucide-react';
 import { ProductResult } from '@/lib/open-food-facts';
 import { cn } from '@/lib/utils';
-import { Star, RefreshCcw } from "lucide-react";
 
 interface ResultCardProps {
   result: ProductResult;
@@ -22,7 +27,8 @@ export const ResultCard: React.FC<ResultCardProps> = ({
 
   const getStatusIcon = () => {
     if (isSafe) return <CheckCircle2 className="w-10 h-10 text-grass-green" />;
-    if (result.warning) return <AlertTriangle className="w-10 h-10 text-yellow-400" />;
+    if (result.warning)
+      return <AlertTriangle className="w-10 h-10 text-yellow-400" />;
     return <AlertCircle className="w-10 h-10 text-redstone-red" />;
   };
 
@@ -32,7 +38,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
       animate={{ scale: 1, rotate: 0, opacity: 1 }}
       exit={{ scale: 0.5, opacity: 0, rotate: 10 }}
       className={cn(
-        "w-full max-w-md bg-block-white border-4 border-ink-navy shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center relative animate-pop p-6 space-y-4",
+        'w-full max-w-md bg-block-white border-4 border-ink-navy shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center relative animate-pop p-6 space-y-4',
       )}
     >
       {/* Close/Reset Button */}
@@ -48,17 +54,19 @@ export const ResultCard: React.FC<ResultCardProps> = ({
       <h2 className="text-4xl font-display font-black text-ink-navy text-center leading-tight p-2 w-full">
         {result.name}
       </h2>
-      
+
       {/* Status Badge */}
 
       <div
         className={cn(
-          "flex items-center justify-center gap-3 px-8 py-4 rounded-full font-black text-2xl border-4 border-ink-navy shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
-          isSafe ? "bg-grass-green/10 text-grass-green" : "bg-redstone-red/10 text-redstone-red"
+          'flex items-center justify-center gap-3 px-8 py-4 rounded-full font-black text-2xl border-4 border-ink-navy shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]',
+          isSafe
+            ? 'bg-grass-green/10 text-grass-green'
+            : 'bg-redstone-red/10 text-redstone-red',
         )}
       >
         {getStatusIcon()}
-        <span>{isSafe ? "O.K" : "STOP"}</span>
+        <span>{isSafe ? 'O.K' : 'STOP'}</span>
       </div>
 
       {/* Allergens List */}
@@ -73,30 +81,42 @@ export const ResultCard: React.FC<ResultCardProps> = ({
               key={allergen}
               className="flex flex-col items-center gap-1 bg-redstone-red/5 p-3 rounded-2xl border-2 border-redstone-red/20"
             >
-               <span className="text-3xl" role="img" aria-label={allergen}>{getAllergenIcon(allergen)}</span>
-               <span className="text-[10px] font-black uppercase text-redstone-red tracking-tighter">{allergen}</span>
+              <span className="text-3xl" role="img" aria-label={allergen}>
+                {getAllergenIcon(allergen)}
+              </span>
+              <span className="text-[10px] font-black uppercase text-redstone-red tracking-tighter">
+                {allergen}
+              </span>
             </div>
           ))
         )}
       </div>
 
       {/* Action Buttons — only safe snacks can join the collection. */}
-      <div className={cn("grid gap-4 w-full px-2 pt-4", isSafe ? "grid-cols-2" : "grid-cols-1")}>
+      <div
+        className={cn(
+          'grid gap-4 w-full px-2 pt-4',
+          isSafe ? 'grid-cols-2' : 'grid-cols-1',
+        )}
+      >
         {isSafe && (
           <button
             onClick={onCollect}
             className={cn(
-              "flex items-center justify-center gap-3 p-6 border-4 border-ink-navy rounded-3xl text-xl font-black transition-all active:scale-95",
+              'flex items-center justify-center gap-3 p-6 border-4 border-ink-navy rounded-3xl text-xl font-black transition-all active:scale-95',
               isCollected
-                ? "bg-yellow-400 text-ink-navy shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-                : "bg-block-white text-gray-600 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+                ? 'bg-yellow-400 text-ink-navy shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                : 'bg-block-white text-gray-600 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]',
             )}
             aria-pressed={isCollected}
           >
             <Star
-              className={cn("w-8 h-8", isCollected ? "fill-yellow-500 text-yellow-600" : "")}
+              className={cn(
+                'w-8 h-8',
+                isCollected ? 'fill-yellow-500 text-yellow-600' : '',
+              )}
             />
-            {isCollected ? "Collected" : "Collect"}
+            {isCollected ? 'Collected' : 'Collect'}
           </button>
         )}
 
@@ -113,17 +133,16 @@ export const ResultCard: React.FC<ResultCardProps> = ({
 };
 
 function getAllergenIcon(allergen: string) {
-    const map: Record<string, string> = {
-        'milk': '🥛',
-        'eggs': '🥚',
-        'peanuts': '🥜',
-        'tree nuts': '🌰',
-        'wheat': '🌾',
-        'soy': '🫘',
-        'fish': '🐟',
-        'crustacean shellfish': '🦐',
-        'sesame': '🫒',
-    };
-    return map[allergen.toLowerCase()] || '⚠️';
+  const map: Record<string, string> = {
+    milk: '🥛',
+    eggs: '🥚',
+    peanuts: '🥜',
+    'tree nuts': '🌰',
+    wheat: '🌾',
+    soy: '🫘',
+    fish: '🐟',
+    'crustacean shellfish': '🦐',
+    sesame: '🫒',
+  };
+  return map[allergen.toLowerCase()] || '⚠️';
 }
-

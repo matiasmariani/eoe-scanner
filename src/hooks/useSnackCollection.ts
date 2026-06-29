@@ -36,7 +36,7 @@ export function useSnackCollection() {
 
   const isCollected = useCallback(
     (barcode: string) => snacks.some((s) => s.barcode === barcode),
-    [snacks]
+    [snacks],
   );
 
   const toggleSnack = useCallback((snack: Omit<CollectedSnack, 'savedAt'>) => {
@@ -44,7 +44,7 @@ export function useSnackCollection() {
     setSnacks((prev) =>
       prev.some((s) => s.barcode === snack.barcode)
         ? save(prev.filter((s) => s.barcode !== snack.barcode))
-        : save([{ ...snack, savedAt: Date.now() }, ...prev])
+        : save([{ ...snack, savedAt: Date.now() }, ...prev]),
     );
   }, []);
 

@@ -1,43 +1,55 @@
-import type { Metadata } from "next";
-import { Fredoka, Nunito, Andika, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
-import { AllergyProvider } from "@/contexts/AllergyContext";
+import type { Metadata } from 'next';
+import { Fredoka, Nunito, Andika, JetBrains_Mono } from 'next/font/google';
+import './globals.css';
+import { AllergyProvider } from '@/contexts/AllergyContext';
 
 const fredoka = Fredoka({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["400", "700"],
+  variable: '--font-display',
+  subsets: ['latin'],
+  weight: ['400', '700'],
   display: 'swap',
 });
 
 const nunito = Nunito({
-  variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
+  variable: '--font-body',
+  subsets: ['latin'],
+  weight: ['400', '600', '700', '800'],
   display: 'swap',
 });
 
 const andika = Andika({
-  variable: "--font-data",
-  subsets: ["latin"],
-  weight: ["400", "700"],
+  variable: '--font-data',
+  subsets: ['latin'],
+  weight: ['400', '700'],
   display: 'swap',
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
+  variable: '--font-mono',
+  subsets: ['latin'],
   display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: "Snack Scout - Is it safe to eat?",
-  description: "Snack Scout is a kid-friendly allergy checker. Scan any snack's barcode to instantly check it for allergens like milk, wheat, eggs, and nuts.",
-  keywords: ['allergy', 'scanner', 'kids', 'food', 'nutrition', 'allergen', 'safe snacking', 'scan barcode', 'snack scout'],
+  title: 'Snack Scout - Is it safe to eat?',
+  description:
+    "Snack Scout is a kid-friendly allergy checker. Scan any snack's barcode to instantly check it for allergens like milk, wheat, eggs, and nuts.",
+  keywords: [
+    'allergy',
+    'scanner',
+    'kids',
+    'food',
+    'nutrition',
+    'allergen',
+    'safe snacking',
+    'scan barcode',
+    'snack scout',
+  ],
   authors: [{ name: 'Snack Scout' }],
   openGraph: {
     title: 'Snack Scout - Is it safe to eat?',
-    description: "A kid-friendly allergy checker. Scan a snack's barcode to instantly check it for allergens.",
+    description:
+      "A kid-friendly allergy checker. Scan a snack's barcode to instantly check it for allergens.",
     type: 'website',
   },
 };
@@ -53,9 +65,7 @@ export default function RootLayout({
       className={`${fredoka.variable} ${nunito.variable} ${andika.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <AllergyProvider>
-          {children}
-        </AllergyProvider>
+        <AllergyProvider>{children}</AllergyProvider>
       </body>
     </html>
   );

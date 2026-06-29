@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { Component, ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { AlertCircle, RefreshCcw } from 'lucide-react';
 import { logError } from '@/lib/errorHandling';
@@ -24,7 +24,7 @@ export class ScannerErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error) {
     logError('ScannerErrorBoundary', error);
   }
 
@@ -49,7 +49,10 @@ export class ScannerErrorBoundary extends Component<Props, State> {
                 transition={{ delay: 0.2 }}
                 className="mb-6 inline-flex items-center justify-center w-24 h-24 bg-redstone-red/10 rounded-full"
               >
-                <AlertCircle className="w-12 h-12 text-redstone-red" aria-hidden="true" />
+                <AlertCircle
+                  className="w-12 h-12 text-redstone-red"
+                  aria-hidden="true"
+                />
               </motion.div>
 
               <h2 className="text-4xl font-display font-black text-ink-navy mb-2">
@@ -57,7 +60,8 @@ export class ScannerErrorBoundary extends Component<Props, State> {
               </h2>
 
               <p className="text-xl text-gray-600 mb-6">
-                We encountered an error while accessing your camera. Please try again.
+                We encountered an error while accessing your camera. Please try
+                again.
               </p>
 
               {this.state.error && (

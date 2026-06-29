@@ -36,49 +36,118 @@ export const UI = {
   CACHE_TTL: 5 * 60 * 1000, // 5 minutes
 } as const;
 
-// Allergy settings
-export const ALLERGY = {
-  OPTIONS: [
-    { value: 'milk', label: 'Milk', icon: '🥛' },
-    { value: 'eggs', label: 'Eggs', icon: '🥚' },
-    { value: 'peanuts', label: 'Peanuts', icon: '🥜' },
-    { value: 'tree nuts', label: 'Tree Nuts', icon: '🥜' },
-    { value: 'wheat', label: 'Wheat', icon: '🌾' },
-    { value: 'soy', label: 'Soy', icon: '🫘' },
-    { value: 'fish', label: 'Fish', icon: '🐟' },
-    { value: 'crustacean shellfish', label: 'Crustacean Shellfish', icon: '🦐' },
-    { value: 'sesame', label: 'Sesame', icon: '🫒' },
-  ] as const,
-} as const;
+// ── Allergens: single source of truth ───────────────────────────────────────
+// The `Allergy` union, the UI option list, and the keyword map below are the one
+// place allergens are defined. Import from here everywhere (context, settings UI,
+// matcher) so the set can never drift.
 
-// Maps each user-selectable allergy (see `Allergy` in AllergyContext) to the
-// ingredient/label keywords that indicate its presence. Used by `checkAllergens`
-// for word-boundary matching against product ingredients and OFF allergen tags.
+export type Allergy =
+  | 'milk'
+  | 'eggs'
+  | 'peanuts'
+  | 'tree nuts'
+  | 'wheat'
+  | 'soy'
+  | 'fish'
+  | 'crustacean shellfish'
+  | 'sesame';
+
+export interface AllergyOption {
+  value: Allergy;
+  label: string;
+  icon: string;
+}
+
+export const ALLERGY_OPTIONS: AllergyOption[] = [
+  { value: 'milk', label: 'Milk', icon: '🥛' },
+  { value: 'eggs', label: 'Eggs', icon: '🥚' },
+  { value: 'peanuts', label: 'Peanuts', icon: '🥜' },
+  { value: 'tree nuts', label: 'Tree Nuts', icon: '🌰' },
+  { value: 'wheat', label: 'Wheat', icon: '🌾' },
+  { value: 'soy', label: 'Soy', icon: '🫘' },
+  { value: 'fish', label: 'Fish', icon: '🐟' },
+  { value: 'crustacean shellfish', label: 'Crustaceans', icon: '🦐' },
+  { value: 'sesame', label: 'Sesame', icon: '🫒' },
+];
+
+// Maps each allergy to the ingredient/label keywords that indicate its presence.
+// Used by `checkAllergens` for word-boundary matching against product ingredients
+// and OFF allergen tags.
 //
 // Note: `butter` is intentionally omitted from `milk` to avoid false positives on
 // cocoa/shea butter (extremely common in candy/chocolate); dairy butter is still
 // covered by milk/cream/dairy when those terms appear.
-export const ALLERGEN_KEYWORDS: Record<string, string[]> = {
-  'milk': ['milk', 'dairy', 'cheese', 'lactose', 'cream', 'casein', 'caseinate', 'whey', 'ghee', 'curd', 'buttermilk', 'butterfat'],
-  'eggs': ['egg', 'albumen', 'albumin', 'ovalbumin', 'mayonnaise', 'meringue'],
-  'peanuts': ['peanut', 'arachis', 'groundnut'],
-  'tree nuts': ['tree nut', 'nut', 'almond', 'cashew', 'walnut', 'pecan', 'hazelnut', 'macadamia', 'pistachio', 'brazil nut', 'pine nut', 'chestnut', 'hickory', 'praline', 'marzipan'],
-  'wheat': ['wheat', 'gluten', 'semolina', 'durum', 'spelt', 'farro', 'einkorn', 'bulgur', 'couscous', 'seitan'],
-  'soy': ['soy', 'soya', 'soybean', 'soja', 'edamame', 'tofu', 'tempeh', 'miso'],
-  'fish': ['fish', 'salmon', 'tuna', 'cod', 'halibut', 'tilapia', 'anchovy', 'sardine', 'herring', 'mackerel', 'pollock', 'trout'],
-  'crustacean shellfish': ['crustacean', 'shellfish', 'shrimp', 'crab', 'lobster', 'prawn', 'crayfish', 'langoustine', 'krill'],
-  'sesame': ['sesame', 'tahini', 'benne', 'sesamol', 'gingelly', 'simsim'],
+export const ALLERGEN_KEYWORDS: Record<Allergy, string[]> = {
+  milk: [
+    'milk',
+    'dairy',
+    'cheese',
+    'lactose',
+    'cream',
+    'casein',
+    'caseinate',
+    'whey',
+    'ghee',
+    'curd',
+    'buttermilk',
+    'butterfat',
+  ],
+  eggs: ['egg', 'albumen', 'albumin', 'ovalbumin', 'mayonnaise', 'meringue'],
+  peanuts: ['peanut', 'arachis', 'groundnut'],
+  'tree nuts': [
+    'tree nut',
+    'nut',
+    'almond',
+    'cashew',
+    'walnut',
+    'pecan',
+    'hazelnut',
+    'macadamia',
+    'pistachio',
+    'brazil nut',
+    'pine nut',
+    'chestnut',
+    'hickory',
+    'praline',
+    'marzipan',
+  ],
+  wheat: [
+    'wheat',
+    'gluten',
+    'semolina',
+    'durum',
+    'spelt',
+    'farro',
+    'einkorn',
+    'bulgur',
+    'couscous',
+    'seitan',
+  ],
+  soy: ['soy', 'soya', 'soybean', 'soja', 'edamame', 'tofu', 'tempeh', 'miso'],
+  fish: [
+    'fish',
+    'salmon',
+    'tuna',
+    'cod',
+    'halibut',
+    'tilapia',
+    'anchovy',
+    'sardine',
+    'herring',
+    'mackerel',
+    'pollock',
+    'trout',
+  ],
+  'crustacean shellfish': [
+    'crustacean',
+    'shellfish',
+    'shrimp',
+    'crab',
+    'lobster',
+    'prawn',
+    'crayfish',
+    'langoustine',
+    'krill',
+  ],
+  sesame: ['sesame', 'tahini', 'benne', 'sesamol', 'gingelly', 'simsim'],
 };
-
-// Default allergens for reference (label + keyword form, kept for display use)
-export const DEFAULT_ALLERGENS = [
-  { label: "Milk", keywords: ALLERGEN_KEYWORDS['milk'] },
-  { label: "Eggs", keywords: ALLERGEN_KEYWORDS['eggs'] },
-  { label: "Peanuts", keywords: ALLERGEN_KEYWORDS['peanuts'] },
-  { label: "Tree Nuts", keywords: ALLERGEN_KEYWORDS['tree nuts'] },
-  { label: "Wheat", keywords: ALLERGEN_KEYWORDS['wheat'] },
-  { label: "Soy", keywords: ALLERGEN_KEYWORDS['soy'] },
-  { label: "Fish", keywords: ALLERGEN_KEYWORDS['fish'] },
-  { label: "Crustacean Shellfish", keywords: ALLERGEN_KEYWORDS['crustacean shellfish'] },
-  { label: "Sesame", keywords: ALLERGEN_KEYWORDS['sesame'] },
-] as const;

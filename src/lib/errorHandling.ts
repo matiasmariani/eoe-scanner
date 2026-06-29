@@ -12,7 +12,7 @@ export class AppError extends Error {
   constructor(
     message: string,
     public code?: string,
-    public isPermissionError?: boolean
+    public isPermissionError?: boolean,
   ) {
     super(message);
     this.name = 'AppError';
@@ -38,8 +38,11 @@ export function createUserErrorMessage(error: unknown): string {
  * Logs errors to console with context
  */
 export function logError(context: string, error: unknown): void {
-  // Logging is handled by the calling environment's console logic.
-  // This remains for API compatibility in future-proofing.
+  // Dev-time visibility. TODO: forward to an error reporter (e.g. Sentry) in
+  // production — the dependency is installed but not yet wired up.
+  if (process.env.NODE_ENV !== 'production') {
+    console.error(`[${context}]`, error);
+  }
 }
 
 /**
@@ -60,7 +63,10 @@ export function handleApiError(error: unknown): AppError {
 /**
  * Validates barcode input
  */
-export function validateBarcode(barcode: string): { valid: boolean; error?: string } {
+export function validateBarcode(barcode: string): {
+  valid: boolean;
+  error?: string;
+} {
   if (!barcode || barcode.trim() === '') {
     return { valid: false, error: 'Please enter a barcode' };
   }

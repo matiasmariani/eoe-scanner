@@ -39,12 +39,14 @@ A modern, kid-friendly mobile web app for scanning product barcodes and checking
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd my-next-app
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 # or
@@ -56,6 +58,7 @@ bun install
 ```
 
 3. Run the development server:
+
 ```bash
 npm run dev
 # or
@@ -100,17 +103,20 @@ my-next-app/
 ## Features in Detail
 
 ### Barcode Scanning
+
 - Uses Quagga.js for real-time barcode detection
 - Supports multiple barcode formats (EAN, UPC, Code 128)
 - Anti-spam protection to prevent duplicate scans
 - Camera permission handling
 
 ### Allergen Detection
+
 - Checks for common allergens using Open Food Facts API
 - Supports: Dairy, Wheat, Eggs, Peanuts, Tree Nuts, Soy, Fish, Sesame
 - Clear visual indicators for safe vs. unsafe products
 
 ### Favorites System
+
 - Saves favorite products to localStorage
 - Persistent across sessions
 - Easy add/remove functionality
