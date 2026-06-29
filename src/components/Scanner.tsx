@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import Quagga, { QuaggaJSResultObject } from "@ericblade/quagga2";
+import { BarcodeDetector as BarcodeDetectorPonyfill } from "barcode-detector/ponyfill";
 import { ScanError } from "@/lib/scanner-types";
 import { AlertCircle } from "lucide-react";
 import { logError } from "@/lib/errorHandling";
@@ -12,148 +12,156 @@ interface ScannerProps {
     onError?: (error: ScanError) => void;
 }
 
+// Grocery barcodes are EAN/UPC; Code 128 covers some store labels.
+const FORMATS = ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"] as const;
+
+// Use the platform's native BarcodeDetector (Android Chrome → ML Kit, Safari 17+)
+// when present; otherwise fall back to the zxing-wasm ponyfill. Same API either way.
+const BarcodeDetectorImpl: typeof BarcodeDetectorPonyfill =
+    typeof window !== "undefined" && "BarcodeDetector" in window
+        ? ((window as unknown as { BarcodeDetector: typeof BarcodeDetectorPonyfill }).BarcodeDetector)
+        : BarcodeDetectorPonyfill;
+
+const DETECT_INTERVAL_MS = 250;
+
 export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
     const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-    const isInitializedRef = useRef(false);
-    const isActiveRef = useRef(true);
-    const containerRef = useRef<HTMLDivElement>(null);
-
-    const scanHistoryRef = useRef<{ [code: string]: number }>({});
-    const lastScannedCodeRef = useRef<string>("");
-    const lastScanTimeRef = useRef<number>(0);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const streamRef = useRef<MediaStream | null>(null);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const detectingRef = useRef(false);
+    const firedRef = useRef(false);
 
     useEffect(() => {
-        isActiveRef.current = true;
+        let cancelled = false;
+        const video = videoRef.current;
 
-        if (typeof window === "undefined" || isInitializedRef.current) return;
+        const fail = (err: unknown, isPermissionError = false) => {
+            logError("Scanner", err);
+            console.log("camera: error", { message: String(err), isPermissionError });
+            if (cancelled) return;
+            setStatus("error");
+            onError?.({
+                message: isPermissionError
+                    ? "Camera permission denied. Please allow camera access or use the manual barcode entry."
+                    : String(err),
+                isPermissionError,
+            });
+        };
 
-        const initScanner = async () => {
-            if (!containerRef.current || !isActiveRef.current) {
+        const start = async () => {
+            console.log("camera: start");
+            if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+                fail(new Error("Camera API unavailable in this browser"));
                 return;
             }
 
+            let stream: MediaStream;
             try {
-                Quagga.init(
-                    {
-                        inputStream: {
-                            type: "LiveStream",
-                            target: containerRef.current,
-                            constraints: {
-                                width: { min: 640, ideal: 1280, max: 1920 },
-                                height: { min: 480, ideal: 720, max: 1080 },
-                                facingMode: "environment",
-                                ...({ focusMode: "continuous" } as Record<string, unknown>)
-                            },
-                            singleChannel: false
-                        },
-                        locate: true,
-                        locator: {
-                            halfSample: true,
-                            patchSize: "medium"
-                        },
-                        numOfWorkers: typeof navigator !== 'undefined' ? Math.min(navigator.hardwareConcurrency || 2, 4) : 2,
-                        decoder: {
-                            readers: [
-                                "ean_reader",
-                                "ean_8_reader",
-                                "upc_reader",
-                                "upc_e_reader",
-                                "code_128_reader"
-                            ],
-                            multiple: false
-                        }
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { ideal: "environment" },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
                     },
-                    (err) => {
-                        if (!isActiveRef.current) {
-                            try { Quagga.stop(); } catch (e) { }
-                            return;
-                        }
-
-                        if (err) {
-                            logError('Scanner', err);
-                            const errorMessage = String(err);
-                            const isPermissionError =
-                                 errorMessage.includes("NotAllowedError") ||
-                                 errorMessage.includes("Permission denied") ||
-                                 errorMessage.includes("camera");
-
-                            setStatus("error");
-                            if (onError) {
-                                onError({
-                                    message: isPermissionError
-                                        ? "Camera permission denied. Please allow camera access or use the manual barcode entry."
-                                        : errorMessage,
-                                    isPermissionError
-                                } as ScanError);
-                            }
-                            return;
-                        }
-
-                        isInitializedRef.current = true;
-                        Quagga.start();
-                        setStatus("ready");
-
-                        Quagga.onDetected((result: QuaggaJSResultObject) => {
-                            const code = result.codeResult?.code;
-                            if (!code) return;
-
-                            if ((result.codeResult as { fallback?: boolean }).fallback || !result.codeResult.format) return;
-
-                            const now = Date.now();
-                            if (code === lastScannedCodeRef.current && now - lastScanTimeRef.current < 3000) {
-                                return;
-                            }
-
-                            scanHistoryRef.current[code] = (scanHistoryRef.current[code] || 0) + 1;
-                            if (scanHistoryRef.current[code] >= 3) {
-                                lastScannedCodeRef.current = code;
-                                lastScanTimeRef.current = now;
-                                scanHistoryRef.current = {};
-                                onScan(code);
-                            }
-                        });
-                    }
-                );
+                    audio: false,
+                });
             } catch (err) {
-                logError('Scanner', err);
-                setStatus("error");
-                if (onError) onError({ message: String(err) } as ScanError);
+                const name = err instanceof DOMException ? err.name : "";
+                fail(err, name === "NotAllowedError" || name === "SecurityError");
+                return;
             }
+
+            console.log("camera: stream acquired", { tracks: stream.getVideoTracks().length });
+            if (cancelled) {
+                stream.getTracks().forEach((t) => t.stop());
+                return;
+            }
+            streamRef.current = stream;
+
+            // Best-effort continuous autofocus — must be applied to the live track,
+            // not via getUserMedia constraints (which ignore focusMode).
+            const track = stream.getVideoTracks()[0];
+            try {
+                await track.applyConstraints({ advanced: [{ focusMode: "continuous" } as MediaTrackConstraintSet] });
+                console.log("camera: continuous focus applied");
+            } catch {
+                console.log("camera: continuous focus not supported (ok)");
+            }
+
+            if (!video) {
+                fail(new Error("Video element missing"));
+                return;
+            }
+            video.srcObject = stream;
+            try {
+                await video.play();
+            } catch (err) {
+                fail(err);
+                return;
+            }
+
+            const detector = new BarcodeDetectorImpl({ formats: [...FORMATS] });
+            console.log("camera: detector ready", {
+                native: BarcodeDetectorImpl !== BarcodeDetectorPonyfill,
+                formats: FORMATS,
+            });
+            if (cancelled) return;
+            setStatus("ready");
+
+            intervalRef.current = setInterval(async () => {
+                if (detectingRef.current || firedRef.current) return;
+                if (!video || video.readyState < 2 || video.videoWidth === 0) return;
+
+                detectingRef.current = true;
+                try {
+                    const codes = await detector.detect(video);
+                    if (codes.length > 0) {
+                        console.log("camera: detected", codes.map((c) => ({ value: c.rawValue, format: c.format })));
+                        const code = codes[0].rawValue;
+                        if (code && !firedRef.current) {
+                            firedRef.current = true;
+                            console.log("camera: ACCEPTED — firing onScan", { code });
+                            onScan(code);
+                        }
+                    }
+                } catch (err) {
+                    console.log("camera: detect threw", { message: String(err) });
+                } finally {
+                    detectingRef.current = false;
+                }
+            }, DETECT_INTERVAL_MS);
         };
 
-        const timer = setTimeout(initScanner, 300);
+        start();
 
         return () => {
-            clearTimeout(timer);
-            isActiveRef.current = false;
-
-            if (isInitializedRef.current) {
-                try {
-                    Quagga.offDetected();
-                    Quagga.stop();
-                } catch (err) {
-                    logError('Scanner', err);
-                }
-                isInitializedRef.current = false;
-            }
+            console.log("camera: cleanup");
+            cancelled = true;
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            intervalRef.current = null;
+            streamRef.current?.getTracks().forEach((t) => t.stop());
+            streamRef.current = null;
+            if (video) video.srcObject = null;
         };
     }, [onScan, onError]);
 
     return (
-        <div className="relative w-full max-w-md mx-auto overflow-hidden bg-deep-stone border-4 border-ink-navy shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center justify-center min-h-[500px] rounded-[3rem] p-2">
-            <div
-                ref={containerRef}
-                id="reader"
-                className={`w-full h-full [&>video]:w-full [&>video]:h-full [&>video]:object-cover ${status === "ready" ? "block" : "hidden"}`}
+        <div className="relative w-full max-w-md mx-auto overflow-hidden bg-deep-stone border-4 border-ink-navy shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center justify-center min-h-[360px] rounded-[3rem] p-2">
+            <video
+                ref={videoRef}
+                muted
+                playsInline
+                className={`w-full h-full object-cover rounded-[2.5rem] ${status === "ready" ? "block" : "hidden"}`}
             />
-            
+
             {status === "ready" && (
                 <div className="absolute inset-0 pointer-events-none z-20">
                     <div className="absolute top-8 left-8 w-20 h-20 border-8 border-ink-navy/40 rounded-2xl shadow-voxel" />
                     <div className="absolute top-8 right-8 w-20 h-20 border-8 border-ink-navy/40 rounded-2xl shadow-voxel" />
                     <div className="absolute bottom-8 left-8 w-20 h-20 border-8 border-ink-navy/40 rounded-2xl shadow-voxel" />
                     <div className="absolute bottom-8 right-8 w-20 h-20 border-8 border-ink-navy/40 rounded-2xl shadow-voxel" />
-                    
+
                     {/* Scanning Line */}
                     <motion.div
                         className="absolute w-full h-2 bg-pikachu-yellow/40 z-10 blur-[2px]"

@@ -16,17 +16,17 @@ export function SnackScout({ size = 'lg', className }: SnackScoutProps) {
     <div
       className={cn(
         'flex items-center justify-center bg-grass-green border-4 border-ink-navy rounded-full shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]',
-        isLarge ? 'gap-4 px-10 py-5 w-full' : 'gap-2 px-5 py-2',
+        isLarge ? 'gap-3 px-6 py-3 w-full' : 'gap-2 px-4 py-2',
         className
       )}
     >
-      <span className={isLarge ? 'text-4xl' : 'text-2xl'} role="img" aria-label="Detective scout">
+      <span className={isLarge ? 'text-3xl' : 'text-2xl'} role="img" aria-label="Detective scout">
         🕵️
       </span>
       <span
         className={cn(
           'font-display font-black text-block-white tracking-tight',
-          isLarge ? 'text-4xl' : 'text-xl'
+          isLarge ? 'text-3xl' : 'text-xl'
         )}
       >
         Snack Scout

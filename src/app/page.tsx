@@ -96,28 +96,28 @@ export default function Home() {
                 Skip to main content
             </a>
             
-            <header className="w-full px-6 py-8 flex flex-col items-center justify-between gap-8">
-                <div className="flex items-center gap-6">
+            <header className="w-full px-6 py-4 flex flex-col items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
                     <button
                         onClick={() => setIsSettingsOpen(true)}
-                        className="p-5 bg-block-white border-4 border-ink-navy rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
+                        className="p-3 bg-block-white border-4 border-ink-navy rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
                         aria-label="Allergy settings"
                     >
-                        <ShieldCheck className="w-10 h-10 text-grass-green" aria-hidden="true" />
+                        <ShieldCheck className="w-8 h-8 text-grass-green" aria-hidden="true" />
                     </button>
                     <button
                         onClick={reset}
-                        className="p-5 bg-block-white border-4 border-ink-navy rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
+                        className="p-3 bg-block-white border-4 border-ink-navy rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
                         aria-label="Reset scanner"
                     >
-                        <RefreshCcw className="w-10 h-10 text-redstone-red" aria-hidden="true" />
+                        <RefreshCcw className="w-8 h-8 text-redstone-red" aria-hidden="true" />
                     </button>
                     <button
                         onClick={() => setIsCollectionOpen(true)}
-                        className="p-5 bg-block-white border-4 border-ink-navy rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
+                        className="p-3 bg-block-white border-4 border-ink-navy rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
                         aria-label="My safe snacks collection"
                     >
-                        <Album className="w-10 h-10 text-diamond-blue" aria-hidden="true" />
+                        <Album className="w-8 h-8 text-diamond-blue" aria-hidden="true" />
                     </button>
                 </div>
 
@@ -126,7 +126,7 @@ export default function Home() {
             </header>
 
             
-            <div id="main-content" className="w-full space-y-12 flex flex-col items-center">
+            <div id="main-content" className="w-full space-y-6 flex flex-col items-center">
                 <AnimatePresence mode="wait">
                     {mode === "idle" && (
                         <motion.div
@@ -134,34 +134,34 @@ export default function Home() {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: -20 }}
-                            className="w-full space-y-12 text-center"
+                            className="w-full space-y-5 text-center"
                         >
-                            <div className="space-y-6">
-                                <h2 className="text-7xl font-display font-black leading-tight">
-                                    Scan your <br />
+                            <div className="space-y-3">
+                                <h2 className="text-5xl font-display font-black leading-tight">
+                                    Scan your{" "}
                                     <span className="text-redstone-red italic underline decoration-ink-navy">snack!</span>
                                 </h2>
-                                <p className="text-3xl text-grass-green font-body font-bold p-8 bg-block-white border-4 border-ink-navy rounded-[3rem] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] max-w-[95%] mx-auto">
-                                    Let&apos;s investigate if it&apos;s safe to eat 🔍
+                                <p className="text-lg text-grass-green font-body font-bold p-4 bg-block-white border-4 border-ink-navy rounded-[2rem] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] max-w-[95%] mx-auto">
+                                    Let&apos;s investigate if it&apos;s O.K to eat 🔍
                                 </p>
                             </div>
-                            
-                            <div className="flex flex-col gap-8 w-full px-4">
+
+                            <div className="flex flex-col gap-4 w-full px-4">
                                  <button
                                      onClick={() => setMode("scanning")}
-                                     className="group relative flex items-center justify-center gap-0 w-full bg-yellow-400 border-4 border-ink-navy p-12 rounded-[3rem] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all hover:-translate-y-[2px]"
+                                     className="group relative flex items-center justify-center gap-0 w-full bg-yellow-400 border-4 border-ink-navy p-6 rounded-[2.5rem] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all hover:-translate-y-[2px]"
                                      aria-label="Start scanning"
                                  >
-                                     <Camera className="w-32 h-32 group-hover:scale-110 transition-transform drop-shadow-[4px_4px_0px_rgba(0,0,0,0.8)]" aria-hidden="true" />
+                                     <Camera className="w-20 h-20 group-hover:scale-110 transition-transform drop-shadow-[4px_4px_0px_rgba(0,0,0,0.8)]" aria-hidden="true" />
                                  </button>
 
-                                
-                                <div className="flex items-center gap-6">
-                                    <div className="h-4 flex-1 bg-gray-300 rounded-full border-4 border-ink-navy" />
-                                    <span className="text-block-white font-display font-black text-3xl uppercase tracking-widest">OR</span>
-                                    <div className="h-4 flex-1 bg-gray-300 rounded-full border-4 border-ink-navy" />
+
+                                <div className="flex items-center gap-4">
+                                    <div className="h-2 flex-1 bg-gray-300 rounded-full border-4 border-ink-navy" />
+                                    <span className="text-block-white font-display font-black text-xl uppercase tracking-widest">OR</span>
+                                    <div className="h-2 flex-1 bg-gray-300 rounded-full border-4 border-ink-navy" />
                                 </div>
-                                
+
                                 <BarcodeSearchForm
                                     barcode={barcode}
                                     setBarcode={setBarcode}
