@@ -1,3 +1,5 @@
+import { checkAllergens } from "../lib/allergen-utils";
+
 export interface USDAConfig {
   apiKey: string;
 }
@@ -38,6 +40,7 @@ export interface USDAFood {
     indentLevel: number;
     foodNutrientId: number;
   }>;
+  foundAllergens?: string[];
 }
 
 export interface USDAFoodSearchResponse {
@@ -62,39 +65,61 @@ export interface USDAErrorResponse {
 
 const BASE_URL = 'https://api.nal.usda.gov/fdc/v1';
 
-export async function searchFood(config: USDAConfig, query: string, dataType: string[]): Promise<USDAFoodSearchResponse> {
-  try {
-    const response = await fetch(`${BASE_URL}/foods/search?api_key=${config.apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query,
-        dataType,
-      }),
-    });
+export async function searchFood(config: USDAConfig, query: string, dataType: string[], userAllergies: string[] = []): Promise<USDAFoodSearchResponse> {
+  const response = await fetch(`${BASE_URL}/foods/search?api_key=${config.apiKey}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query,
+      dataType,
+    }),
+  });
 
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-
-    return await response.json();
-  } catch (error) {
-    throw error;
+  if (!response.ok) {
+    throw new Error(response.statusText);
   }
+
+  const data: USDAFoodSearchResponse = await response.json();
+
+  if (data.foods && Array.isArray(data.foods)) {
+    data.foods = data.foods.map((food) => ({
+      ...food,
+      foundAllergens: checkAllergens(food.ingredients, userAllergies),
+    }));
+  }
+
+  return data;
 }
 
-export async function getFoodDetails(config: USDAConfig, fdcId: string): Promise<USDAFood> {
-  try {
-    const response = await fetch(`${BASE_URL}/food/${fdcId}?api_key=${config.apiKey}`);
+/**
+ * Looks up a single branded food by its barcode (UPC/GTIN).
+ * Search results are ranked by relevance, not exactness, so we prefer the food
+ * whose `gtinUpc` exactly matches the barcode and only fall back to the top hit.
+ * Returns null when nothing is found.
+ */
+export async function findFoodByBarcode(config: USDAConfig, barcode: string, userAllergies: string[] = []): Promise<USDAFood | null> {
+  const data = await searchFood(config, barcode, ['Branded'], userAllergies);
+  if (!data.foods || data.foods.length === 0) return null;
+  return data.foods.find((food) => food.gtinUpc === barcode) ?? data.foods[0];
+}
 
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
+export async function getFoodDetails(config: USDAConfig, fdcId: string, userAllergies: string[] = []): Promise<USDAFood> {
+  const response = await fetch(`${BASE_URL}/food/${fdcId}?api_key=${config.apiKey}`);
 
-    return await response.json();
-  } catch (error) {
-    throw error;
+  if (!response.ok) {
+    throw new Error(response.statusText);
   }
+
+  const data = await response.json();
+
+  if (data.food) {
+    return {
+      ...data.food,
+      foundAllergens: checkAllergens(data.food.ingredients, userAllergies),
+    };
+  }
+
+  return data as USDAFood;
 }

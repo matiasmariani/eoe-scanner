@@ -9,6 +9,7 @@ export interface ProductResult {
     openfoodError?: string;
     usdaError?: string;
     source?: string;
+    ingredients?: string;
 }
 
 export interface OpenFoodFactsResponse {
@@ -105,26 +106,38 @@ export interface OpenFoodFactsResponse {
         nutriscore_score?: number;
         nutriscore_version?: string;
         allergens_text?: string;
+        image_url?: string;
     };
 }
 
-const CACHE = new Map<string, { data: ProductResult; timestamp: number }>();
+import { checkAllergens } from "./allergen-utils";
+
+const ERROR_MSG = "I can't find that product. Ask a grown-up for help";
+
+// Only the fields we actually consume — keeps the OFF response small/fast.
+const OFF_FIELDS = "product_name,brands,ingredients_text,allergens,allergens_tags,image_url";
+
+// We cache the raw product data (the expensive network result) rather than a
+// computed ProductResult, so allergen matching is re-run against the current
+// user allergies on every call — including cache hits.
+interface RawProduct {
+    notFound: boolean;
+    error?: string;
+    name?: string;
+    brand?: string;
+    ingredients?: string;
+    allergensText?: string;
+    allergensTags?: string[];
+    image_url?: string;
+}
+
+const CACHE = new Map<string, { data: RawProduct; timestamp: number }>();
 const CACHE_TTL = 5 * 60 * 1000;
 
-export async function fetchProductFromOpenFoodFacts(barcode: string, userAllergies: string[] = []): Promise<ProductResult> {
-    const errorMsg = "I can't find that product. Ask a grown-up for help";
-
-    // Cache check
-    if (userAllergies.length === 0) {
-        const cached = CACHE.get(barcode);
-        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-            return cached.data;
-        }
-    }
-
+async function fetchRawProduct(barcode: string): Promise<RawProduct> {
     try {
         const response = await fetch(
-            `https://world.openfoodfacts.org/api/v3.6/product/${barcode}`,
+            `https://world.openfoodfacts.org/api/v3.6/product/${barcode}?fields=${OFF_FIELDS}`,
             {
                 headers: {
                     'User-Agent': process.env.NEXT_PUBLIC_OPENFOODFACTS_USER_AGENT || 'AllergyScout/1.0 (contact@example.com)'
@@ -132,126 +145,69 @@ export async function fetchProductFromOpenFoodFacts(barcode: string, userAllergi
             }
         );
 
-        console.log("SHIT", response)
         const data: OpenFoodFactsResponse = await response.json();
-        console.log("RESPONSE data", data)
 
-        // 1. Check if product was found or status is failure, or if response is not ok
         if (!response.ok || data.status === "failure" || !data.product) {
-            console.log('GATO>>>', data)
-            let errorMsgFromApi = errorMsg;
             const firstError = data.errors?.[0];
-            
+            let error = ERROR_MSG;
             if (firstError?.message?.name && firstError.message.name.trim() !== "") {
-                errorMsgFromApi = firstError.message.name;
+                error = firstError.message.name;
             } else if (data.result?.name && data.result.name.trim() !== "") {
-                errorMsgFromApi = data.result.name;
-            } else if (firstError?.message && typeof firstError.message === 'string') {
-                errorMsgFromApi = firstError.message;
+                error = data.result.name;
             }
-            
-            const result: ProductResult = {
-                name: "Unknown Product",
-                brand: "Unknown",
-                isSafe: false,
-                allergensFound: [],
-                error: errorMsgFromApi,
-            };
-            CACHE.set(barcode, { data: result, timestamp: Date.now() });
-            return result;
+            return { notFound: true, error };
         }
+
         const product = data.product;
-        const productName = product.product_name || "Unknown Product";
-        const brandName = product.brands || "Unknown Brand";
-
-        const foundAllergens: string[] = [];
-        const labeledText = product.allergens_lc || "";
-        const ingredientsText = product.ingredients_text || "";
-        const rawAllergensText = product.allergens || "";
-        const textToScan = `${labeledText} ${ingredientsText} ${rawAllergensText}`.toLowerCase();
-
-        for (const allergy of userAllergies) {
-            if (textToScan.includes(allergy.toLowerCase())) {
-                foundAllergens.push(allergy);
-            }
-        }
-
-        const result: ProductResult = {
-            name: productName,
-            brand: brandName,
-            isSafe: foundAllergens.length === 0,
-            allergensFound: foundAllergens,
+        return {
+            notFound: false,
+            name: product.product_name || "Unknown Product",
+            brand: product.brands || "Unknown Brand",
+            ingredients: product.ingredients_text || "",
+            allergensText: product.allergens || "",
+            allergensTags: product.allergens_tags || [],
+            image_url: product.image_url,
         };
-
-        CACHE.set(barcode, { data: result, timestamp: Date.now() });
-        return result;
-
     } catch (error) {
         console.error(`[fetchProductFromOpenFoodFacts] error:`, error);
-        return {
-            name: "Error",
-            brand: "Error",
-            isSafe: false,
-            allergensFound: [],
-            error: errorMsg,
-        };
+        return { notFound: true, error: ERROR_MSG };
     }
 }
 
-export interface USDAFood {
-  fdcId: number;
-  description: string;
-  lowercaseDescription: string;
-  dataType: string;
-  gtinUpc?: string;
-  publishedDate?: string;
-  brandOwner?: string;
-  brandName?: string;
-  ingredients?: string;
-  marketCountry?: string;
-  foodCategory?: string;
-  modifiedDate?: string;
-  dataSource?: string;
-  packageWeight?: string;
-  servingSizeUnit?: string;
-  servingSize?: number;
-  tradeChannels?: string[];
-  allHighlightFields?: string;
-  score?: number;
-  foodNutrients?: Array<{
-    nutrientId: number;
-    nutrientName: string;
-    nutrientNumber: string;
-    unitName: string;
-    derivationCode: string;
-    derivationDescription: string;
-    derivationId: number;
-    value: number;
-    foodNutrientSourceId: number;
-    foodNutrientSourceCode: string;
-    foodNutrientSourceDescription: string;
-    rank: number;
-    indentLevel: number;
-    foodNutrientId: number;
-  }>;
+export async function fetchProductFromOpenFoodFacts(barcode: string, userAllergies: string[] = []): Promise<ProductResult> {
+    let raw: RawProduct;
+    const cached = CACHE.get(barcode);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        raw = cached.data;
+    } else {
+        raw = await fetchRawProduct(barcode);
+        CACHE.set(barcode, { data: raw, timestamp: Date.now() });
+    }
+
+    if (raw.notFound) {
+        return {
+            name: "Unknown Product",
+            brand: "Unknown",
+            isSafe: false,
+            allergensFound: [],
+            error: raw.error || ERROR_MSG,
+            ingredients: "",
+        };
+    }
+
+    // OFF allergen tags (e.g. "en:milk") are the most reliable signal; combine
+    // them with the free-text ingredients and allergens label for matching.
+    const haystack = `${raw.ingredients} ${raw.allergensText} ${(raw.allergensTags ?? []).join(" ")}`;
+    const foundAllergens = checkAllergens(haystack, userAllergies);
+
+    return {
+        name: raw.name!,
+        brand: raw.brand!,
+        isSafe: foundAllergens.length === 0,
+        allergensFound: foundAllergens,
+        ingredients: raw.ingredients ?? "",
+        image_url: raw.image_url,
+    };
 }
 
-export interface USDAFoodSearchResponse {
-  totalHits: number;
-  currentPage: number;
-  totalPages: number;
-  pageList: number[];
-  foodSearchCriteria: Record<string, unknown>;
-  foods: USDAFood[];
-}
-
-export interface USDAErrorResponse {
-  error?: {
-    code?: string;
-    message?: string;
-  };
-  timestamp?: string;
-  status?: number;
-  message?: string;
-  path?: string;
-}
+// USDA types live in `@/services/usdaService` (the single USDA implementation).

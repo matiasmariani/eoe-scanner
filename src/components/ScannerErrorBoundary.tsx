@@ -35,24 +35,24 @@ export class ScannerErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-deep-stone flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             className="w-full max-w-md space-y-6"
           >
-            <div className="bg-white rounded-[3rem] border-8 border-rose-200 p-10 text-center shadow-2xl">
+            <div className="bg-block-white border-4 border-ink-navy p-10 text-center shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-[3rem]">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2 }}
-                className="mb-6 inline-flex items-center justify-center w-24 h-24 bg-rose-100 rounded-full"
+                className="mb-6 inline-flex items-center justify-center w-24 h-24 bg-redstone-red/10 rounded-full"
               >
-                <AlertCircle className="w-12 h-12 text-rose-500" aria-hidden="true" />
+                <AlertCircle className="w-12 h-12 text-redstone-red" aria-hidden="true" />
               </motion.div>
 
-              <h2 className="text-4xl font-black text-gray-900 mb-2">
+              <h2 className="text-4xl font-display font-black text-ink-navy mb-2">
                 Oops! Camera Error
               </h2>
 
@@ -70,7 +70,7 @@ export class ScannerErrorBoundary extends Component<Props, State> {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={this.handleReset}
-                className="inline-flex items-center gap-3 bg-rose-500 text-white px-8 py-4 rounded-full text-xl font-black hover:bg-rose-600 transition-all shadow-lg"
+                className="inline-flex items-center gap-3 bg-ink-navy text-block-white px-8 py-4 rounded-full text-xl font-black hover:bg-redstone-red transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
               >
                 <RefreshCcw className="w-5 h-5" aria-hidden="true" />
                 Try Again

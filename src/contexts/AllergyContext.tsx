@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { logError } from '@/lib/errorHandling';
+import { checkAllergens } from '@/lib/allergen-utils';
 
 export type Allergy =
   | 'milk'
@@ -49,7 +50,8 @@ export function AllergyProvider({ children }: { children: ReactNode }) {
   };
 
   const isAllergicTo = (allergen: string): boolean => {
-    return allergies.some(allergy => allergy.toLowerCase().includes(allergen.toLowerCase()));
+    // True if `allergen` text triggers any of the user's saved allergies.
+    return checkAllergens(allergen, allergies).length > 0;
   };
 
   const clearAllergies = () => {
@@ -74,7 +76,6 @@ export function AllergyProvider({ children }: { children: ReactNode }) {
 // Custom hook for easier access
 export function useAllergySettings() {
     const context = useContext(AllergyContext);
-  console.log('test-3 context', context)
   if (context === undefined) {
     throw new Error('useAllergySettings must be used within an AllergyProvider');
   }

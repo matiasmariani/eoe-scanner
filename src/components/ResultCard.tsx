@@ -3,27 +3,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react';
 import { ProductResult } from '@/lib/open-food-facts';
 import { cn } from '@/lib/utils';
-import { Heart, RefreshCcw } from "lucide-react";
+import { Star, RefreshCcw } from "lucide-react";
 
 interface ResultCardProps {
   result: ProductResult;
   onReset: () => void;
-  onFavorite: () => void;
-  isFavorite: boolean;
+  onCollect: () => void;
+  isCollected: boolean;
 }
 
 export const ResultCard: React.FC<ResultCardProps> = ({
   result,
   onReset,
-  onFavorite,
-  isFavorite,
+  onCollect,
+  isCollected,
 }) => {
   const isSafe = result.isSafe !== undefined ? result.isSafe : true;
 
   const getStatusIcon = () => {
-    if (isSafe) return <CheckCircle2 className="w-10 h-10 text-emerald-green" />;
-    if (result.warning) return <AlertTriangle className="w-10 h-10 text-pikachu-yellow" />;
-    return <AlertCircle className="w-10 h-10 text-pokeball-red" />;
+    if (isSafe) return <CheckCircle2 className="w-10 h-10 text-grass-green" />;
+    if (result.warning) return <AlertTriangle className="w-10 h-10 text-yellow-400" />;
+    return <AlertCircle className="w-10 h-10 text-redstone-red" />;
   };
 
   return (
@@ -32,101 +32,86 @@ export const ResultCard: React.FC<ResultCardProps> = ({
       animate={{ scale: 1, rotate: 0, opacity: 1 }}
       exit={{ scale: 0.5, opacity: 0, rotate: 10 }}
       className={cn(
-        "w-full max-w-sm bg-voxel-bg border-4 border-ink-navy shadow-voxel flex flex-col items-center relative animate-pop",
+        "w-full max-w-md bg-block-white border-4 border-ink-navy shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center relative animate-pop p-6 space-y-4",
       )}
     >
       {/* Close/Reset Button */}
       <button
         onClick={onReset}
-        className="absolute -top-3 -right-3 bg-ink-navy text-white w-10 h-10 rounded-full flex items-center justify-center shadow-voxel hover:scale-110 transition-transform z-10"
+        className="absolute -top-4 -right-4 bg-ink-navy text-block-white w-12 h-12 rounded-full flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:scale-110 transition-transform z-10"
         aria-label="Close result"
       >
         ✕
       </button>
 
-      {/* Product Image Container */}
-      <div className="w-40 h-40 rounded-2xl overflow-hidden bg-gray-100 border-4 border-ink-navy mb-4 flex items-center justify-center shadow-voxel">
-        {result.image_url ? (
-          <img
-            src={result.image_url}
-            alt={result.name}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div className="text-5xl">📦</div>
-        )}
-      </div >
-
       {/* Product Name */}
-      <h2 className="text-2xl font-display font-black text-ink-navy text-center mb-2 leading-tight p-4 w-full">
+      <h2 className="text-4xl font-display font-black text-ink-navy text-center leading-tight p-2 w-full">
         {result.name}
       </h2>
-
+      
       {/* Status Badge */}
+
       <div
         className={cn(
-          "flex items-center gap-2 px-6 py-3 rounded-full mb-6 font-bold text-lg border-2 border-ink-navy shadow-voxel",
-          isSafe ? "bg-emerald-green/10 text-emerald-green" : "bg-pokeball-red/10 text-pokeball-red"
+          "flex items-center justify-center gap-3 px-8 py-4 rounded-full font-black text-2xl border-4 border-ink-navy shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
+          isSafe ? "bg-grass-green/10 text-grass-green" : "bg-redstone-red/10 text-redstone-red"
         )}
       >
         {getStatusIcon()}
-        <span>{isSafe ? "Safe to eat!" : "Not Safe!"}</span>
+        <span>{isSafe ? "O.K" : "STOP"}</span>
       </div>
 
-      {/* Allergens List (Icons Only) */}
-      <div className="w-full flex flex-wrap justify-center gap-4 mb-6">
+      {/* Allergens List */}
+      <div className="w-full flex flex-wrap justify-center gap-3 mb-2">
         {isSafe ? (
-          <div className="flex items-center gap-2 text-gray-400 font-bold" aria-hidden="true">
-            No clues found!
+          <div className="text-gray-400 font-bold text-xl" aria-hidden="true">
+            No allergens found!
           </div>
         ) : (
           result.allergensFound?.map((allergen) => (
             <div
               key={allergen}
-              className="flex flex-col items-center gap-1 bg-pokeball-red/5 p-3 rounded-2xl border-2 border-pokeball-red/20"
+              className="flex flex-col items-center gap-1 bg-redstone-red/5 p-3 rounded-2xl border-2 border-redstone-red/20"
             >
-               {/* Using Emoji/Icon placeholder for allergens */}
                <span className="text-3xl" role="img" aria-label={allergen}>{getAllergenIcon(allergen)}</span>
-               <span className="text-[10px] font-black uppercase text-pokeball-red tracking-tighter">{allergen}</span>
+               <span className="text-[10px] font-black uppercase text-redstone-red tracking-tighter">{allergen}</span>
             </div>
           ))
         )}
       </div>
 
-      {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-4 w-full px-4">
-        <button
-          onClick={onFavorite}
-          className={cn(
-            "flex items-center justify-center gap-2 p-3 border-4 border-ink-navy rounded-full text-sm font-bold transition-all active:scale-95",
-            isFavorite
-              ? "bg-pikachu-yellow text-ink-navy shadow-[0_4px_0_0_rgba(253,224,71,0.8)]"
-              : "bg-white text-gray-600 shadow-voxel hover:shadow-[4px_4px_0px_#ffde00]"
-          )}
-        >
-          <Heart
+      {/* Action Buttons — only safe snacks can join the collection. */}
+      <div className={cn("grid gap-4 w-full px-2 pt-4", isSafe ? "grid-cols-2" : "grid-cols-1")}>
+        {isSafe && (
+          <button
+            onClick={onCollect}
             className={cn(
-              "w-5 h-5",
-              isFavorite ? "fill-pokeball-red text-pokeball-red" : ""
+              "flex items-center justify-center gap-3 p-6 border-4 border-ink-navy rounded-3xl text-xl font-black transition-all active:scale-95",
+              isCollected
+                ? "bg-yellow-400 text-ink-navy shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                : "bg-block-white text-gray-600 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
             )}
-          />
-          {isFavorite ? "Saved" : "Favorite"}
-        </button>
+            aria-pressed={isCollected}
+          >
+            <Star
+              className={cn("w-8 h-8", isCollected ? "fill-yellow-500 text-yellow-600" : "")}
+            />
+            {isCollected ? "Collected" : "Collect"}
+          </button>
+        )}
 
         <button
           onClick={onReset}
-          className="flex items-center justify-center gap-2 p-3 border-4 border-ink-navy bg-ink-navy text-white rounded-full text-sm font-bold shadow-[0_4px_0_0_rgba(30,58,138,0.5)] active:scale-95 hover:translate-y-[-2px] transition-transform"
+          className="flex items-center justify-center gap-3 p-6 border-4 border-ink-navy bg-ink-navy text-block-white rounded-3xl font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:scale-95 hover:translate-y-[-2px] transition-transform"
         >
-          <RefreshCcw className="w-5 h-5" />
-          Scan Again
+          <RefreshCcw className="w-8 h-8" />
+          Scan
         </button>
       </div>
     </motion.div>
   );
 };
 
-// Helper to map allergen names to icons/emojis
 function getAllergenIcon(allergen: string) {
     const map: Record<string, string> = {
         'milk': '🥛',
@@ -141,3 +126,4 @@ function getAllergenIcon(allergen: string) {
     };
     return map[allergen.toLowerCase()] || '⚠️';
 }
+

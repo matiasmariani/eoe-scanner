@@ -51,15 +51,34 @@ export const ALLERGY = {
   ] as const,
 } as const;
 
-// Default allergens for reference
+// Maps each user-selectable allergy (see `Allergy` in AllergyContext) to the
+// ingredient/label keywords that indicate its presence. Used by `checkAllergens`
+// for word-boundary matching against product ingredients and OFF allergen tags.
+//
+// Note: `butter` is intentionally omitted from `milk` to avoid false positives on
+// cocoa/shea butter (extremely common in candy/chocolate); dairy butter is still
+// covered by milk/cream/dairy when those terms appear.
+export const ALLERGEN_KEYWORDS: Record<string, string[]> = {
+  'milk': ['milk', 'dairy', 'cheese', 'lactose', 'cream', 'casein', 'caseinate', 'whey', 'ghee', 'curd', 'buttermilk', 'butterfat'],
+  'eggs': ['egg', 'albumen', 'albumin', 'ovalbumin', 'mayonnaise', 'meringue'],
+  'peanuts': ['peanut', 'arachis', 'groundnut'],
+  'tree nuts': ['tree nut', 'nut', 'almond', 'cashew', 'walnut', 'pecan', 'hazelnut', 'macadamia', 'pistachio', 'brazil nut', 'pine nut', 'chestnut', 'hickory', 'praline', 'marzipan'],
+  'wheat': ['wheat', 'gluten', 'semolina', 'durum', 'spelt', 'farro', 'einkorn', 'bulgur', 'couscous', 'seitan'],
+  'soy': ['soy', 'soya', 'soybean', 'soja', 'edamame', 'tofu', 'tempeh', 'miso'],
+  'fish': ['fish', 'salmon', 'tuna', 'cod', 'halibut', 'tilapia', 'anchovy', 'sardine', 'herring', 'mackerel', 'pollock', 'trout'],
+  'crustacean shellfish': ['crustacean', 'shellfish', 'shrimp', 'crab', 'lobster', 'prawn', 'crayfish', 'langoustine', 'krill'],
+  'sesame': ['sesame', 'tahini', 'benne', 'sesamol', 'gingelly', 'simsim'],
+};
+
+// Default allergens for reference (label + keyword form, kept for display use)
 export const DEFAULT_ALLERGENS = [
-  { label: "Milk", keywords: ["milk", "cheese", "lactose", "cream", "butter", "dairy"] },
-  { label: "Eggs", keywords: ["egg", "albumen"] },
-  { label: "Peanuts", keywords: ["peanut", "arachis"] },
-  { label: "Tree Nuts", keywords: ["almond", "cashew", "walnut", "pecan", "hazelnut", "macadamia", "pistachio", "tree nut"] },
-  { label: "Wheat", keywords: ["wheat", "gluten", "flour", "semolina", "durum"] },
-  { label: "Soy", keywords: ["soy", "soybean", "soy milk"] },
-  { label: "Fish", keywords: ["fish", "salmon", "tuna", "cod", "halibut", "tilapia"] },
-  { label: "Crustacean Shellfish", keywords: ["crustacean", "shrimp", "crab", "lobster", "prawn", "crayfish"] },
-  { label: "Sesame", keywords: ["sesame", "sesame oil", "sesame seeds"] },
+  { label: "Milk", keywords: ALLERGEN_KEYWORDS['milk'] },
+  { label: "Eggs", keywords: ALLERGEN_KEYWORDS['eggs'] },
+  { label: "Peanuts", keywords: ALLERGEN_KEYWORDS['peanuts'] },
+  { label: "Tree Nuts", keywords: ALLERGEN_KEYWORDS['tree nuts'] },
+  { label: "Wheat", keywords: ALLERGEN_KEYWORDS['wheat'] },
+  { label: "Soy", keywords: ALLERGEN_KEYWORDS['soy'] },
+  { label: "Fish", keywords: ALLERGEN_KEYWORDS['fish'] },
+  { label: "Crustacean Shellfish", keywords: ALLERGEN_KEYWORDS['crustacean shellfish'] },
+  { label: "Sesame", keywords: ALLERGEN_KEYWORDS['sesame'] },
 ] as const;

@@ -31,13 +31,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Allergy Scout - Find Food Clues!",
-  description: "Scan any product barcode to instantly check for allergens like dairy, wheat, and eggs.",
-  keywords: ['allergy', 'scanner', 'food', 'nutrition', 'allergen', 'safe snacking', 'scan barcode'],
-  authors: [{ name: 'Allergy Scout Team' }],
+  title: "Snack Scout - Is it safe to eat?",
+  description: "Snack Scout is a kid-friendly allergy checker. Scan any snack's barcode to instantly check it for allergens like milk, wheat, eggs, and nuts.",
+  keywords: ['allergy', 'scanner', 'kids', 'food', 'nutrition', 'allergen', 'safe snacking', 'scan barcode', 'snack scout'],
+  authors: [{ name: 'Snack Scout' }],
   openGraph: {
-    title: 'Allergy Scout - Find Food Clues!',
-    description: 'Scan any product barcode to instantly check for allergens like dairy, wheat, and eggs.',
+    title: 'Snack Scout - Is it safe to eat?',
+    description: "A kid-friendly allergy checker. Scan a snack's barcode to instantly check it for allergens.",
     type: 'website',
   },
 };
