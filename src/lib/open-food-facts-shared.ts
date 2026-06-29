@@ -6,6 +6,9 @@ export interface ProductResult {
     error?: string;
     warning?: boolean;
     image_url?: string;
+    openfoodError?: string;
+    usdaError?: string;
+    source?: string;
 }
 
 export interface OpenFoodFactsResponse {
@@ -85,7 +88,7 @@ export interface OpenFoodFactsResponse {
         allergens_tags?: string[];
         ingredients?: Array<{
             id: string;
-            ingredients?: Record<string, unknown>; // Replaced any with Record
+            ingredients?: Record<string, unknown>;
             percent?: number;
             percent_estimate?: number;
             percent_max?: string;
@@ -96,8 +99,8 @@ export interface OpenFoodFactsResponse {
         }>;
         ingredients_text?: string;
         ingredients_with_specified_percent_n?: number;
-        nutriment_levels?: Record<string, unknown>; // Replaced any with Record
-        nutriscore?: Record<string, unknown> | null; // Replaced any with Record or null
+        nutriment_levels?: Record<string, unknown>;
+        nutriscore?: Record<string, unknown> | null;
         nutriscore_grade?: string;
         nutriscore_score?: number;
         nutriscore_version?: string;
@@ -129,25 +132,34 @@ export async function fetchProductFromOpenFoodFacts(barcode: string, userAllergi
             }
         );
 
-        if (!response.ok) {
-            throw new Error("Network error");
-        }
-
+        console.log("SHIT", response)
         const data: OpenFoodFactsResponse = await response.json();
+        console.log("RESPONSE data", data)
 
-        // 1. Check if product was found or status is failure
-        if (data.status === "failure" || !data.product) {
+        // 1. Check if product was found or status is failure, or if response is not ok
+        if (!response.ok || data.status === "failure" || !data.product) {
+            console.log('GATO>>>', data)
+            let errorMsgFromApi = errorMsg;
+            const firstError = data.errors?.[0];
+            
+            if (firstError?.message?.name && firstError.message.name.trim() !== "") {
+                errorMsgFromApi = firstError.message.name;
+            } else if (data.result?.name && data.result.name.trim() !== "") {
+                errorMsgFromApi = data.result.name;
+            } else if (firstError?.message && typeof firstError.message === 'string') {
+                errorMsgFromApi = firstError.message;
+            }
+            
             const result: ProductResult = {
                 name: "Unknown Product",
                 brand: "Unknown",
-                isSafe: true,
+                isSafe: false,
                 allergensFound: [],
-                error: errorMsg,
+                error: errorMsgFromApi,
             };
             CACHE.set(barcode, { data: result, timestamp: Date.now() });
             return result;
         }
-
         const product = data.product;
         const productName = product.product_name || "Unknown Product";
         const brandName = product.brands || "Unknown Brand";
@@ -184,4 +196,62 @@ export async function fetchProductFromOpenFoodFacts(barcode: string, userAllergi
             error: errorMsg,
         };
     }
+}
+
+export interface USDAFood {
+  fdcId: number;
+  description: string;
+  lowercaseDescription: string;
+  dataType: string;
+  gtinUpc?: string;
+  publishedDate?: string;
+  brandOwner?: string;
+  brandName?: string;
+  ingredients?: string;
+  marketCountry?: string;
+  foodCategory?: string;
+  modifiedDate?: string;
+  dataSource?: string;
+  packageWeight?: string;
+  servingSizeUnit?: string;
+  servingSize?: number;
+  tradeChannels?: string[];
+  allHighlightFields?: string;
+  score?: number;
+  foodNutrients?: Array<{
+    nutrientId: number;
+    nutrientName: string;
+    nutrientNumber: string;
+    unitName: string;
+    derivationCode: string;
+    derivationDescription: string;
+    derivationId: number;
+    value: number;
+    foodNutrientSourceId: number;
+    foodNutrientSourceCode: string;
+    foodNutrientSourceDescription: string;
+    rank: number;
+    indentLevel: number;
+    foodNutrientId: number;
+  }>;
+}
+
+export interface USDAFoodSearchResponse {
+  totalHits: number;
+  currentPage: number;
+  totalPages: number;
+  pageList: number[];
+  foodSearchCriteria: Record<string, unknown>;
+  foods: USDAFood[];
+}
+
+export interface USDAErrorResponse {
+  error?: {
+    code?: string;
+    message?: string;
+  };
+  timestamp?: string;
+  status?: number;
+  message?: string;
+  path?: string;
 }

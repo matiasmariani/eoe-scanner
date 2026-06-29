@@ -140,24 +140,24 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
     }, [onScan, onError]);
 
     return (
-        <div className="relative w-full max-w-md mx-auto overflow-hidden wobbly-border-lg border-8 border-detective-blue bg-white shadow-2xl flex flex-col items-center justify-center min-h-[400px]">
+        <div className="relative w-full max-w-md mx-auto overflow-hidden bg-voxel-bg border-4 border-ink-navy shadow-voxel flex flex-col items-center justify-center min-h-[400px] rounded-3xl">
             <div
                 ref={containerRef}
                 id="reader"
                 className={`w-full h-full [&>video]:w-full [&>video]:h-full [&>video]:object-cover ${status === "ready" ? "block" : "hidden"}`}
             />
 
-            {/* Crayon Viewfinder Overlay */}
+            {/* Voxel Viewfinder Overlay */}
             {status === "ready" && (
                 <div className="absolute inset-0 pointer-events-none z-20">
-                    <div className="absolute top-6 left-6 w-16 h-16 border-8 border-detective-blue/50 wobbly-border" />
-                    <div className="absolute top-6 right-6 w-16 h-16 border-8 border-detective-blue/50 wobbly-border" />
-                    <div className="absolute bottom-6 left-6 w-16 h-16 border-8 border-detective-blue/50 wobbly-border" />
-                    <div className="absolute bottom-6 right-6 w-16 h-16 border-8 border-detective-blue/50 wobbly-border" />
+                    <div className="absolute top-8 left-8 w-16 h-16 border-8 border-ink-navy/50 rounded-xl shadow-voxel" />
+                    <div className="absolute top-8 right-8 w-16 h-16 border-8 border-ink-navy/50 rounded-xl shadow-voxel" />
+                    <div className="absolute bottom-8 left-8 w-16 h-16 border-8 border-ink-navy/50 rounded-xl shadow-voxel" />
+                    <div className="absolute bottom-8 right-8 w-16 h-16 border-8 border-ink-navy/50 rounded-xl shadow-voxel" />
 
                     {/* Scanning Line */}
                     <motion.div
-                        className="absolute w-full h-1 bg-detective-blue/40 z-10"
+                        className="absolute w-full h-2 bg-pikachu-yellow/40 z-10 blur-[2px]"
                         animate={{ top: ['0%', '100%'] }}
                         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                     />
@@ -165,25 +165,23 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
             )}
 
             {status === "loading" && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-white z-10" role="status" aria-live="polite" aria-label="Loading">
-                    <div className="w-16 h-16 border-8 border-sky-blue/20 border-t-detective-blue rounded-full animate-spin mb-4" />
-                    <p className="text-2xl font-display font-bold text-detective-blue">Looking for clues...</p>
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-voxel-bg z-10">
+                    <div className="w-20 h-20 border-8 border-emerald-green/30 border-t-ink-navy rounded-full animate-spin mb-4" />
+                    <p className="text-3xl font-display font-black text-ink-navy animate-pulse">Looking for clues...</p>
                 </div>
             )}
 
             {status === "error" && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-white z-10" role="alert" aria-live="assertive">
-                    <AlertCircle className="w-20 h-20 text-watermelon-red mb-4" />
-                    <h3 className="text-3xl font-display font-black text-ink-navy mb-2">Oops!</h3>
-                    <p className="text-xl text-gray-600 font-body font-bold mb-4"> We couldn&apos;t find a camera. </p>
-                    <p className="text-sm text-gray-500 mb-6"> Please allow camera access or use the manual barcode entry below. </p>
-                    <p className="text-sm text-gray-400"> Tip: Camera access requires HTTPS or localhost </p>
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-voxel-bg z-10 border-4 border-ink-navy m-2 rounded-3xl">
+                    <AlertCircle className="w-20 h-20 text-pokeball-red mb-4" />
+                    <h3 className="text-4xl font-display font-black text-ink-navy mb-2 uppercase tracking-tighter">Oops!</h3>
+                    <p className="text-xl text-gray-600 font-body font-bold mb-8 max-w-[90%]">We couldn&apos;t find a camera. Please allow access or use the manual barcode entry.</p>
                 </div>
             )}
 
             {status === "ready" && (
-                <div className="absolute bottom-10 left-0 right-0 text-center pointer-events-none z-30">
-                    <span className="bg-inknavy/80 text-white px-6 py-2 wobbly-border font-display font-bold text-lg">
+                <div className="absolute bottom-12 left-0 right-0 text-center pointer-events-none z-30">
+                    <span className="bg-white border-4 border-ink-navy px-8 py-3 rounded-full font-display font-black text-xl shadow-voxel">
                         Align the barcode!
                     </span>
                 </div>

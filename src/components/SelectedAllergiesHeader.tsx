@@ -24,15 +24,7 @@ export function SelectedAllergiesHeader() {
   if (allergies.length === 0) return null;
 
   return (
-    <div className="w-full px-4 py-4 flex flex-row items-start">
-      <motion.h2
-        initial={{ x: -20, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        className="text-2xl font-black text-blue-600 drop-shadow-sm mb-3 flex items-center gap-2"
-      >
-        Your Allergies
-      </motion.h2>
-
+    <div className="w-full px-4 py-4 flex flex-row items-center justify-center">
       <div className="flex gap-2 max-w-md">
         <AnimatePresence mode="popLayout">
           {allergies.map((allergy) => {
@@ -45,12 +37,9 @@ export function SelectedAllergiesHeader() {
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0, opacity: 0 }}
-                className="flex items-center gap-2 bg-white border-4 border-blue-400 px-4 py-2 rounded-2xl shadow-[4px_4px_0_0_rgba(96,165,252,1)]"
+                className="flex items-center gap-2 bg-white border-4 border-ink-navy px-4 py-2 rounded-full shadow-voxel"
               >
-                <span className="text-xl">{option.icon}</span>
-                <span className="text-blue-700 font-black text-sm uppercase tracking-wide">
-                  {option.label}
-                </span>
+                <span className="text-2xl">{option.icon}</span>
               </motion.div>
             );
           })}
