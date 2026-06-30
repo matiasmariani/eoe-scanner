@@ -20,11 +20,6 @@ export const SCANNER = {
   SCAN_HISTORY_WINDOW: 3000, // milliseconds
 } as const;
 
-// Cache settings
-export const CACHE = {
-  TTL: 5 * 60 * 1000, // 5 minutes in milliseconds
-} as const;
-
 // UI settings
 export const UI = {
   ROUNDS: {
@@ -33,7 +28,6 @@ export const UI = {
     MAX: 1920,
   } as const,
   SCAN_DELAY: 3000, // milliseconds
-  CACHE_TTL: 5 * 60 * 1000, // 5 minutes
 } as const;
 
 // ── Allergens: single source of truth ───────────────────────────────────────

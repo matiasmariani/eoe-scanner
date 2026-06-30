@@ -7,7 +7,7 @@ import {
   Star,
   RefreshCcw,
 } from 'lucide-react';
-import { ProductResult } from '@/lib/open-food-facts';
+import { ProductResult } from '@/lib/open-food-facts-shared';
 import { cn } from '@/lib/utils';
 
 interface ResultCardProps {

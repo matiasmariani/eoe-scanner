@@ -135,25 +135,30 @@ interface RawProduct {
   image_url?: string;
 }
 
-const CACHE = new Map<string, { data: RawProduct; timestamp: number }>();
-const CACHE_TTL = 5 * 60 * 1000;
-
 async function fetchRawProduct(barcode: string): Promise<RawProduct> {
   try {
     const response = await fetch(
-      `https://world.openfoodfacts.org/api/v3.6/product/${barcode}?fields=${OFF_FIELDS}`,
+      `https://us.openfoodfacts.org/api/v3.6/product/${barcode}?fields=${OFF_FIELDS}`,
       {
         headers: {
           'User-Agent':
-            process.env.NEXT_PUBLIC_OPENFOODFACTS_USER_AGENT ||
+            process.env.OPENFOODFACTS_USER_AGENT ||
             'AllergyScout/1.0 (contact@example.com)',
         },
+        next: { revalidate: 86400 }, // Cache for 24 hours using Next.js native fetch cache
       },
     );
 
+    if (!response.ok) {
+      return {
+        notFound: true,
+        error: `API responded with status: ${response.status}`,
+      };
+    }
+
     const data: OpenFoodFactsResponse = await response.json();
 
-    if (!response.ok || data.status === 'failure' || !data.product) {
+    if (data.status === 'failure' || !data.product) {
       const firstError = data.errors?.[0];
       let error = ERROR_MSG;
       if (firstError?.message?.name && firstError.message.name.trim() !== '') {
@@ -185,14 +190,7 @@ export async function fetchProductFromOpenFoodFacts(
   barcode: string,
   userAllergies: string[] = [],
 ): Promise<ProductResult> {
-  let raw: RawProduct;
-  const cached = CACHE.get(barcode);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    raw = cached.data;
-  } else {
-    raw = await fetchRawProduct(barcode);
-    CACHE.set(barcode, { data: raw, timestamp: Date.now() });
-  }
+  const raw = await fetchRawProduct(barcode);
 
   if (raw.notFound) {
     return {

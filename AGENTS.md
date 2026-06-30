@@ -34,11 +34,11 @@ A kid-friendly mobile web app for scanning product barcodes and checking for all
 - `src/lib/`: API integrations (Open Food Facts) and scanner logic
 - `src/hooks/`: Custom hooks (e.g., `useFavorites`)
 - `src/types/`: Shared TypeScript definitions
-- **Flow**: Scanner component captures barcode -> `fetchProductByBarcode` (lib) -> `ResultView` displays data.
+- **Flow**: Scanner component captures barcode -> `lookupProductAction` (Server Action) -> `ResultView` displays data.
 
 ## Important Configuration & Quirks
 
-- **Data fetching**: Product lookups go through the API route `src/app/api/product/[barcode]/route.ts`, which calls Open Food Facts directly then falls back to USDA. (There are no `next.config.js` rewrites.)
+- **Data fetching**: Product lookups are handled by the `lookupProductAction` Server Action in `src/app/actions.ts`, which calls Open Food Facts directly and falls back to USDA.
 - **Permissions**: `Permissions-Policy` is configured for `camera`, `microphone`, and `geolocation`.
 - **Style**: Tailwind CSS **v4**, configured CSS-first via `@theme` in `src/app/globals.css` (there is no `tailwind.config.js`). Custom "voxel" box shadows (e.g., `shadow-voxel` / `shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]`) and "arcade" animations.
 - **Allergens**: Single source of truth in `src/lib/constants.ts` (`Allergy` type, `ALLERGY_OPTIONS`, `ALLERGEN_KEYWORDS`); matching logic in `src/lib/allergen-utils.ts`.

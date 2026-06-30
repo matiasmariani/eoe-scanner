@@ -118,28 +118,3 @@ export async function findFoodByBarcode(
     data.foods.find((food) => food.gtinUpc === barcode) ?? data.foods[0] ?? null
   );
 }
-
-export async function getFoodDetails(
-  config: USDAConfig,
-  fdcId: string,
-  userAllergies: string[] = [],
-): Promise<USDAFood> {
-  const response = await fetch(
-    `${BASE_URL}/food/${fdcId}?api_key=${config.apiKey}`,
-  );
-
-  if (!response.ok) {
-    throw new Error(response.statusText);
-  }
-
-  const data = await response.json();
-
-  if (data.food) {
-    return {
-      ...data.food,
-      foundAllergens: checkAllergens(data.food.ingredients, userAllergies),
-    };
-  }
-
-  return data as USDAFood;
-}
