@@ -7,6 +7,7 @@ export interface CollectedSnack {
   barcode: string;
   name: string;
   brand: string;
+  icon: string;
   savedAt: number;
 }
 

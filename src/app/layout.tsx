@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Fredoka, Nunito, Andika, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { AllergyProvider } from '@/contexts/AllergyContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 const fredoka = Fredoka({
   variable: '--font-display',
@@ -64,8 +65,22 @@ export default function RootLayout({
       lang="en"
       className={`${fredoka.variable} ${nunito.variable} ${andika.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function() {
+              try {
+                var theme = localStorage.getItem('app-theme') || 'minecraft';
+                document.documentElement.setAttribute('data-theme', theme);
+              } catch (e) {}
+            })()`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
-        <AllergyProvider>{children}</AllergyProvider>
+        <ThemeProvider>
+          <AllergyProvider>{children}</AllergyProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

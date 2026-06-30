@@ -5,7 +5,7 @@ describe('fetchProductByBarcode', () => {
     const result = await fetchProductByBarcode('1234567890123');
     expect(result).toBeDefined();
     // Resolves to either product data or an error message.
-    expect(result.data ?? result.error).toBeDefined();
+    expect(result.name || result.error).toBeDefined();
   });
 
   it('should handle invalid barcode', async () => {
@@ -15,15 +15,11 @@ describe('fetchProductByBarcode', () => {
 
   it('should detect allergens', async () => {
     const result = await fetchProductByBarcode('1234567890123');
-    if (result.data) {
-      expect(result.data.allergensFound).toBeDefined();
-    }
+    expect(result.allergensFound).toBeDefined();
   });
 
   it('should return safe status', async () => {
     const result = await fetchProductByBarcode('1234567890123');
-    if (result.data) {
-      expect(result.data.isSafe).toBeDefined();
-    }
+    expect(result.isSafe).toBeDefined();
   });
 });

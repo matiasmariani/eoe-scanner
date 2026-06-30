@@ -10,6 +10,7 @@ export interface ProductResult {
   usdaError?: string;
   source?: string;
   ingredients?: string;
+  icon?: string;
 }
 
 export interface OpenFoodFactsResponse {
@@ -111,12 +112,13 @@ export interface OpenFoodFactsResponse {
 }
 
 import { checkAllergens } from './allergen-utils';
+import { resolveIcon } from './icon-utils';
 
 const ERROR_MSG = "I can't find that product. Ask a grown-up for help";
 
 // Only the fields we actually consume — keeps the OFF response small/fast.
 const OFF_FIELDS =
-  'product_name,brands,ingredients_text,allergens,allergens_tags,image_url';
+  'product_name,brands,ingredients_text,allergens,allergens_tags,image_url,categories_tags';
 
 // We cache the raw product data (the expensive network result) rather than a
 // computed ProductResult, so allergen matching is re-run against the current
@@ -129,6 +131,7 @@ interface RawProduct {
   ingredients?: string;
   allergensText?: string;
   allergensTags?: string[];
+  categoriesTags?: string[];
   image_url?: string;
 }
 
@@ -169,6 +172,7 @@ async function fetchRawProduct(barcode: string): Promise<RawProduct> {
       ingredients: product.ingredients_text || '',
       allergensText: product.allergens || '',
       allergensTags: product.allergens_tags || [],
+      categoriesTags: product.categories_tags || [],
       image_url: product.image_url,
     };
   } catch (error) {
@@ -213,6 +217,7 @@ export async function fetchProductFromOpenFoodFacts(
     allergensFound: foundAllergens,
     ingredients: raw.ingredients ?? '',
     image_url: raw.image_url,
+    icon: resolveIcon(raw.categoriesTags, raw.name!),
   };
 }
 

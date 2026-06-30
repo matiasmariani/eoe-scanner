@@ -1,22 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server';
+'use server';
+
 import {
   fetchProductFromOpenFoodFacts,
   ProductResult,
 } from '@/lib/open-food-facts-shared';
 import { findFoodByBarcode } from '@/services/usdaService';
+import { resolveIcon } from '@/lib/icon-utils';
 
 const NOT_FOUND_MSG = "I can't find that product. Ask a grown-up for help";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ barcode: string }> },
-) {
-  const { barcode } = await params;
-  const allergies = (request.nextUrl.searchParams.get('allergies') || '')
-    .split(',')
-    .map((a) => a.trim())
-    .filter((a) => a !== '');
-
+/**
+ * Server action to lookup a product by barcode across multiple sources.
+ * Replaces the /api/product/[barcode] route.
+ */
+export async function lookupProductAction(
+  barcode: string,
+  allergies: string[],
+): Promise<ProductResult> {
   let openfoodError: string | undefined;
   let usdaError: string | undefined;
 
@@ -48,6 +48,7 @@ export async function GET(
           openfoodError,
           source: 'usda',
           ingredients: food.ingredients || '',
+          icon: resolveIcon(food.foodCategory, food.description),
         };
       } else {
         usdaError = 'USDA returned no results';
@@ -59,7 +60,7 @@ export async function GET(
 
   // 3. Neither source found the product. Surface "unknown" — never "safe".
   if (result.name === 'Error' || result.name === 'Unknown Product') {
-    return NextResponse.json({
+    return {
       name: 'Unknown Product',
       brand: 'Unknown',
       isSafe: false,
@@ -69,8 +70,8 @@ export async function GET(
       usdaError,
       source: 'none',
       ingredients: result.ingredients || '',
-    });
+    };
   }
 
-  return NextResponse.json(result);
+  return result;
 }

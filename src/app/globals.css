@@ -4,7 +4,23 @@
    them here (that would add a render-blocking request and defeat next/font). */
 
 @theme {
-  /* Brand Colors (Pixel-Craft Palette) */
+  /* Theme Variables */
+  --theme-primary: var(--theme-primary-val, #4c9e38);
+  --theme-accent: var(--theme-accent-val, #4dfff3);
+  --theme-bg: var(--theme-bg-val, #313131);
+  --theme-text: var(--theme-text-val, #ffffff);
+  --theme-border: var(--theme-border-val, #000000);
+  --theme-shadow: var(--theme-shadow-val, #000000);
+
+  /* Map to Tailwind Classes */
+  --color-theme-primary: var(--theme-primary);
+  --color-theme-accent: var(--theme-accent);
+  --color-theme-bg: var(--theme-bg);
+  --color-theme-text: var(--theme-text);
+  --color-theme-border: var(--theme-border);
+  --color-theme-shadow: var(--theme-shadow);
+
+  /* Brand Colors (Pixel-Craft Palette) - kept for legacy/specific needs */
   --color-dirt-brown: #4a3b32;
   --color-wood-brown: #866043;
   --color-grass-green: #4c9e38;
@@ -15,15 +31,34 @@
   --color-ink-navy: #1a1a1a;
   --color-pikachu-yellow: #ffde00;
 
-  /* Font Families (variables provided by next/font) */
+  /* Font Families */
   --font-display: 'Fredoka', sans-serif;
   --font-body: 'Nunito', sans-serif;
   --font-data: 'Andika', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   /* Voxel/arcade design tokens */
-  --shadow-voxel: 4px 4px 0px var(--color-ink-navy);
+  --shadow-voxel: 4px 4px 0px var(--color-theme-shadow);
   --animate-pop: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Theme Definitions */
+[data-theme='minecraft'] {
+  --theme-primary-val: #4c9e38;
+  --theme-accent-val: #4dfff3;
+  --theme-bg-val: #313131;
+  --theme-text-val: #ffffff;
+  --theme-border-val: #000000;
+  --theme-shadow-val: #000000;
+}
+
+[data-theme='kitty'] {
+  --theme-primary-val: #ff1493;
+  --theme-accent-val: #ffd700;
+  --theme-bg-val: #ffd1dc;
+  --theme-text-val: #2c2c2c;
+  --theme-border-val: #2c2c2c;
+  --theme-shadow-val: #2c2c2c;
 }
 
 @keyframes pop {
@@ -131,5 +166,5 @@ html {
 
 /* Layout Base */
 .app-container {
-  @apply min-h-screen bg-deep-stone text-block-white overflow-x-hidden paper-texture;
+  @apply min-h-screen bg-theme-bg text-theme-text overflow-x-hidden paper-texture;
 }
