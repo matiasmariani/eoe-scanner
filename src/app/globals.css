@@ -44,8 +44,8 @@
 
 /* Theme Definitions */
 [data-theme='minecraft'] {
-  --theme-primary-val: #4c9e38;
-  --theme-accent-val: #4dfff3;
+  --theme-primary-val: #79d461;
+  --theme-accent-val: #00a3a3;
   --theme-bg-val: #313131;
   --theme-text-val: #ffffff;
   --theme-border-val: #000000;
@@ -54,7 +54,7 @@
 
 [data-theme='kitty'] {
   --theme-primary-val: #ff1493;
-  --theme-accent-val: #ffd700;
+  --theme-accent-val: #c5a000;
   --theme-bg-val: #ffd1dc;
   --theme-text-val: #2c2c2c;
   --theme-border-val: #2c2c2c;

@@ -10,7 +10,7 @@ export const ThemeSelector = () => {
   return (
     <button
       onClick={() => setTheme(theme === 'minecraft' ? 'kitty' : 'minecraft')}
-      className="group relative flex items-center justify-center w-14 h-14 bg-theme-accent text-theme-bg border-4 border-theme-border shadow-voxel transition-all active:translate-x-1 active:translate-y-1 active:shadow-none"
+      className="group relative flex items-center justify-center w-14 h-14 bg-theme-accent text-theme-text border-4 border-theme-border shadow-voxel transition-all active:translate-x-1 active:translate-y-1 active:shadow-none"
       aria-label="Toggle Theme"
     >
       <Palette className="w-6 h-6 group-hover:rotate-12 transition-transform" />

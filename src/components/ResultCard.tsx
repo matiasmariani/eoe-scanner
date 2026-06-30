@@ -93,7 +93,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
               <span className="text-3xl" role="img" aria-label={allergen}>
                 {getAllergenIcon(allergen)}
               </span>
-              <span className="text-[10px] font-black uppercase text-redstone-red tracking-tighter">
+              <span className="text-xs font-black uppercase text-redstone-red tracking-tighter">
                 {allergen}
               </span>
             </div>

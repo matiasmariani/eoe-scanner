@@ -109,7 +109,7 @@ export function HomeClient() {
                     snack!
                   </span>
                 </h2>
-                <p className="text-lg text-theme-primary font-body font-bold p-4 bg-theme-text border-4 border-theme-border rounded-[2rem] shadow-voxel max-w-[95%] mx-auto">
+                <p className="text-lg text-theme-bg font-body font-bold p-4 bg-theme-text border-4 border-theme-border rounded-[2rem] shadow-voxel max-w-[95%] mx-auto">
                   Let&apos;s investigate if it&apos;s O.K to eat 🔍
                 </p>
               </div>

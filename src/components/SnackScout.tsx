@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
 interface SnackScoutProps {
@@ -11,7 +14,10 @@ interface SnackScoutProps {
  * Snack Scout wordmark + mascot. The app's brand lockup.
  */
 export function SnackScout({ size = 'lg', className }: SnackScoutProps) {
+  const { theme } = useTheme();
   const isLarge = size === 'lg';
+  const mascot = theme === 'kitty' ? '🕵️‍♀️' : '🕵️';
+
   return (
     <div
       className={cn(
@@ -23,9 +29,11 @@ export function SnackScout({ size = 'lg', className }: SnackScoutProps) {
       <span
         className={isLarge ? 'text-3xl' : 'text-2xl'}
         role="img"
-        aria-label="Detective scout"
+        aria-label={
+          theme === 'kitty' ? 'Female detective scout' : 'Detective scout'
+        }
       >
-        🕵️
+        {mascot}
       </span>
       <span
         className={cn(
