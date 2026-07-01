@@ -27,10 +27,22 @@ export const ResultCard: React.FC<ResultCardProps> = ({
 
   const getStatusIcon = () => {
     if (isSafe)
-      return <CheckCircle2 className="w-10 h-10 text-theme-primary" />;
+      return (
+        <CheckCircle2
+          className="w-10 h-10 text-theme-primary"
+          aria-hidden="true"
+        />
+      );
     if (result.warning)
-      return <AlertTriangle className="w-10 h-10 text-theme-accent" />;
-    return <AlertCircle className="w-10 h-10 text-redstone-red" />;
+      return (
+        <AlertTriangle
+          className="w-10 h-10 text-theme-accent"
+          aria-hidden="true"
+        />
+      );
+    return (
+      <AlertCircle className="w-10 h-10 text-redstone-red" aria-hidden="true" />
+    );
   };
 
   return (
@@ -70,23 +82,21 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             ? 'bg-theme-primary/10 text-theme-primary'
             : 'bg-redstone-red/10 text-redstone-red',
         )}
+        role="status"
       >
         {getStatusIcon()}
         <span>{isSafe ? 'O.K' : 'STOP'}</span>
       </div>
 
       {/* Allergens List */}
-      <div className="w-full flex flex-wrap justify-center gap-3 mb-2">
+      <ul className="w-full flex flex-wrap justify-center gap-3 mb-2">
         {isSafe ? (
-          <div
-            className="text-theme-bg/60 font-bold text-xl"
-            aria-hidden="true"
-          >
+          <li className="text-theme-bg/60 font-bold text-xl" aria-hidden="true">
             No allergens found!
-          </div>
+          </li>
         ) : (
           result.allergensFound?.map((allergen: string) => (
-            <div
+            <li
               key={allergen}
               className="flex flex-col items-center gap-1 bg-redstone-red/5 p-3 rounded-2xl border-2 border-redstone-red/20"
             >
@@ -96,10 +106,10 @@ export const ResultCard: React.FC<ResultCardProps> = ({
               <span className="text-xs font-black uppercase text-redstone-red tracking-tighter">
                 {allergen}
               </span>
-            </div>
+            </li>
           ))
         )}
-      </div>
+      </ul>
 
       {/* Action Buttons — only safe snacks can join the collection. */}
       <div
@@ -124,6 +134,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                 'w-8 h-8',
                 isCollected ? 'fill-theme-accent text-theme-accent' : '',
               )}
+              aria-hidden="true"
             />
             {isCollected ? 'Collected' : 'Collect'}
           </button>
@@ -133,7 +144,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
           onClick={onReset}
           className="flex items-center justify-center gap-3 p-6 border-4 border-theme-border bg-theme-bg text-theme-text rounded-3xl font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:scale-95 hover:translate-y-[-2px] transition-transform"
         >
-          <RefreshCcw className="w-8 h-8" />
+          <RefreshCcw className="w-8 h-8" aria-hidden="true" />
           Scan
         </button>
       </div>

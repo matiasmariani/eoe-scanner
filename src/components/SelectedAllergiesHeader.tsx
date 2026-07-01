@@ -15,13 +15,13 @@ export function SelectedAllergiesHeader() {
       <h2 className="text-3xl font-display font-black text-theme-accent mb-4">
         Your Allergies
       </h2>
-      <div className="flex flex-wrap justify-center gap-3 max-w-md">
+      <ul className="flex flex-wrap justify-center gap-3 max-w-md" role="list">
         <AnimatePresence mode="popLayout">
           {allergies.map((allergy) => {
             const option = ALLERGY_OPTIONS.find((o) => o.value === allergy);
             if (!option) return null;
             return (
-              <motion.div
+              <motion.li
                 key={allergy}
                 layout
                 initial={{ scale: 0, opacity: 0 }}
@@ -29,12 +29,14 @@ export function SelectedAllergiesHeader() {
                 exit={{ scale: 0, opacity: 0 }}
                 className="flex items-center justify-center bg-theme-text border-4 border-theme-border p-3 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
               >
-                <span className="text-3xl">{option.emoji}</span>
-              </motion.div>
+                <span className="text-3xl" aria-label={option.label}>
+                  {option.emoji}
+                </span>
+              </motion.li>
             );
           })}
         </AnimatePresence>
-      </div>
+      </ul>
     </div>
   );
 }

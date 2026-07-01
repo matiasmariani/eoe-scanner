@@ -43,6 +43,9 @@ export function BarcodeSearchForm({
           onChange={(e) => setBarcode(e.target.value)}
           className="w-full p-8 border-4 border-ink-navy text-center text-xl font-data font-bold focus:ring-4 focus:ring-grass-green outline-none bg-deep-stone text-block-white shadow-inner rounded-3xl"
           aria-label="Barcode input"
+          aria-describedby={
+            error && errorType === 'barcode' ? 'barcode-error' : undefined
+          }
         />
         {error && errorType === 'barcode' && (
           <p

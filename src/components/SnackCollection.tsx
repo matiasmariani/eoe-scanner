@@ -54,10 +54,10 @@ export function SnackCollection({ onClose }: SnackCollectionProps) {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
+          <ul className="grid grid-cols-2 gap-4" role="list">
             <AnimatePresence mode="popLayout">
               {snacks.map((snack) => (
-                <motion.div
+                <motion.li
                   key={snack.barcode || snack.name}
                   layout
                   initial={{ scale: 0.7, opacity: 0 }}
@@ -73,7 +73,11 @@ export function SnackCollection({ onClose }: SnackCollectionProps) {
                     <Trash2 className="w-4 h-4" aria-hidden="true" />
                   </button>
 
-                  <span className="text-5xl mb-2" role="img" aria-hidden="true">
+                  <span
+                    className="text-5xl mb-2"
+                    role="img"
+                    aria-label={`${snack.name} icon`}
+                  >
                     {snack.icon || '🍪'}
                   </span>
                   <h3 className="text-base font-display font-black text-theme-bg leading-tight line-clamp-2">
@@ -86,10 +90,10 @@ export function SnackCollection({ onClose }: SnackCollectionProps) {
                     <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
                     Safe
                   </div>
-                </motion.div>
+                </motion.li>
               ))}
             </AnimatePresence>
-          </div>
+          </ul>
         )}
       </div>
     </div>

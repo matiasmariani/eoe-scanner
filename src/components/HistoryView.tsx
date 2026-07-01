@@ -12,8 +12,13 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
 
   if (history === undefined) {
     return (
-      <div className="flex items-center justify-center p-12">
+      <div
+        className="flex items-center justify-center p-12"
+        role="status"
+        aria-live="polite"
+      >
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-theme-primary"></div>
+        <span className="sr-only">Loading history...</span>
       </div>
     );
   }
@@ -21,7 +26,9 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
   if (history.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center space-y-4">
-        <div className="text-6xl opacity-20">📜</div>
+        <div className="text-6xl opacity-20" aria-hidden="true">
+          📜
+        </div>
         <p className="text-2xl font-black text-theme-text/40">
           No history yet!
         </p>
@@ -57,6 +64,7 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
             <button
               key={f}
               onClick={() => setFilter(f)}
+              aria-pressed={filter === f}
               className={`px-4 py-2 rounded-xl border-4 border-theme-border font-display font-black uppercase transition-all ${
                 filter === f
                   ? 'bg-theme-accent text-theme-bg shadow-voxel'
@@ -68,7 +76,7 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
           ))}
         </div>
 
-        <div className="space-y-4">
+        <ul className="space-y-4">
           <AnimatePresence mode="popLayout">
             {history
               .filter((item) => {
@@ -77,7 +85,7 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                 return true;
               })
               .map((item) => (
-                <motion.div
+                <motion.li
                   key={item.id ?? `no-id-${item.timestamp}`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -85,7 +93,10 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                   className="relative"
                 >
                   <div className="bg-theme-text border-4 border-theme-border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4 flex items-center gap-4 rounded-2xl">
-                    <div className="w-16 h-16 bg-theme-bg/10 rounded-xl flex items-center justify-center text-3xl shrink-0">
+                    <div
+                      className="w-16 h-16 bg-theme-bg/10 rounded-xl flex items-center justify-center text-3xl shrink-0"
+                      aria-hidden="true"
+                    >
                       {item.result.icon || '📦'}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col gap-1">
@@ -130,10 +141,10 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                       </button>
                     </div>
                   </div>
-                </motion.div>
+                </motion.li>
               ))}
           </AnimatePresence>
-        </div>
+        </ul>
       </div>
     </div>
   );

@@ -35,7 +35,10 @@ export class ScannerErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-deep-stone flex items-center justify-center p-4">
+        <div
+          role="alert"
+          className="min-h-screen bg-deep-stone flex items-center justify-center p-4"
+        >
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}

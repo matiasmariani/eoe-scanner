@@ -1,8 +1,10 @@
-const { withSentry } = require('@sentry/nextjs');
+const { withSentryConfig } = require('@sentry/nextjs');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  experimental: {
+    reactCompiler: true,
+  },
   async headers() {
     return [
       {
@@ -38,4 +40,16 @@ const nextConfig = {
   },
 };
 
-module.exports = withSentry(nextConfig);
+module.exports = withSentryConfig(nextConfig, {
+  org: 'bazaar-web-solutions',
+  project: 'javascript-nextjs',
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  tunnelRoute: '/monitoring',
+  webpack: {
+    automaticVercelMonitors: true,
+    treeshake: {
+      removeDebugLogging: true,
+    },
+  },
+});

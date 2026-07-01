@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/nextjs';
+
 /**
  * Error handling utilities for the application
  */
@@ -16,6 +18,7 @@ export class AppError extends Error {
   ) {
     super(message);
     this.name = 'AppError';
+    Object.setPrototypeOf(this, AppError.prototype);
   }
 }
 
@@ -44,17 +47,11 @@ export function logError(context: string, error: unknown): void {
     console.error(`[${context}]`, error);
   }
 
-  if (
-    process.env.NODE_ENV === 'production' &&
-    process.env.NEXT_PUBLIC_SENTRY_DSN
-  ) {
+  if (process.env.NODE_ENV === 'production') {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const sentry = require('@sentry/nextjs');
-      sentry.setTag('context', context);
-      sentry.captureException(error);
+      Sentry.setTag('context', context);
+      Sentry.captureException(error);
     } catch {
-      // Sentry may not be configured — silently fall back to console
       console.error(`[${context}]`, error);
     }
   }

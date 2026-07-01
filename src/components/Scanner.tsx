@@ -187,7 +187,10 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
       )}
 
       {status === 'loading' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-theme-bg z-10">
+        <div
+          role="status"
+          className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-theme-bg z-10"
+        >
           <div className="w-24 h-24 border-8 border-theme-primary/30 border-t-theme-bg rounded-full animate-spin mb-4" />
           <p className="text-4xl font-display font-black text-theme-text animate-pulse">
             Looking for clues...
@@ -196,8 +199,14 @@ export const Scanner: React.FC<ScannerProps> = ({ onScan, onError }) => {
       )}
 
       {status === 'error' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-theme-bg z-10 border-4 border-theme-border m-4 rounded-[2.5rem]">
-          <AlertCircle className="w-24 h-24 text-redstone-red mb-4" />
+        <div
+          role="status"
+          className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-theme-bg z-10 border-4 border-theme-border m-4 rounded-[2.5rem]"
+        >
+          <AlertCircle
+            className="w-24 h-24 text-redstone-red mb-4"
+            aria-hidden="true"
+          />
           <h3 className="text-4xl font-display font-black text-theme-bg mb-2 uppercase tracking-tighter">
             Oops!
           </h3>

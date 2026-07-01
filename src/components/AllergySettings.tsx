@@ -54,7 +54,7 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
               key={option.value}
               onClick={() => toggleAllergy(option.value)}
               className={cn(
-                'flex flex-col items-center justify-center gap-2 p-8 border-4 transition-all active:translate-x-[2px] active:translate-y-[2px] focus:outline-none rounded-[2.5rem] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[1px]',
+                'flex flex-col items-center justify-center gap-2 p-8 border-4 transition-all active:translate-x-[2px] active:translate-y-[2px] focus:ring-4 focus:ring-theme-accent rounded-[2.5rem] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[1px]',
                 allergies.includes(option.value)
                   ? 'bg-theme-accent border-theme-border text-theme-border'
                   : 'bg-theme-bg border-theme-border/30 text-theme-text hover:border-theme-primary shadow-[0_4px_0_0_rgba(0,0,0,0.1)]',
