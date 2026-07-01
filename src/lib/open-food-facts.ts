@@ -113,6 +113,7 @@ export interface OpenFoodFactsResponse {
 
 import { checkAllergens } from './allergen-utils';
 import { resolveIcon } from './icon-utils';
+import { logError } from './errorHandling';
 
 const ERROR_MSG = "I can't find that product. Ask a grown-up for help";
 
@@ -181,7 +182,7 @@ async function fetchRawProduct(barcode: string): Promise<RawProduct> {
       image_url: product.image_url,
     };
   } catch (error) {
-    console.error(`[fetchProductFromOpenFoodFacts] error:`, error);
+    logError('open-food-facts-fetch', error);
     return { notFound: true, error: ERROR_MSG };
   }
 }

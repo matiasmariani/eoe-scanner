@@ -8,6 +8,7 @@ import {
   AlertCircle,
   ShieldCheck,
   Album,
+  History,
 } from 'lucide-react';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { Scanner } from '@/components/Scanner';
@@ -18,12 +19,15 @@ import { BarcodeSearchForm } from '@/components/BarcodeSearchForm';
 import { ResultView } from '@/components/ResultView';
 import { SnackScout } from '@/components/SnackScout';
 import { SnackCollection } from '@/components/SnackCollection';
+import { HistoryView } from '@/components/HistoryView';
 import { useSnackCollection } from '@/hooks/useSnackCollection';
 import { useProductLookup } from '@/hooks/useProductLookup';
+import { useHistory } from '@/hooks/useHistory';
 
 export function HomeClient() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const {
     mode,
@@ -38,6 +42,7 @@ export function HomeClient() {
   } = useProductLookup();
 
   const { isCollected, toggleSnack } = useSnackCollection();
+  const { history } = useHistory();
 
   const handleScan = (code: string) => {
     if (mode !== 'scanning') return;
@@ -81,6 +86,21 @@ export function HomeClient() {
             aria-label="My safe snacks collection"
           >
             <Album className="w-8 h-8 text-theme-accent" aria-hidden="true" />
+          </button>
+          <button
+            onClick={() => setIsHistoryOpen(true)}
+            disabled={!history || history.length === 0}
+            className={`p-3 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px] ${
+              !history || history.length === 0
+                ? 'opacity-50 grayscale cursor-not-allowed hover:translate-y-0'
+                : ''
+            }`}
+            aria-label="Scan history"
+          >
+            <History
+              className="w-8 h-8 text-theme-primary"
+              aria-hidden="true"
+            />
           </button>
           <ThemeSelector />
         </div>
@@ -243,6 +263,12 @@ export function HomeClient() {
       {isCollectionOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <SnackCollection onClose={() => setIsCollectionOpen(false)} />
+        </div>
+      )}
+
+      {isHistoryOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <HistoryView onClose={() => setIsHistoryOpen(false)} />
         </div>
       )}
     </main>

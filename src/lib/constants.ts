@@ -1,147 +1,135 @@
-/**
- * Application constants
- */
-
-// Camera settings
-export const CAMERA = {
-  MIN_WIDTH: 640,
-  IDEAL_WIDTH: 1280,
-  MAX_WIDTH: 1920,
-  MIN_HEIGHT: 480,
-  IDEAL_HEIGHT: 720,
-  MAX_HEIGHT: 1080,
-  FOCUS_MODE: 'continuous' as const,
-} as const;
-
-// Scanner settings
-export const SCANNER = {
-  SCAN_DELAY: 3000, // milliseconds
-  SCAN_HISTORY_THRESHOLD: 3, // number of scans before confirming
-  SCAN_HISTORY_WINDOW: 3000, // milliseconds
-} as const;
-
-// UI settings
-export const UI = {
-  ROUNDS: {
-    MIN: 640,
-    IDEAL: 1280,
-    MAX: 1920,
+// Application Configuration
+export const CONFIG = {
+  // UI Colors
+  COLORS: {
+    PRIMARY: '#4CAF50',
+    ACCENT: '#FFC107',
+    TEXT: '#212121',
+    BG: '#FFF8E1',
+    BORDER: '#000000',
+    RED: '#D32F2F',
   } as const,
-  SCAN_DELAY: 3000, // milliseconds
+
+  // Typography
+  TYPOGRAPHY: {
+    FONT_DISPLAY: 'var(--font-display)',
+    FONT_BODY: 'var(--font-body)',
+  } as const,
+
+  // Spacing
+  SPACING: {
+    XS: '0.25rem',
+    SM: '0.5rem',
+    MD: '1rem',
+    LG: '1.5rem',
+    XL: '2rem',
+  } as const,
+
+  // Border Radius
+  BORDER_RADIUS: {
+    SM: '0.5rem',
+    MD: '1rem',
+    LG: '1.5rem',
+    XL: '2rem',
+    FULL: '9999px',
+  } as const,
+
+  // Shadows
+  SHADOW: {
+    SM: '2px 2px 0px 0px rgba(0,0,0,1)',
+    MD: '4px 4px 0px 0px rgba(0,0,0,1)',
+    LG: '6px 6px 0px 0px rgba(0,0,0,1)',
+  } as const,
+
+  // Camera Configuration
+  CAMERA: {
+    // Barcode formats to detect
+    FORMATS: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'] as const,
+
+    // Detection interval in milliseconds
+    DETECT_INTERVAL_MS: 250,
+
+    // Camera constraints
+    VIDEO: {
+      FACING_MODE: 'environment',
+      WIDTH: 1280,
+      HEIGHT: 720,
+    } as const,
+
+    // Scanner UI
+    SCANNER: {
+      BORDER_COLOR: '#000000',
+      BORDER_WIDTH: 8,
+      CORNER_SIZE: 80,
+      LINE_COLOR: '#FFC107',
+      LINE_BLUR: 2,
+    } as const,
+  } as const,
 } as const;
 
-// ── Allergens: single source of truth ───────────────────────────────────────
-// The `Allergy` union, the UI option list, and the keyword map below are the one
-// place allergens are defined. Import from here everywhere (context, settings UI,
-// matcher) so the set can never drift.
+// Backwards compatibility aliases
+export const UI = CONFIG;
+export const CAMERA = CONFIG.CAMERA;
 
+// Allergen types — the kid's allergies
 export type Allergy =
-  | 'milk'
-  | 'eggs'
   | 'peanuts'
-  | 'tree nuts'
+  | 'tree_nuts'
+  | 'milk'
+  | 'egg'
   | 'wheat'
   | 'soy'
   | 'fish'
-  | 'crustacean shellfish'
-  | 'sesame';
+  | 'shellfish'
+  | 'sesame'
+  | 'gluten';
 
-export interface AllergyOption {
+export const ALLERGY_OPTIONS: {
   value: Allergy;
   label: string;
-  icon: string;
-}
-
-export const ALLERGY_OPTIONS: AllergyOption[] = [
-  { value: 'milk', label: 'Milk', icon: '🥛' },
-  { value: 'eggs', label: 'Eggs', icon: '🥚' },
-  { value: 'peanuts', label: 'Peanuts', icon: '🥜' },
-  { value: 'tree nuts', label: 'Tree Nuts', icon: '🌰' },
-  { value: 'wheat', label: 'Wheat', icon: '🌾' },
-  { value: 'soy', label: 'Soy', icon: '🫘' },
-  { value: 'fish', label: 'Fish', icon: '🐟' },
-  { value: 'crustacean shellfish', label: 'Crustaceans', icon: '🦐' },
-  { value: 'sesame', label: 'Sesame', icon: '🫒' },
+  emoji: string;
+}[] = [
+  { value: 'peanuts', label: 'Peanuts', emoji: '🥜' },
+  { value: 'tree_nuts', label: 'Tree Nuts', emoji: '🌰' },
+  { value: 'milk', label: 'Milk', emoji: '🥛' },
+  { value: 'egg', label: 'Egg', emoji: '🥚' },
+  { value: 'wheat', label: 'Wheat', emoji: '🌾' },
+  { value: 'soy', label: 'Soy', emoji: '🫘' },
+  { value: 'fish', label: 'Fish', emoji: '🐟' },
+  { value: 'shellfish', label: 'Shellfish', emoji: '🦐' },
+  { value: 'sesame', label: 'Sesame', emoji: '🫛' },
+  { value: 'gluten', label: 'Gluten', emoji: '🍞' },
 ];
 
-// Maps each allergy to the ingredient/label keywords that indicate its presence.
-// Used by `checkAllergens` for word-boundary matching against product ingredients
-// and OFF allergen tags.
-//
-// Note: `butter` is intentionally omitted from `milk` to avoid false positives on
-// cocoa/shea butter (extremely common in candy/chocolate); dairy butter is still
-// covered by milk/cream/dairy when those terms appear.
+// Keywords used to match allergens in Open Food Facts data
 export const ALLERGEN_KEYWORDS: Record<Allergy, string[]> = {
-  milk: [
-    'milk',
-    'dairy',
-    'cheese',
-    'lactose',
-    'cream',
-    'casein',
-    'caseinate',
-    'whey',
-    'ghee',
-    'curd',
-    'buttermilk',
-    'butterfat',
-  ],
-  eggs: ['egg', 'albumen', 'albumin', 'ovalbumin', 'mayonnaise', 'meringue'],
-  peanuts: ['peanut', 'arachis', 'groundnut'],
-  'tree nuts': [
-    'tree nut',
-    'nut',
+  peanuts: ['peanut', 'peanuts', 'groundnut', 'groundnuts'],
+  tree_nuts: [
     'almond',
     'cashew',
-    'walnut',
-    'pecan',
     'hazelnut',
-    'macadamia',
-    'pistachio',
-    'brazil nut',
+    'pecan',
     'pine nut',
-    'chestnut',
-    'hickory',
-    'praline',
-    'marzipan',
+    'pistachio',
+    'walnut',
+    'macadamia',
+    'Brazil nut',
+    'coconut',
   ],
-  wheat: [
-    'wheat',
-    'gluten',
-    'semolina',
-    'durum',
-    'spelt',
-    'farro',
-    'einkorn',
-    'bulgur',
-    'couscous',
-    'seitan',
-  ],
-  soy: ['soy', 'soya', 'soybean', 'soja', 'edamame', 'tofu', 'tempeh', 'miso'],
-  fish: [
-    'fish',
-    'salmon',
-    'tuna',
-    'cod',
-    'halibut',
-    'tilapia',
-    'anchovy',
-    'sardine',
-    'herring',
-    'mackerel',
-    'pollock',
-    'trout',
-  ],
-  'crustacean shellfish': [
-    'crustacean',
+  milk: ['milk', 'lactose', 'casein', 'whey', 'cheese', 'yogurt', 'butter'],
+  egg: ['egg', 'egg white', 'egg yolk', 'albumin'],
+  wheat: ['wheat', 'flour', 'semolina', 'spelt', 'durum', 'bread', 'pastry'],
+  soy: ['soy', 'soya', 'soybean', 'soybean', 'tofu', 'edamame'],
+  fish: ['fish', 'cod', 'tuna', 'salmon', 'anchovy', 'fish sauce'],
+  shellfish: [
     'shellfish',
-    'shrimp',
     'crab',
     'lobster',
+    'shrimp',
     'prawn',
-    'crayfish',
-    'langoustine',
-    'krill',
+    'clam',
+    'mussel',
   ],
-  sesame: ['sesame', 'tahini', 'benne', 'sesamol', 'gingelly', 'simsim'],
+  sesame: ['sesame', 'sesame seed', 'tahini', 'halva'],
+  gluten: ['gluten'],
 };

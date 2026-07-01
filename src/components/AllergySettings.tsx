@@ -61,7 +61,7 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
               )}
               aria-pressed={allergies.includes(option.value)}
             >
-              <span className="text-5xl block animate-pop">{option.icon}</span>
+              <span className="text-5xl block animate-pop">{option.emoji}</span>
               <span className="text-xs font-black uppercase tracking-widest text-center">
                 {option.label}
               </span>

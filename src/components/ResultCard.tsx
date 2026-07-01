@@ -7,7 +7,7 @@ import {
   Star,
   RefreshCcw,
 } from 'lucide-react';
-import { ProductResult } from '@/lib/open-food-facts-shared';
+import { ProductResult } from '../lib/open-food-facts';
 import { cn } from '@/lib/utils';
 
 interface ResultCardProps {
@@ -85,7 +85,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             No allergens found!
           </div>
         ) : (
-          result.allergensFound?.map((allergen) => (
+          result.allergensFound?.map((allergen: string) => (
             <div
               key={allergen}
               className="flex flex-col items-center gap-1 bg-redstone-red/5 p-3 rounded-2xl border-2 border-redstone-red/20"

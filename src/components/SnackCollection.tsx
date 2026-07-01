@@ -3,39 +3,12 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, CheckCircle2 } from 'lucide-react';
-import {
-  useSnackCollection,
-  scoutRank,
-  CollectedSnack,
-} from '@/hooks/useSnackCollection';
+import { useSnackCollection, scoutRank } from '@/hooks/useSnackCollection';
+import { CollectedSnack } from '@/lib/db';
 import { SnackScout } from '@/components/SnackScout';
 
 interface SnackCollectionProps {
   onClose: () => void;
-}
-
-// A spread of treat stickers; chosen deterministically per snack so each card
-// keeps the same sticker across renders without needing stored state.
-const STICKERS = [
-  '🍪',
-  '🍫',
-  '🍬',
-  '🍭',
-  '🧃',
-  '🍿',
-  '🍎',
-  '🥨',
-  '🧀',
-  '🍩',
-  '🍓',
-  '🍌',
-];
-
-function stickerFor(snack: CollectedSnack): string {
-  const seed = (snack.barcode || snack.name)
-    .split('')
-    .reduce((sum, c) => sum + c.charCodeAt(0), 0);
-  return STICKERS[seed % STICKERS.length] ?? '🍪';
 }
 
 export function SnackCollection({ onClose }: SnackCollectionProps) {
@@ -101,7 +74,7 @@ export function SnackCollection({ onClose }: SnackCollectionProps) {
                   </button>
 
                   <span className="text-5xl mb-2" role="img" aria-hidden="true">
-                    {stickerFor(snack)}
+                    {snack.icon || '🍪'}
                   </span>
                   <h3 className="text-base font-display font-black text-theme-bg leading-tight line-clamp-2">
                     {snack.name}

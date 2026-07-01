@@ -1,6 +1,6 @@
 import React from 'react';
 import { ResultCard } from './ResultCard';
-import { ProductResult } from '@/lib/open-food-facts-shared';
+import { ProductResult } from '@/lib/open-food-facts';
 
 interface ResultViewProps {
   result: ProductResult;

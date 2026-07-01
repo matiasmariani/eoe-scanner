@@ -1,56 +1,63 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { logError } from '@/lib/errorHandling';
-
-const STORAGE_KEY = 'snack-scout-collection';
-
-export interface CollectedSnack {
-  barcode: string;
-  name: string;
-  brand: string;
-  icon: string;
-  savedAt: number;
-}
+import { db, dbService, CollectedSnack } from '@/lib/db';
 
 /**
  * The kid's "Safe Snacks Collection" — a local sticker shelf of snacks they've
  * found safe. Stores the snack name + brand (no re-fetching needed), keyed by
- * barcode for dedupe. Persisted to localStorage only (no accounts; COPPA-safe).
+ * barcode for dedupe. Persisted to IndexedDB.
  */
 export function useSnackCollection() {
   const [snacks, setSnacks] = useState<CollectedSnack[]>([]);
 
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setSnacks(JSON.parse(stored));
-      } catch (error) {
-        logError('useSnackCollection', error);
-      }
-    }
-  }, []);
+  const dbSnacks = useLiveQuery(() => db.collection.toArray(), []);
 
-  const save = (next: CollectedSnack[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    return next;
-  };
+  // Sync DB data into local state so optimistic updates work
+  if (dbSnacks !== undefined && dbSnacks !== snacks) {
+    setSnacks(dbSnacks);
+  }
 
   const isCollected = useCallback(
     (barcode: string) => snacks.some((s) => s.barcode === barcode),
     [snacks],
   );
 
-  const toggleSnack = useCallback((snack: Omit<CollectedSnack, 'savedAt'>) => {
-    if (!snack.barcode) return;
-    setSnacks((prev) =>
-      prev.some((s) => s.barcode === snack.barcode)
-        ? save(prev.filter((s) => s.barcode !== snack.barcode))
-        : save([{ ...snack, savedAt: Date.now() }, ...prev]),
-    );
-  }, []);
+  const toggleSnack = useCallback(
+    async (
+      snack: Omit<CollectedSnack, 'savedAt' | 'barcode'> & { barcode: string },
+    ) => {
+      if (!snack.barcode) return;
 
-  const removeSnack = useCallback((barcode: string) => {
-    setSnacks((prev) => save(prev.filter((s) => s.barcode !== barcode)));
+      try {
+        const isAlreadyCollected = snacks.some(
+          (s) => s.barcode === snack.barcode,
+        );
+        if (isAlreadyCollected) {
+          await dbService.deleteFromCollection(snack.barcode);
+          setSnacks((prev) => prev.filter((s) => s.barcode !== snack.barcode));
+        } else {
+          const newSnack: CollectedSnack = {
+            ...snack,
+            savedAt: Date.now(),
+          };
+          await dbService.addToCollection(newSnack);
+          setSnacks((prev) => [newSnack, ...prev]);
+        }
+      } catch (error) {
+        logError('useSnackCollection-toggle', error);
+      }
+    },
+    [snacks],
+  );
+
+  const removeSnack = useCallback(async (barcode: string) => {
+    try {
+      await dbService.deleteFromCollection(barcode);
+      setSnacks((prev) => prev.filter((s) => s.barcode !== barcode));
+    } catch (error) {
+      logError('useSnackCollection-remove', error);
+    }
   }, []);
 
   return { snacks, isCollected, toggleSnack, removeSnack };

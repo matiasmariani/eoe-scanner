@@ -15,12 +15,12 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@ericblade/quagga2": "^1.12.1",
-    "@sentry/nextjs": "^10.62.0",
+    "@sentry/nextjs": "^10.63.0",
     "barcode-detector": "^3.2.0",
     "clsx": "^2.1.1",
+    "dexie": "^4.4.4",
+    "dexie-react-hooks": "^4.4.0",
     "framer-motion": "^12.42.0",
-    "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.400.0",
     "next": "^15.1.0",
     "react": "19.2.4",

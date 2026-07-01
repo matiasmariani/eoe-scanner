@@ -35,15 +35,35 @@ export function createUserErrorMessage(error: unknown): string {
 }
 
 /**
- * Logs errors to console with context
+ * Logs errors to console with context. In production, forwards to Sentry.
  */
 export function logError(context: string, error: unknown): void {
-  // Dev-time visibility. TODO: forward to an error reporter (e.g. Sentry) in
-  // production — the dependency is installed but not yet wired up.
+  const message = error instanceof Error ? error.message : String(error);
+
   if (process.env.NODE_ENV !== 'production') {
     console.error(`[${context}]`, error);
   }
+
+  if (
+    process.env.NODE_ENV === 'production' &&
+    process.env.NEXT_PUBLIC_SENTRY_DSN
+  ) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const sentry = require('@sentry/nextjs');
+      sentry.setTag('context', context);
+      sentry.captureException(error);
+    } catch {
+      // Sentry may not be configured — silently fall back to console
+      console.error(`[${context}]`, error);
+    }
+  }
 }
+
+/**
+ * Alias for logError
+ */
+export const logErrorWithMessage = logError;
 
 /**
  * Handles API errors

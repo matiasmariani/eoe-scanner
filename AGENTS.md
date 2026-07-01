@@ -16,7 +16,7 @@ A kid-friendly mobile web app for scanning product barcodes and checking for all
 - **Framework**: Next.js 15 (App Router)
 - **UI/Styling**: React 19, Tailwind CSS 4, Framer Motion
 - **Barcode Scanning**: Native `BarcodeDetector` API when available, falling back to the `barcode-detector` (zxing-wasm) ponyfill (`src/components/Scanner.tsx`)
-- **Data Source**: Open Food Facts API v3.6 (primary), USDA FoodData Central (fallback) — see `src/lib/open-food-facts-shared.ts` and `src/services/usdaService.ts`
+- **Data Source**: Open Food Facts API v3.6 (primary), USDA FoodData Central (fallback) — see `src/lib/open-food-facts.ts` and `src/services/usdaService.ts`
 - **State**: `localStorage` for the Safe Snacks Collection (`src/hooks/useSnackCollection.ts`) and selected allergies (`src/contexts/AllergyContext.tsx`)
 
 ## Development Commands

@@ -3,7 +3,7 @@
 import {
   fetchProductFromOpenFoodFacts,
   ProductResult,
-} from '@/lib/open-food-facts-shared';
+} from '@/lib/open-food-facts';
 import { findFoodByBarcode } from '@/services/usdaService';
 import { resolveIcon } from '@/lib/icon-utils';
 

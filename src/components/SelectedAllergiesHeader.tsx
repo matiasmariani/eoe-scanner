@@ -29,7 +29,7 @@ export function SelectedAllergiesHeader() {
                 exit={{ scale: 0, opacity: 0 }}
                 className="flex items-center justify-center bg-theme-text border-4 border-theme-border p-3 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
               >
-                <span className="text-3xl">{option.icon}</span>
+                <span className="text-3xl">{option.emoji}</span>
               </motion.div>
             );
           })}

@@ -86,7 +86,8 @@ export async function searchFood(
   );
 
   if (!response.ok) {
-    throw new Error(response.statusText);
+    const errorText = await response.text();
+    throw new Error(`USDA API error: ${response.status} - ${errorText}`);
   }
 
   const data: USDAFoodSearchResponse = await response.json();

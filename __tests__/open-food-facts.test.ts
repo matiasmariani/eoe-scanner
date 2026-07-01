@@ -1,4 +1,4 @@
-import { fetchProductFromOpenFoodFacts } from '@/lib/open-food-facts-shared';
+import { fetchProductFromOpenFoodFacts } from '@/lib/open-food-facts';
 
 describe('fetchProductFromOpenFoodFacts', () => {
   it('should fetch product data', async () => {
