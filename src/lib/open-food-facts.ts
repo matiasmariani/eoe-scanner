@@ -114,12 +114,13 @@ export interface OpenFoodFactsResponse {
 import { checkAllergens } from './allergen-utils';
 import { resolveIcon } from './icon-utils';
 import { logError } from './errorHandling';
+import { OpenFoodFactsResponseSchema } from './schemas';
 
 const ERROR_MSG = "I can't find that product. Ask a grown-up for help";
 
 // Only the fields we actually consume — keeps the OFF response small/fast.
 const OFF_FIELDS =
-  'product_name,brands,ingredients_text,allergens,allergens_tags,image_url,categories_tags';
+  'product_name,brands,ingredients_text,allergens,allergens_tags,image_url,image_front_url,image_small_url,categories_tags';
 
 // We cache the raw product data (the expensive network result) rather than a
 // computed ProductResult, so allergen matching is re-run against the current
@@ -157,20 +158,35 @@ async function fetchRawProduct(barcode: string): Promise<RawProduct> {
       };
     }
 
-    const data: OpenFoodFactsResponse = await response.json();
+    const json = await response.json();
+    console.log(
+      'OFF API Response for barcode ' + barcode + ':',
+      JSON.stringify(json, null, 2),
+    );
+    const data = OpenFoodFactsResponseSchema.safeParse(json);
 
-    if (data.status === 'failure' || !data.product) {
-      const firstError = data.errors?.[0];
+    if (!data.success) {
+      logError('open-food-facts-validation', data.error);
+      return { notFound: true, error: ERROR_MSG };
+    }
+
+    const validatedData = data.data;
+
+    if (validatedData.status === 'failure' || !validatedData.product) {
+      const firstError = validatedData.errors?.[0];
       let error = ERROR_MSG;
       if (firstError?.message?.name && firstError.message.name.trim() !== '') {
         error = firstError.message.name;
-      } else if (data.result?.name && data.result.name.trim() !== '') {
-        error = data.result.name;
+      } else if (
+        validatedData.result?.name &&
+        validatedData.result.name.trim() !== ''
+      ) {
+        error = validatedData.result.name;
       }
       return { notFound: true, error };
     }
 
-    const product = data.product;
+    const product = validatedData.product;
     return {
       notFound: false,
       name: product.product_name || 'Unknown Product',
@@ -179,7 +195,11 @@ async function fetchRawProduct(barcode: string): Promise<RawProduct> {
       allergensText: product.allergens || '',
       allergensTags: product.allergens_tags || [],
       categoriesTags: product.categories_tags || [],
-      image_url: product.image_url,
+      image_url:
+        product.image_url ??
+        product.image_front_url ??
+        product.image_small_url ??
+        undefined,
     };
   } catch (error) {
     logError('open-food-facts-fetch', error);

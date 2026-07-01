@@ -1,4 +1,5 @@
 import { checkAllergens } from '../lib/allergen-utils';
+import { USDAFoodSearchResponseSchema } from '../lib/schemas';
 
 export interface USDAConfig {
   apiKey: string;
@@ -90,7 +91,14 @@ export async function searchFood(
     throw new Error(`USDA API error: ${response.status} - ${errorText}`);
   }
 
-  const data: USDAFoodSearchResponse = await response.json();
+  const json = await response.json();
+  const result = USDAFoodSearchResponseSchema.safeParse(json);
+
+  if (!result.success) {
+    throw new Error(`USDA API validation error: ${result.error.message}`);
+  }
+
+  const data = result.data;
 
   if (data.foods && Array.isArray(data.foods)) {
     data.foods = data.foods.map((food) => ({

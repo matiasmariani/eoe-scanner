@@ -1,8 +1,9 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Fredoka, Nunito, Andika, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { AllergyProvider } from '@/contexts/AllergyContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 
 const fredoka = Fredoka({
   variable: '--font-display',
@@ -47,12 +48,30 @@ export const metadata: Metadata = {
     'snack scout',
   ],
   authors: [{ name: 'Snack Scout' }],
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Snack Scout',
+    startupImage: '/apple-touch-icon.png',
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     title: 'Snack Scout - Is it safe to eat?',
     description:
       "A kid-friendly allergy checker. Scan a snack's barcode to instantly check it for allergens.",
     type: 'website',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#79d461',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
@@ -78,6 +97,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
+        <ServiceWorkerRegister />
         <ThemeProvider>
           <AllergyProvider>{children}</AllergyProvider>
         </ThemeProvider>

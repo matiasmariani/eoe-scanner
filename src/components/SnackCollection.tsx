@@ -73,13 +73,21 @@ export function SnackCollection({ onClose }: SnackCollectionProps) {
                     <Trash2 className="w-4 h-4" aria-hidden="true" />
                   </button>
 
-                  <span
-                    className="text-5xl mb-2"
-                    role="img"
-                    aria-label={`${snack.name} icon`}
-                  >
-                    {snack.icon || '🍪'}
-                  </span>
+                  {snack.image_url ? (
+                    <img
+                      src={snack.image_url}
+                      alt={snack.name}
+                      className="w-20 h-20 object-cover rounded-2xl border-2 border-theme-border mb-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                    />
+                  ) : (
+                    <span
+                      className="text-5xl mb-2"
+                      role="img"
+                      aria-label={`${snack.name} icon`}
+                    >
+                      {snack.icon || '🍪'}
+                    </span>
+                  )}
                   <h3 className="text-base font-display font-black text-theme-bg leading-tight line-clamp-2">
                     {snack.name}
                   </h3>

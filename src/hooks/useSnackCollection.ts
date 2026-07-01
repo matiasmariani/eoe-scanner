@@ -23,10 +23,8 @@ export function useSnackCollection() {
       if (!snack.barcode) return;
 
       try {
-        const isAlreadyCollected = snacks.some(
-          (s) => s.barcode === snack.barcode,
-        );
-        if (isAlreadyCollected) {
+        const existing = await dbService.getCollectedSnack(snack.barcode);
+        if (existing) {
           await dbService.deleteFromCollection(snack.barcode);
         } else {
           const newSnack: CollectedSnack = {
@@ -39,7 +37,7 @@ export function useSnackCollection() {
         logError('useSnackCollection-toggle', error);
       }
     },
-    [snacks],
+    [],
   );
 
   const removeSnack = useCallback(async (barcode: string) => {

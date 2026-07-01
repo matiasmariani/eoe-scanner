@@ -1,104 +1,125 @@
 # Allergy Scout — Project Guidelines
 
-> This file is the source of truth for agent tools (opencode, etc.). It mirrors the conventions in `AGENTS.md` and `CLAUDE.md` and adds detail needed for automated audits.
+House law for agents and reviewers. A pattern endorsed here is **intentional** — do not flag it as a violation.
 
 ---
 
-## Project Identity
+## Stack (exact versions)
 
-**Allergy Scout** — a kid-friendly mobile web app for scanning product barcodes and checking for allergens. Focus on mobile-first design and "voxel/arcade" aesthetics.
-
----
-
-## Tech Stack
-
-| Layer            | Choice                                                                  |
-| ---------------- | ----------------------------------------------------------------------- |
-| Framework        | Next.js 15 (App Router)                                                 |
-| UI               | React 19, Tailwind CSS **v4** (CSS-first)                               |
-| Animation        | Framer Motion                                                           |
-| Barcode scanning | Native `BarcodeDetector` API + `barcode-detector` ponyfill (zxing-wasm) |
-| Data             | Open Food Facts API v3.6 (primary), USDA FoodData Central (fallback)    |
-| State            | `localStorage` only — no accounts (COPPA-friendly)                      |
-| Error tracking   | Sentry                                                                  |
-| Testing          | Jest + Testing Library                                                  |
+| Package           | Version                                                              |
+| ----------------- | -------------------------------------------------------------------- |
+| Next.js           | 15.1 (App Router)                                                    |
+| React             | 19.2.4                                                               |
+| TypeScript        | 5.x (strict + `noUncheckedIndexedAccess`)                            |
+| Tailwind CSS      | 4.3                                                                  |
+| Framer Motion     | 12.42                                                                |
+| Dexie (IndexedDB) | 4.4                                                                  |
+| Zod               | 4.4                                                                  |
+| Sentry            | 10.63                                                                |
+| React Compiler    | **ENABLED** (`experimental.reactCompiler: true` in `next.config.js`) |
 
 ---
 
-## Versions (for audit tools)
+## React Compiler is ON
 
-- **Next.js**: 15.x — `params`/`searchParams`/`cookies()`/`headers()` are Promises and must be `await`ed
-- **React**: 19.x — `ref` is a plain prop (no `forwardRef`); `use()`, `useActionState`, `useFormStatus`, `useOptimistic` available
-- **React Compiler**: **ENABLED** (`reactCompiler: true` in `next.config.js`) — do NOT flag `useMemo`/`useCallback` as missing; the compiler handles memoization automatically
-- **Tailwind CSS**: v4 — configured CSS-first via `@theme` in `src/app/globals.css`; there is **no** `tailwind.config.js`
-
----
-
-## Data Fetching Pattern
-
-This project uses **Server Actions**, not Apollo/GraphQL and not raw `fetch` from client components.
-
-- Product lookups go through `lookupProductAction` in `src/app/actions.ts` (Server Action)
-- The Server Action calls Open Food Facts directly and falls back to USDA
-- Do NOT recommend Apollo patterns, GraphQL, or `useQuery`/`useMutation` — they are not used here
-- Client components call Server Actions via `useTransition` or form `action` props
+**Do NOT flag missing `useMemo`, `useCallback`, or `memo`.** The React Compiler (`babel-plugin-react-compiler`) handles memoization automatically. Adding manual memoization is redundant noise, not a fix.
 
 ---
 
 ## Architecture
 
 ```
-src/app/           Next.js App Router (layout, page, loading, error, not-found)
-src/components/    UI components (Scanner, ResultCard, HistoryView, etc.)
-src/lib/           Pure utilities and API clients (no React hooks)
-src/hooks/         Custom React hooks (always 'use client')
-src/contexts/      React context providers (always 'use client')
-src/services/      External service clients (USDA, etc.)
+src/app/          Next.js App Router — pages, layouts, Server Actions
+src/components/   UI components (all are Client Components — see below)
+src/lib/          Pure utilities, types, API clients, DB schema — NO React hooks
+src/hooks/        Custom React hooks
+src/contexts/     React contexts (AllergyContext, ThemeContext)
+src/services/     External API wrappers (USDA FoodData Central)
+__tests__/        Jest unit tests
 ```
 
-**Key rule:** `src/lib/` files must never import React hooks. If a utility is needed by both server and client code, it belongs in `src/lib/` as a pure function. Hook-dependent logic goes in `src/hooks/`.
+**Rule:** `src/lib/` files must never import React hooks. Hooks belong in `src/hooks/` or components. Types shared across lib + components go in `src/lib/` (not a separate `src/types/`).
 
 ---
 
-## Important Configuration & Intentional Patterns
+## Data Layer
 
-- **Tailwind v4 CSS-first**: Custom design tokens (`shadow-voxel`, arcade animations) are defined in `src/app/globals.css` under `@theme`. There is no `tailwind.config.js` — this is intentional, not a missing file.
-- **`clsx` + `tailwind-merge`**: Use `cn()` from `src/lib/utils.ts` for conditional class composition. Raw string concatenation in `className` is a code smell.
-- **Allergen single source of truth**: `Allergy` type, `ALLERGY_OPTIONS`, and `ALLERGEN_KEYWORDS` all live in `src/lib/constants.ts`. Do not redefine allergen data elsewhere.
-- **Allergen matching**: Logic lives in `src/lib/allergen-utils.ts`. Do not duplicate matching logic in components.
-- **Permissions policy**: `camera`, `microphone`, and `geolocation` are configured in `next.config.js` headers. This is intentional for barcode scanning.
-- **No server-side auth**: This is a public app with no user accounts — `localStorage` only. Do not flag the absence of auth middleware as a violation.
-- **`src/lib/db.ts` and `src/lib/history-db.ts`**: Use Dexie (IndexedDB) for scan history. These are client-only — they must only be imported from `'use client'` components or hooks.
-- **`BarcodeDetector` ponyfill**: `src/components/Scanner.tsx` conditionally loads the ponyfill. The feature-detection pattern (checking for native API then falling back) is intentional.
+- **Product lookups**: `lookupProductAction` Server Action (`src/app/actions.ts`) → Open Food Facts v3 → USDA FoodData Central fallback. No Apollo, no tRPC, no SWR, no React Query.
+- **Persistence**: **Dexie (IndexedDB)** for everything — scan history (`db.scans`), Safe Snacks Collection (`db.collection`), allergy settings (`db.settings`), history (`db.history`). The DB schema lives in `src/lib/db.ts`.
+- **Legacy migration**: `AllergyContext` reads from `localStorage` once on first load and migrates to Dexie. After migration, `localStorage` is cleared. Do not add new `localStorage` usage.
+- **No server-side state**: no sessions, no database, no auth. Intentional — COPPA-friendly offline-first design.
 
 ---
 
-## Development Commands
+## All Components Are Client Components
 
-```bash
-npm run dev          # Start dev server
-npm run build        # Production build
-npm run validate     # Primary CI check: tsc --noEmit && eslint .
-npm run lint         # ESLint only
-npm run typecheck    # tsc --noEmit only
-npm test             # Jest
-```
+Every file in `src/components/` is `'use client'`. This is intentional: the app requires camera access (BarcodeDetector), IndexedDB (Dexie), and browser event handlers throughout. Do not flag `'use client'` on these files or suggest moving logic to Server Components.
+
+The only Server Component in the app is `src/app/page.tsx`, which is a thin shell that renders `<HomeClient />`.
 
 ---
 
-## Code Style Rules
+## Intentional Patterns — Do Not Flag
 
-1. **TypeScript strict** — no `any`. Validate only at real boundaries (API responses, form input). Do not add defensive type guards for states the type system already prevents.
-2. **Mobile-first** — all UI must be optimized for touch and small screens. Desktop is secondary.
-3. **Semantic HTML** — `<button>` for actions, `<a href>` for navigation. `<div onClick>` is never correct.
-4. **No unnecessary comments** — keep only non-obvious WHY (workarounds, hidden constraints). Delete comments that explain what the code does.
-5. **Error handling in Server Actions** — every Server Action must have try/catch and return a typed result (not throw to the client).
+| Pattern                                                               | Why it's intentional                                                                                            |
+| --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| No `tailwind.config.js`                                               | Tailwind v4 uses CSS-first config via `@theme` in `globals.css`                                                 |
+| Hardcoded shadow values like `shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]` | Voxel/arcade design language; `--shadow-voxel` token also available                                             |
+| `BarcodeDetector` feature-detect + ponyfill fallback                  | Native API (Android Chrome ML Kit, Safari 17+) with `barcode-detector` (zxing-wasm) fallback — same API surface |
+| Emoji in UI labels (`🥜`, `🥛`, etc.)                                 | Kid-friendly UX, intentional in `ALLERGY_OPTIONS`                                                               |
+| All components `'use client'`                                         | Browser APIs required throughout (camera, IndexedDB)                                                            |
+| No auth, no accounts                                                  | COPPA-friendly design; data stays on-device                                                                     |
+| Dexie for all persistence                                             | Offline-first; chosen over `localStorage` for structured queries and IndexedDB reliability                      |
+| `data-theme` attribute on root + CSS custom property theming          | Multi-theme system (minecraft, kitty); themes defined in `globals.css`                                          |
+| `CONFIG` / `UI` / `CAMERA` constant aliases in `src/lib/constants.ts` | `UI` and `CAMERA` are backward-compat aliases for `CONFIG`; do not remove                                       |
 
 ---
 
-## File Naming
+## Styling
 
-- Components: `PascalCase.tsx`
-- Hooks: `camelCase.ts` prefixed with `use`
-- Utilities: `kebab-case.ts`
-- Types: colocated in the file that owns them, or `types.ts` if shared across 2+ files
+- **Tailwind v4, CSS-first.** Theme tokens live in `@theme {}` in `src/app/globals.css`. Custom utilities use `@utility` blocks (also in `globals.css`). Do not create a `tailwind.config.js`.
+- **Design tokens**: Use `bg-theme-bg`, `text-theme-text`, `text-theme-primary`, `border-theme-border`, etc. — not raw hex values. Raw hex is only acceptable inside `globals.css` theme definitions.
+- **Fonts**: Loaded via `next/font` in `src/app/layout.tsx`. Do not `@import` fonts in CSS.
+- **className utility**: Use `clsx` or `tailwind-merge` for conditional classes, not string concatenation.
+- **Voxel shadows**: Use `shadow-voxel` (token) or `shadow-[NpxNpx0px0px_rgba(0,0,0,1)]` for the hard-shadow aesthetic.
+
+---
+
+## TypeScript
+
+- `strict: true` + `noUncheckedIndexedAccess: true`. Array index access returns `T | undefined` — always guard with `?? fallback` or explicit checks.
+- Path alias `@/` maps to `src/`. Use it; do not use relative `../../` paths across feature boundaries.
+- No `any`. Use `unknown` + narrowing, or a precise type.
+
+---
+
+## Testing
+
+- **Jest 30** + `jest-environment-jsdom` + `@testing-library/react`
+- Tests live in `__tests__/` at the project root, named `*.test.ts(x)`
+- Run with `npm test` (via `next/jest` wrapper for proper Next.js integration)
+- No Playwright, no Vitest, no Storybook
+
+---
+
+## Code Style
+
+Enforced by Prettier + ESLint on every commit (husky + lint-staged):
+
+- Single quotes, semicolons, 2-space indent, trailing commas everywhere, 80-char print width
+- ESLint: `eslint-config-next` (includes `@typescript-eslint`, `react-hooks`, `@next/next` rules)
+- Run `npm run validate` (typecheck + lint) before pushing; CI fails on errors
+
+---
+
+## Allergen Logic
+
+- **Single source of truth**: `src/lib/constants.ts` — `Allergy` type, `ALLERGY_OPTIONS`, `ALLERGEN_KEYWORDS`
+- **Matching**: `src/lib/allergen-utils.ts` — `checkAllergens()` is the canonical function; do not duplicate keyword matching logic elsewhere
+- `isSafe: false` is the **safe default** — unknown products must never be marked safe
+
+---
+
+## Error Monitoring
+
+Sentry is integrated via `@sentry/nextjs`. Client config in `sentry.client.config.ts`, server in `sentry.server.config.ts`. Use `logError(context, error)` from `src/lib/errorHandling.ts` for structured error reporting in hooks and components.

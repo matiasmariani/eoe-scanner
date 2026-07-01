@@ -86,7 +86,7 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
               })
               .map((item) => (
                 <motion.li
-                  key={item.id ?? `no-id-${item.timestamp}`}
+                  key={item.barcode}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
@@ -94,25 +94,33 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                 >
                   <div className="bg-theme-text border-4 border-theme-border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4 flex items-center gap-4 rounded-2xl">
                     <div
-                      className="w-16 h-16 bg-theme-bg/10 rounded-xl flex items-center justify-center text-3xl shrink-0"
+                      className="w-16 h-16 bg-theme-bg/10 rounded-xl flex items-center justify-center text-3xl shrink-0 overflow-hidden"
                       aria-hidden="true"
                     >
-                      {item.result.icon || '📦'}
+                      {item.result.image_url ? (
+                        <img
+                          src={item.result.image_url}
+                          alt={item.result.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        item.result.icon || '📦'
+                      )}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col gap-1">
                       <h3 className="font-black text-xl text-theme-bg truncate">
                         {item.result.name}
                       </h3>
-                      <p className="text-xs text-theme-bg/60 truncate">
+                      <p className="text-sm text-theme-bg/80 truncate">
                         {item.result.brand}
                       </p>
                       {!item.result.isSafe &&
                         item.result.allergensFound.length > 0 && (
-                          <p className="text-xs font-bold text-redstone-red truncate">
+                          <p className="text-base font-black text-redstone-red truncate">
                             Contains: {item.result.allergensFound.join(', ')}
                           </p>
                         )}
-                      <p className="text-[10px] text-theme-bg/40 mt-auto">
+                      <p className="text-xs text-theme-bg/70 mt-auto">
                         {new Date(item.timestamp).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
@@ -132,7 +140,8 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                       )}
                       <button
                         onClick={() =>
-                          item.id !== undefined && removeHistory(item.id)
+                          item.barcode !== undefined &&
+                          removeHistory(item.barcode)
                         }
                         className="w-8 h-8 flex items-center justify-center text-redstone-red hover:bg-redstone-red/10 rounded-lg transition-colors"
                         aria-label="Remove from history"

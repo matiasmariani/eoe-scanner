@@ -63,9 +63,21 @@ export const ResultCard: React.FC<ResultCardProps> = ({
         ✕
       </button>
 
-      {/* Product Icon */}
-      <div className="text-8xl mb-2" role="img" aria-label={result.name}>
-        {result.icon || '📦'}
+      {/* Product Image/Icon */}
+      <div
+        className="mb-2 flex justify-center"
+        role="img"
+        aria-label={result.name}
+      >
+        {result.image_url ? (
+          <img
+            src={result.image_url}
+            alt={result.name}
+            className="w-64 h-64 object-cover rounded-3xl border-4 border-theme-border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+          />
+        ) : (
+          <div className="text-8xl">{result.icon || '📦'}</div>
+        )}
       </div>
 
       {/* Product Name */}

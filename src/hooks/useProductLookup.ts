@@ -9,7 +9,7 @@ import {
 } from '@/lib/errorHandling';
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { lookupProductAction } from '@/app/actions';
-import { getHistoryByBarcode } from '@/lib/history-db';
+import { dbService } from '@/lib/db';
 import { useHistory } from '@/hooks/useHistory';
 
 export function useProductLookup() {
@@ -29,7 +29,7 @@ export function useProductLookup() {
 
     try {
       // 1. Check IndexedDB first
-      const cachedResult = await getHistoryByBarcode(code);
+      const cachedResult = await dbService.getHistoryByBarcode(code);
       if (cachedResult) {
         await addHistory(code, cachedResult.result);
         setResult(cachedResult.result);

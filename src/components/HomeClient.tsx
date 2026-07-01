@@ -217,6 +217,7 @@ export function HomeClient() {
                   name: result.name,
                   brand: result.brand,
                   icon: result.icon ?? '📦',
+                  image_url: result.image_url,
                 })
               }
 

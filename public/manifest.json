@@ -1,0 +1,36 @@
+{
+  "name": "Snack Scout",
+  "short_name": "Snack Scout",
+  "description": "A kid-friendly allergy checker. Scan a snack's barcode to instantly check it for allergens like milk, wheat, eggs, and nuts.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#313131",
+  "theme_color": "#79d461",
+  "lang": "en",
+  "categories": ["health", "food", "kids"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

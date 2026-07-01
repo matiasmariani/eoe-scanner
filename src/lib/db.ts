@@ -19,6 +19,7 @@ export type CollectedSnack = {
   name: string;
   brand: string;
   icon: string;
+  image_url?: string;
   savedAt: number;
 };
 
@@ -28,7 +29,6 @@ export type AllergySettings = {
 };
 
 export interface HistoryItem {
-  id: number;
   barcode: string;
   result: ProductResult;
   timestamp: number;
@@ -48,7 +48,7 @@ export class AllergyScoutDB extends Dexie {
       scans: 'barcode',
       collection: 'barcode',
       settings: 'id',
-      history: '++id, barcode, timestamp',
+      history: 'barcode, timestamp',
     });
 
     // Version 2: Add indexes for better query performance
@@ -56,7 +56,7 @@ export class AllergyScoutDB extends Dexie {
       scans: 'barcode, timestamp',
       collection: 'barcode, savedAt',
       settings: 'id',
-      history: '++id, barcode, timestamp',
+      history: 'barcode, timestamp',
     });
   }
 }
@@ -88,12 +88,38 @@ export class DBService {
     return db.collection.put(snack);
   }
 
+  async getCollectedSnack(
+    barcode: string,
+  ): Promise<CollectedSnack | undefined> {
+    return db.collection.get(barcode);
+  }
+
   async deleteFromCollection(barcode: string) {
     return db.collection.delete(barcode);
   }
 
   async clearSettings() {
     return db.settings.clear();
+  }
+
+  async saveHistory(barcode: string, result: ProductResult) {
+    return db.history.put({
+      barcode,
+      result,
+      timestamp: Date.now(),
+    });
+  }
+
+  async getHistoryByBarcode(barcode: string): Promise<HistoryItem | null> {
+    return (await db.history.get(barcode)) ?? null;
+  }
+
+  async getAllHistory(): Promise<HistoryItem[]> {
+    return db.history.orderBy('timestamp').reverse().toArray();
+  }
+
+  async deleteHistory(barcode: string) {
+    return db.history.delete(barcode);
   }
 }
 

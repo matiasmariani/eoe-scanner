@@ -25,7 +25,7 @@ export async function lookupProductAction(
     barcode,
     allergies,
   );
-  const offFound = result.name !== 'Unknown Product' && result.name !== 'Error';
+  const offFound = !result.error;
   if (offFound) {
     result.source = 'openfooddata';
   } else {
@@ -59,7 +59,7 @@ export async function lookupProductAction(
   }
 
   // 3. Neither source found the product. Surface "unknown" — never "safe".
-  if (result.name === 'Error' || result.name === 'Unknown Product') {
+  if (result.error || result.name === 'Unknown Product') {
     return {
       name: 'Unknown Product',
       brand: 'Unknown',

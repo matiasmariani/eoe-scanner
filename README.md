@@ -1,9 +1,9 @@
-# Allergy Scout 🛡️
+# Snack Scout 🛡️
 
-A modern, kid-friendly mobile web app for scanning product barcodes and checking for allergens. Built with Next.js, React, and Tailwind CSS.
+A kid-friendly offline-first mobile web app for scanning product barcodes and checking for allergens. Built with Next.js, React, and Tailwind CSS.
 
-![Allergy Scout](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)
-![React](https://img.shields.io/badge/React-18-blue?style=flat-square&logo=react)
+![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)
+![React](https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38bdf8?style=flat-square&logo=tailwind-css)
 
