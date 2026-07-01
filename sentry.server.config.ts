@@ -3,17 +3,21 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from '@sentry/nextjs';
+import { scrubEvent, scrubTransaction } from '@/lib/sentry-scrub';
 
 Sentry.init({
   dsn: 'https://54d8abfb67077e10b081e03edda57df2@o4511660952846336.ingest.us.sentry.io/4511660953042944',
 
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
+  // Only report from production builds.
+  enabled: process.env.NODE_ENV === 'production',
 
-  // Enable logs to be sent to Sentry
-  enableLogs: true,
+  // Sample a fraction of traces in production (100% is expensive and noisy).
+  tracesSampleRate: 0.1,
 
-  // Enable sending user PII (Personally Identifiable Information)
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
-  sendDefaultPii: true,
+  // COPPA: never attach IP addresses / request headers / cookies to events.
+  sendDefaultPii: false,
+
+  // Defense-in-depth PII scrubbing (barcodes, request metadata, breadcrumbs).
+  beforeSend: scrubEvent,
+  beforeSendTransaction: scrubTransaction,
 });

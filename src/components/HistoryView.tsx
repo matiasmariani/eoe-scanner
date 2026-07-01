@@ -23,19 +23,6 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
     );
   }
 
-  if (history.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center p-12 text-center space-y-4">
-        <div className="text-6xl opacity-20" aria-hidden="true">
-          📜
-        </div>
-        <p className="text-2xl font-black text-theme-text/40">
-          No history yet!
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-theme-bg flex flex-col">
       <header className="w-full max-w-md mx-auto px-6 py-8 flex items-center justify-between gap-4">
@@ -67,7 +54,7 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
               aria-pressed={filter === f}
               className={`px-4 py-2 rounded-xl border-4 border-theme-border font-display font-black uppercase transition-all ${
                 filter === f
-                  ? 'bg-theme-accent text-theme-bg shadow-voxel'
+                  ? 'bg-theme-accent text-theme-border shadow-voxel'
                   : 'bg-theme-bg text-theme-text hover:bg-theme-bg/80'
               }`}
             >

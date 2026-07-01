@@ -32,7 +32,11 @@ export function checkAllergens(
   if (!text || userAllergies.length === 0) return [];
 
   return userAllergies.filter((allergy) => {
-    const key = allergy.toLowerCase().trim();
+    // Custom allergens are stored as "emoji:value" — extract the value part.
+    const raw = allergy.includes(':')
+      ? allergy.slice(allergy.indexOf(':') + 1)
+      : allergy;
+    const key = raw.toLowerCase().trim();
     // Fall back to the allergy term itself if we have no keyword mapping.
     // `userAllergies` is loosely-typed string[], so index via a string view.
     const keywords = (ALLERGEN_KEYWORDS as Record<string, string[]>)[key] ?? [
@@ -40,4 +44,18 @@ export function checkAllergens(
     ];
     return keywords.some((keyword) => keywordRegex(keyword).test(text));
   });
+}
+
+/**
+ * Re-evaluates a product's safety verdict against a (possibly changed) allergy
+ * list. Used on cache hits so a product scanned before an allergen was added —
+ * or by a different profile — is re-checked against BOTH the ingredients and
+ * the allergen tags (persisted together in `matchText`), never a stale verdict.
+ */
+export function recomputeVerdict(
+  matchText: string | undefined,
+  userAllergies: string[],
+): { isSafe: boolean; allergensFound: string[] } {
+  const allergensFound = checkAllergens(matchText, userAllergies);
+  return { isSafe: allergensFound.length === 0, allergensFound };
 }

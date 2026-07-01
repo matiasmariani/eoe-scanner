@@ -23,9 +23,18 @@ export type CollectedSnack = {
   savedAt: number;
 };
 
-export type AllergySettings = {
-  id: 'current';
+export type SettingsRecord = {
+  id: string;
+  allergies?: Allergy[];
+  value?: string;
+};
+
+export type Profile = {
+  id: string;
+  name: string;
+  emoji: string;
   allergies: Allergy[];
+  createdAt: number;
 };
 
 export interface HistoryItem {
@@ -37,8 +46,9 @@ export interface HistoryItem {
 export class AllergyScoutDB extends Dexie {
   scans!: Table<ScannedProduct>;
   collection!: Table<CollectedSnack>;
-  settings!: Table<AllergySettings>;
+  settings!: Table<SettingsRecord, string>;
   history!: Table<HistoryItem>;
+  profiles!: Table<Profile>;
 
   constructor() {
     super('AllergyScoutDB');
@@ -58,6 +68,34 @@ export class AllergyScoutDB extends Dexie {
       settings: 'id',
       history: 'barcode, timestamp',
     });
+
+    // Version 3: Add profiles table
+    this.version(3)
+      .stores({
+        scans: 'barcode, timestamp',
+        collection: 'barcode, savedAt',
+        settings: 'id',
+        history: 'barcode, timestamp',
+        profiles: '++id, name, createdAt',
+      })
+      .upgrade((tx) => {
+        // Migration: create default profile from existing settings
+        return tx
+          .table('settings')
+          .get('current')
+          .then((settings) => {
+            if (settings && settings.allergies) {
+              return tx.table('profiles').add({
+                id: 'default-profile',
+                name: 'Me',
+                emoji: '😊',
+                allergies: settings.allergies,
+                createdAt: Date.now(),
+              });
+            }
+            return undefined;
+          });
+      });
   }
 }
 
@@ -76,11 +114,11 @@ export class DBService {
     return db.collection.delete(barcode);
   }
 
-  async getSettings(): Promise<AllergySettings | undefined> {
+  async getSettings(): Promise<SettingsRecord | undefined> {
     return db.settings.get('current');
   }
 
-  async saveSettings(settings: AllergySettings) {
+  async saveSettings(settings: SettingsRecord) {
     return db.settings.put(settings);
   }
 
@@ -120,6 +158,32 @@ export class DBService {
 
   async deleteHistory(barcode: string) {
     return db.history.delete(barcode);
+  }
+
+  // Profile methods
+  async getActiveProfileId(): Promise<string | undefined> {
+    const record = await db.settings.get('activeProfileId');
+    return record?.value;
+  }
+
+  async saveActiveProfileId(profileId: string) {
+    return db.settings.put({ id: 'activeProfileId', value: profileId });
+  }
+
+  async getAllProfiles(): Promise<Profile[]> {
+    return db.profiles.toArray();
+  }
+
+  async getProfile(id: string): Promise<Profile | undefined> {
+    return db.profiles.get(id);
+  }
+
+  async saveProfile(profile: Profile) {
+    return db.profiles.put(profile);
+  }
+
+  async deleteProfile(id: string) {
+    return db.profiles.delete(id);
   }
 }
 

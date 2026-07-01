@@ -25,7 +25,9 @@
   --color-wood-brown: #866043;
   --color-grass-green: #4c9e38;
   --color-diamond-blue: #4dfff3;
-  --color-redstone-red: #ff2200;
+  /* Darkened from #ff2200 so allergen/danger TEXT meets WCAG AA (~4.6:1) on the
+     white result/history cards in both themes. Still reads as urgent red. */
+  --color-redstone-red: #d81b00;
   --color-deep-stone: #313131;
   --color-block-white: #ffffff;
   --color-ink-navy: #1a1a1a;

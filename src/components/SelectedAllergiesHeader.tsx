@@ -12,14 +12,22 @@ export function SelectedAllergiesHeader() {
 
   return (
     <div className="w-full px-4 py-6 flex flex-col items-center justify-center">
-      <h2 className="text-3xl font-display font-black text-theme-accent mb-4">
+      <h2 className="text-3xl font-display font-black text-theme-text mb-4">
         Your Allergies
       </h2>
       <ul className="flex flex-wrap justify-center gap-3 max-w-md" role="list">
         <AnimatePresence mode="popLayout">
           {allergies.map((allergy) => {
-            const option = ALLERGY_OPTIONS.find((o) => o.value === allergy);
-            if (!option) return null;
+            const isCustom = allergy.includes(':');
+            const emoji = isCustom
+              ? allergy.slice(0, allergy.indexOf(':'))
+              : (ALLERGY_OPTIONS.find((o) => o.value === allergy)?.emoji ??
+                null);
+            const label = isCustom
+              ? allergy.slice(allergy.indexOf(':') + 1)
+              : (ALLERGY_OPTIONS.find((o) => o.value === allergy)?.label ??
+                allergy);
+            if (!emoji) return null;
             return (
               <motion.li
                 key={allergy}
@@ -29,8 +37,8 @@ export function SelectedAllergiesHeader() {
                 exit={{ scale: 0, opacity: 0 }}
                 className="flex items-center justify-center bg-theme-text border-4 border-theme-border p-3 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
               >
-                <span className="text-3xl" aria-label={option.label}>
-                  {option.emoji}
+                <span className="text-3xl" aria-label={label}>
+                  {emoji}
                 </span>
               </motion.li>
             );

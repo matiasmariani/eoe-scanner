@@ -10,24 +10,26 @@ A kid-friendly offline-first mobile web app for scanning product barcodes and ch
 ## Features
 
 - 📱 **Mobile-First Design**: Optimized for touch interactions and mobile devices
-- 📷 **Barcode Scanning**: Real-time barcode scanning using camera
+- 📷 **Barcode Scanning**: Real-time barcode scanning using the BarcodeDetector API
 - 🔍 **Manual Search**: Enter barcodes manually for quick lookups
-- ❤️ **Favorites**: Save and manage favorite products
-- 🚫 **Allergen Detection**: Checks for common allergens (dairy, wheat, eggs, peanuts, tree nuts, soy, fish, sesame)
-- 🎨 **Kid-Friendly UI**: Colorful, engaging design perfect for children
-- ⚡ **Fast & Responsive**: Optimized performance with Next.js 16
-- 🔒 **Secure**: Built with security best practices
+- ❤️ **Favorites**: Save and manage favourite products
+- 🚫 **Allergen Detection**: Checks for 10 common allergens (dairy, wheat, eggs, peanuts, tree nuts, soy, fish, shellfish, sesame, gluten)
+- 🎨 **Kid-Friendly Themes**: Minecraft and Kitty themes
+- 📦 **Offline-First**: All data stored locally via IndexedDB (Dexie) — no account required
+- ⚡ **PWA**: Installable on Android and iOS, works offline
+- 🔒 **COPPA-Friendly**: No accounts, no backend, no data leaves the device
 
 ## Tech Stack
 
-- **Framework**: Next.js 16 (App Router)
-- **UI Library**: React 18
+- **Framework**: Next.js 15 (App Router)
+- **UI Library**: React 19 (React Compiler enabled)
 - **Styling**: Tailwind CSS 4
 - **Animations**: Framer Motion
 - **Icons**: Lucide React
-- **Barcode Scanning**: Quagga.js
+- **Barcode Scanning**: BarcodeDetector API
+- **Storage**: Dexie 4 (IndexedDB)
 - **TypeScript**: Full type safety
-- **Fonts**: Google Fonts (Geist)
+- **Fonts**: Google Fonts (Fredoka, Nunito, Andika)
 
 ## Getting Started
 
@@ -126,11 +128,20 @@ my-next-app/
 ### Available Scripts
 
 ```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
+npm run dev                    # Development server (hot reload, SW disabled)
+npm run build && npm start     # Production build — use this to test the PWA,
+                               # service worker, and offline behaviour
+npm run generate-icons         # Generate PNG icons from SVG sources (run once
+                               # after installing sharp: npm i -D sharp)
+npm run lint                   # Run ESLint
+npm run typecheck              # TypeScript type check
+npm run format                 # Format with Prettier
 ```
+
+> **Dev vs production:** `npm run dev` is for all normal feature development.
+> Only use `npm run build && npm start` when you need to test the service worker,
+> PWA install prompt, or offline caching — the SW is intentionally disabled in
+> dev mode so it doesn't interfere with hot reload.
 
 ### Code Quality
 

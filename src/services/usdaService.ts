@@ -83,6 +83,7 @@ export async function searchFood(
         query,
         dataType,
       }),
+      signal: AbortSignal.timeout(8000), // Don't hang forever on flaky networks
     },
   );
 

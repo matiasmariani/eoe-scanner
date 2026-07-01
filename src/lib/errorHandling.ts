@@ -49,8 +49,9 @@ export function logError(context: string, error: unknown): void {
 
   if (process.env.NODE_ENV === 'production') {
     try {
-      Sentry.setTag('context', context);
-      Sentry.captureException(error);
+      // Scope the tag to THIS event only — Sentry.setTag() sets a global tag
+      // that would leak onto every subsequent event on the shared scope.
+      Sentry.captureException(error, { tags: { context } });
     } catch {
       console.error(`[${context}]`, error);
     }
@@ -84,15 +85,22 @@ export function validateBarcode(barcode: string): {
   valid: boolean;
   error?: string;
 } {
-  if (!barcode || barcode.trim() === '') {
+  const trimmed = barcode.trim();
+
+  if (trimmed === '') {
     return { valid: false, error: 'Please enter a barcode' };
   }
 
-  if (barcode.length < 8) {
+  if (!/^\d+$/.test(trimmed)) {
+    return { valid: false, error: 'Barcode should be numbers only' };
+  }
+
+  if (trimmed.length < 8) {
     return { valid: false, error: 'Barcode is too short' };
   }
 
-  if (barcode.length > 13) {
+  // EAN/UPC/GTIN codes are at most 14 digits.
+  if (trimmed.length > 14) {
     return { valid: false, error: 'Barcode is too long' };
   }
 

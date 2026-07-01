@@ -7,6 +7,7 @@ import {
   validateBarcode,
   logError,
 } from '@/lib/errorHandling';
+import { recomputeVerdict } from '@/lib/allergen-utils';
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { lookupProductAction } from '@/app/actions';
 import { dbService } from '@/lib/db';
@@ -28,11 +29,19 @@ export function useProductLookup() {
     setMode('loading');
 
     try {
-      // 1. Check IndexedDB first
+      // 1. Check IndexedDB first. Re-run the allergen check against the CURRENT
+      //    allergies (against both ingredients and allergen tags via matchText)
+      //    so a cached product reflects newly-added/custom allergens and the
+      //    active profile — never a stale verdict.
       const cachedResult = await dbService.getHistoryByBarcode(code);
       if (cachedResult) {
-        await addHistory(code, cachedResult.result);
-        setResult(cachedResult.result);
+        const { isSafe, allergensFound } = recomputeVerdict(
+          cachedResult.result.matchText ?? cachedResult.result.ingredients,
+          allergies,
+        );
+        const refreshed = { ...cachedResult.result, isSafe, allergensFound };
+        await addHistory(code, refreshed);
+        setResult(refreshed);
         setMode('result');
         return;
       }

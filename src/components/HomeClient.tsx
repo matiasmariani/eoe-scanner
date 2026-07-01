@@ -14,20 +14,25 @@ import { ThemeSelector } from '@/components/ThemeSelector';
 import { Scanner } from '@/components/Scanner';
 import { ScannerErrorBoundary } from '@/components/ScannerErrorBoundary';
 import { AllergySettings } from '@/components/AllergySettings';
+import { ProfileSetupModal } from '@/components/ProfileSetupModal';
 import { SelectedAllergiesHeader } from '@/components/SelectedAllergiesHeader';
 import { BarcodeSearchForm } from '@/components/BarcodeSearchForm';
 import { ResultView } from '@/components/ResultView';
 import { SnackScout } from '@/components/SnackScout';
 import { SnackCollection } from '@/components/SnackCollection';
 import { HistoryView } from '@/components/HistoryView';
-import { useSnackCollection } from '@/hooks/useSnackCollection';
 import { useProductLookup } from '@/hooks/useProductLookup';
 import { useHistory } from '@/hooks/useHistory';
+import { useSnackCollection } from '@/hooks/useSnackCollection';
+import { PremiumGate } from '@/components/PremiumGate';
+import { useIsPremium } from '@/lib/premium';
 
 export function HomeClient() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [showHistoryGate, setShowHistoryGate] = useState(false);
+  const isPremium = useIsPremium();
 
   const {
     mode,
@@ -41,8 +46,8 @@ export function HomeClient() {
     reset,
   } = useProductLookup();
 
-  const { isCollected, toggleSnack } = useSnackCollection();
   const { history } = useHistory();
+  const { toggleSnack } = useSnackCollection();
 
   const handleScan = (code: string) => {
     if (mode !== 'scanning') return;
@@ -50,7 +55,7 @@ export function HomeClient() {
   };
 
   return (
-    <main className="relative w-full max-w-md mx-auto px-6 pb-20 flex flex-col items-center min-h-screen justify-center overflow-x-hidden bg-theme-bg text-theme-text app-container">
+    <main className="relative w-full max-w-md mx-auto px-6 pb-28 flex flex-col items-center min-h-screen justify-center overflow-x-hidden bg-theme-bg text-theme-text app-container">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 bg-theme-accent text-theme-bg focus:rounded"
@@ -88,13 +93,15 @@ export function HomeClient() {
             <Album className="w-8 h-8 text-theme-accent" aria-hidden="true" />
           </button>
           <button
-            onClick={() => setIsHistoryOpen(true)}
+            onClick={() => {
+              if (!isPremium) {
+                setShowHistoryGate(true);
+                return;
+              }
+              setIsHistoryOpen(true);
+            }}
             disabled={!history || history.length === 0}
-            className={`p-3 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px] ${
-              !history || history.length === 0
-                ? 'opacity-50 grayscale cursor-not-allowed hover:translate-y-0'
-                : ''
-            }`}
+            className={`p-3 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px] ${!history || history.length === 0 ? 'opacity-40 grayscale cursor-not-allowed hover:translate-y-0' : ''}`}
             aria-label="Scan history"
           >
             <History
@@ -220,8 +227,6 @@ export function HomeClient() {
                   image_url: result.image_url,
                 })
               }
-
-              isCollected={isCollected(barcode)}
             />
           )}
 
@@ -272,6 +277,28 @@ export function HomeClient() {
           <HistoryView onClose={() => setIsHistoryOpen(false)} />
         </div>
       )}
+
+      {showHistoryGate && (
+        <PremiumGate
+          feature="Scan history"
+          onClose={() => setShowHistoryGate(false)}
+        />
+      )}
+
+      <ProfileSetupModal />
+
+      {/* Disclaimer footer — always visible */}
+      <footer className="fixed bottom-0 left-0 right-0 z-30 flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 px-4 py-2 bg-theme-bg/95 backdrop-blur-sm border-t border-theme-border/10 text-center">
+        <p className="text-xs font-body font-bold text-theme-text/70 leading-tight">
+          Not medical advice · Data from Open Food Facts (may contain errors)
+        </p>
+        <a
+          href="/privacy"
+          className="text-xs font-black text-theme-text underline underline-offset-2 shrink-0"
+        >
+          Privacy Policy
+        </a>
+      </footer>
     </main>
   );
 }

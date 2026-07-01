@@ -122,4 +122,6 @@ Enforced by Prettier + ESLint on every commit (husky + lint-staged):
 
 ## Error Monitoring
 
-Sentry is integrated via `@sentry/nextjs`. Client config in `sentry.client.config.ts`, server in `sentry.server.config.ts`. Use `logError(context, error)` from `src/lib/errorHandling.ts` for structured error reporting in hooks and components.
+Sentry is integrated via `@sentry/nextjs`. Client config in `src/instrumentation-client.ts`, server in `sentry.server.config.ts`, edge in `sentry.edge.config.ts`. Use `logError(context, error)` from `src/lib/errorHandling.ts` for structured error reporting in hooks and components.
+
+**COPPA privacy rules (do not regress):** `sendDefaultPii` must stay `false`, Session Replay must NOT be enabled (no `replayIntegration()`), and all init sites route events through `scrubEvent`/`scrubTransaction` from `src/lib/sentry-scrub.ts`, which strips IPs, request metadata, barcodes, and console breadcrumbs.

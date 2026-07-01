@@ -1,109 +1,159 @@
 'use client';
 
-import {
+import React, {
   createContext,
   useContext,
   useState,
   useEffect,
   ReactNode,
 } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db, dbService } from '@/lib/db';
+import { Allergy } from '@/lib/constants';
 import { logError } from '@/lib/errorHandling';
-import { checkAllergens } from '@/lib/allergen-utils';
-import type { Allergy } from '@/lib/constants';
-import { dbService, AllergySettings } from '@/lib/db';
 
-export type { Allergy };
-
-interface AllergyContextType {
+export interface AllergyContextType {
   allergies: Allergy[];
-  toggleAllergy: (allergy: Allergy) => void;
-  /**
-   * Check if a single allergen string matches any of the user's allergies.
-   * Returns true if the allergen is in the user's allergy list.
-   */
-  isAllergicTo: (allergen: string) => boolean;
-  /**
-   * Check if an ingredient list contains any allergens the user is allergic to.
-   * Useful for checking full ingredient strings from product data.
-   */
-  isAllergicToText: (text: string) => boolean;
-  clearAllergies: () => void;
+  activeProfile: Profile | null;
+  profiles: Profile[];
+  /** False until the stored active-profile pointer has been resolved on mount. */
+  isHydrated: boolean;
+  toggleAllergy: (allergy: Allergy) => Promise<void>;
+  clearAllergies: () => Promise<void>;
+  setActiveProfileId: (id: string) => Promise<void>;
+  createProfile: (
+    name: string,
+    emoji: string,
+    allergies?: Allergy[],
+  ) => Promise<Profile>;
+  deleteProfile: (id: string) => Promise<void>;
+}
+
+export interface Profile {
+  id: string;
+  name: string;
+  emoji: string;
+  allergies: Allergy[];
+  createdAt: number;
 }
 
 const AllergyContext = createContext<AllergyContextType | undefined>(undefined);
 
 export function AllergyProvider({ children }: { children: ReactNode }) {
-  const [allergies, setAllergies] = useState<Allergy[]>([]);
+  const [activeProfileId, setActiveProfileIdState] = useState<string | null>(
+    null,
+  );
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  // Load from IndexedDB on mount (with localStorage migration)
+  // Live query is the single source of truth for profile data.
+  const profiles = useLiveQuery(() => db.profiles.toArray(), []);
+
+  // Derived state — no duplicated `allergies` useState to drift out of sync.
+  const activeProfile = profiles?.find((p) => p.id === activeProfileId) ?? null;
+  const allergies = activeProfile?.allergies ?? [];
+
+  // Resolve the persisted active-profile pointer once on mount.
   useEffect(() => {
-    const loadSettings = async () => {
+    const loadActiveProfile = async () => {
       try {
-        const storedSettings = await dbService.getSettings();
-
-        if (storedSettings && storedSettings.allergies) {
-          setAllergies(storedSettings.allergies);
+        const storedId = await dbService.getActiveProfileId();
+        if (storedId && (await db.profiles.get(storedId))) {
+          setActiveProfileIdState(storedId);
         } else {
-          // Migration from localStorage
-          const legacy = localStorage.getItem('allergy-scout-allergies');
-          if (legacy) {
-            const parsed = JSON.parse(legacy);
-            if (Array.isArray(parsed)) {
-              await dbService.saveSettings({
-                id: 'current',
-                allergies: parsed,
-              });
-              setAllergies(parsed as Allergy[]);
-              // Clear legacy to avoid re-migration
-              localStorage.removeItem('allergy-scout-allergies');
-            }
+          // No (or dangling) pointer. Clear it, and auto-select only if exactly
+          // one profile exists; otherwise leave selection to the setup modal.
+          if (storedId) await dbService.saveActiveProfileId('');
+          const all = await db.profiles.toArray();
+          if (all.length === 1 && all[0]) {
+            setActiveProfileIdState(all[0].id);
+            await dbService.saveActiveProfileId(all[0].id);
           }
         }
       } catch (error) {
         logError('AllergyContext-load', error);
+      } finally {
+        setIsHydrated(true);
       }
     };
-    loadSettings();
+    loadActiveProfile();
   }, []);
 
+  // Read-modify-write against the DB (the authoritative copy) so concurrent
+  // taps don't clobber each other via a stale render closure.
   const toggleAllergy = async (allergy: Allergy) => {
-    setAllergies((prev) => {
-      const nextAllergies = prev.includes(allergy)
-        ? prev.filter((item) => item !== allergy)
-        : [...prev, allergy];
-
-      // Persist to IndexedDB
-      dbService
-        .saveSettings({ id: 'current', allergies: nextAllergies })
-        .catch((err) => logError('AllergyContext-save', err));
-
-      return nextAllergies;
-    });
-  };
-
-  const isAllergicTo = (allergen: string): boolean => {
-    return checkAllergens(allergen, allergies).length > 0;
-  };
-
-  const isAllergicToText = (text: string): boolean => {
-    // Split text by common allergen separators and check each part
-    const parts = text.split(/[,;\/]/).map((p) => p.trim());
-    return parts.some((part) => isAllergicTo(part));
+    if (!activeProfileId) return;
+    try {
+      const profile = await dbService.getProfile(activeProfileId);
+      if (!profile) return;
+      const next = profile.allergies.includes(allergy)
+        ? profile.allergies.filter((a) => a !== allergy)
+        : [...profile.allergies, allergy];
+      await dbService.saveProfile({ ...profile, allergies: next });
+    } catch (err) {
+      logError('AllergyContext-toggle', err);
+    }
   };
 
   const clearAllergies = async () => {
-    setAllergies([]);
-    await dbService.clearSettings();
+    if (!activeProfileId) return;
+    try {
+      const profile = await dbService.getProfile(activeProfileId);
+      if (!profile) return;
+      await dbService.saveProfile({ ...profile, allergies: [] });
+    } catch (err) {
+      logError('AllergyContext-clear', err);
+    }
+  };
+
+  const setActiveProfileId = async (id: string) => {
+    setActiveProfileIdState(id);
+    await dbService.saveActiveProfileId(id);
+  };
+
+  const createProfile = async (
+    name: string,
+    emoji: string,
+    initialAllergies: Allergy[] = [],
+  ): Promise<Profile> => {
+    const newProfile: Profile = {
+      id: crypto.randomUUID(),
+      name,
+      emoji,
+      allergies: initialAllergies,
+      createdAt: Date.now(),
+    };
+    await dbService.saveProfile(newProfile);
+    await dbService.saveActiveProfileId(newProfile.id);
+    setActiveProfileIdState(newProfile.id);
+    return newProfile;
+  };
+
+  const deleteProfile = async (id: string) => {
+    await dbService.deleteProfile(id);
+    if (activeProfileId !== id) return;
+
+    // The active profile was deleted — switch to another or clear the pointer.
+    const remaining = await db.profiles.toArray();
+    if (remaining.length > 0 && remaining[0]) {
+      await setActiveProfileId(remaining[0].id);
+    } else {
+      setActiveProfileIdState(null);
+      await dbService.saveActiveProfileId('');
+    }
   };
 
   return (
     <AllergyContext.Provider
       value={{
         allergies,
+        activeProfile,
+        profiles: profiles ?? [],
+        isHydrated,
         toggleAllergy,
-        isAllergicTo,
-        isAllergicToText,
         clearAllergies,
+        setActiveProfileId,
+        createProfile,
+        deleteProfile,
       }}
     >
       {children}

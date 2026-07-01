@@ -17,6 +17,21 @@ export async function lookupProductAction(
   barcode: string,
   allergies: string[],
 ): Promise<ProductResult> {
+  // Server actions are public endpoints — validate here, not just in the client.
+  // EAN/UPC/GTIN barcodes are 8–14 digits; reject anything else outright.
+  if (!/^\d{8,14}$/.test(barcode)) {
+    return {
+      barcode: '',
+      name: 'Unknown Product',
+      brand: 'Unknown',
+      isSafe: false,
+      allergensFound: [],
+      error: NOT_FOUND_MSG,
+      source: 'none',
+      ingredients: '',
+    };
+  }
+
   let openfoodError: string | undefined;
   let usdaError: string | undefined;
 
@@ -41,6 +56,7 @@ export async function lookupProductAction(
       if (food) {
         const foundAllergens = food.foundAllergens ?? [];
         result = {
+          barcode,
           name: food.description?.trim() || 'Unknown Product',
           brand: food.brandName || food.brandOwner || 'Unknown Brand',
           isSafe: foundAllergens.length === 0,
@@ -48,6 +64,7 @@ export async function lookupProductAction(
           openfoodError,
           source: 'usda',
           ingredients: food.ingredients || '',
+          matchText: food.ingredients || '',
           icon: resolveIcon(food.foodCategory, food.description),
         };
       } else {
@@ -61,6 +78,7 @@ export async function lookupProductAction(
   // 3. Neither source found the product. Surface "unknown" — never "safe".
   if (result.error || result.name === 'Unknown Product') {
     return {
+      barcode,
       name: 'Unknown Product',
       brand: 'Unknown',
       isSafe: false,

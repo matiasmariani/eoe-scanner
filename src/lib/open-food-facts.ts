@@ -1,4 +1,5 @@
 export interface ProductResult {
+  barcode: string;
   name: string;
   brand: string;
   isSafe: boolean;
@@ -11,6 +12,10 @@ export interface ProductResult {
   source?: string;
   ingredients?: string;
   icon?: string;
+  // The full text allergen matching runs against: ingredients + allergen label
+  // + allergen tags. Persisted so cache hits can re-check against the CURRENT
+  // user allergies (including custom ones) instead of reusing a stale verdict.
+  matchText?: string;
 }
 
 export interface OpenFoodFactsResponse {
@@ -140,7 +145,7 @@ interface RawProduct {
 async function fetchRawProduct(barcode: string): Promise<RawProduct> {
   try {
     const response = await fetch(
-      `https://us.openfoodfacts.org/api/v3.6/product/${barcode}?fields=${OFF_FIELDS}`,
+      `https://us.openfoodfacts.org/api/v3.6/product/${encodeURIComponent(barcode)}?fields=${OFF_FIELDS}`,
       {
         headers: {
           'User-Agent':
@@ -148,6 +153,7 @@ async function fetchRawProduct(barcode: string): Promise<RawProduct> {
             'AllergyScout/1.0 (contact@example.com)',
         },
         next: { revalidate: 86400 }, // Cache for 24 hours using Next.js native fetch cache
+        signal: AbortSignal.timeout(8000), // Don't hang forever on flaky mobile networks
       },
     );
 
@@ -159,10 +165,6 @@ async function fetchRawProduct(barcode: string): Promise<RawProduct> {
     }
 
     const json = await response.json();
-    console.log(
-      'OFF API Response for barcode ' + barcode + ':',
-      JSON.stringify(json, null, 2),
-    );
     const data = OpenFoodFactsResponseSchema.safeParse(json);
 
     if (!data.success) {
@@ -215,6 +217,7 @@ export async function fetchProductFromOpenFoodFacts(
 
   if (raw.notFound) {
     return {
+      barcode,
       name: 'Unknown Product',
       brand: 'Unknown',
       isSafe: false,
@@ -230,11 +233,13 @@ export async function fetchProductFromOpenFoodFacts(
   const foundAllergens = checkAllergens(haystack, userAllergies);
 
   return {
+    barcode,
     name: raw.name!,
     brand: raw.brand!,
     isSafe: foundAllergens.length === 0,
     allergensFound: foundAllergens,
     ingredients: raw.ingredients ?? '',
+    matchText: haystack,
     image_url: raw.image_url,
     icon: resolveIcon(raw.categoriesTags, raw.name!),
   };

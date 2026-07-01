@@ -14,15 +14,17 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [theme, setThemeState] = useState<Theme>('minecraft');
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('app-theme') as Theme;
-    if (savedTheme === 'minecraft' || savedTheme === 'kitty') {
-      setThemeState(savedTheme);
+  // Seed from the value the pre-paint inline script in layout.tsx already set on
+  // <html>, so React's state matches the DOM and we don't flash the wrong theme.
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof document !== 'undefined') {
+      const attr = document.documentElement.getAttribute('data-theme');
+      if (attr === 'minecraft' || attr === 'kitty') return attr;
     }
-  }, []);
+    return 'minecraft';
+  });
 
+  // Persist + apply on change only (the initial value already matches the DOM).
   useEffect(() => {
     localStorage.setItem('app-theme', theme);
     document.documentElement.setAttribute('data-theme', theme);

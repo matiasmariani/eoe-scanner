@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   CheckCircle2,
@@ -6,9 +8,15 @@ import {
   AlertCircle,
   Star,
   RefreshCcw,
+  Volume2,
+  Lock,
 } from 'lucide-react';
-import { ProductResult } from '../lib/open-food-facts';
 import { cn } from '@/lib/utils';
+import { useAllergySettings } from '@/contexts/AllergyContext';
+import { useIsPremium } from '@/lib/premium';
+import { useSpeakResult } from '@/hooks/useSpeakResult';
+import { PremiumGate } from '@/components/PremiumGate';
+import { type ProductResult } from '@/lib/open-food-facts';
 
 interface ResultCardProps {
   result: ProductResult;
@@ -23,7 +31,37 @@ export const ResultCard: React.FC<ResultCardProps> = ({
   onCollect,
   isCollected,
 }) => {
+  const { activeProfile } = useAllergySettings();
+  const isPremium = useIsPremium();
+  const { speak } = useSpeakResult();
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+
   const isSafe = result.isSafe !== undefined ? result.isSafe : true;
+
+  // Auto-speak result when premium
+  useEffect(() => {
+    if (isPremium && result.name && result.name !== 'Unknown Product') {
+      speak(
+        activeProfile?.name || 'Me',
+        result.name,
+        isSafe,
+        result.allergensFound,
+      );
+    }
+  }, [result, isPremium, speak, activeProfile, isSafe]);
+
+  const handleSpeak = () => {
+    if (!isPremium) {
+      setShowPremiumModal(true);
+      return;
+    }
+    speak(
+      activeProfile?.name || 'Me',
+      result.name,
+      isSafe,
+      result.allergensFound,
+    );
+  };
 
   const getStatusIcon = () => {
     if (isSafe)
@@ -63,7 +101,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
         ✕
       </button>
 
-      {/* Product Image/Icon */}
+      {/* Product Image / Icon */}
       <div
         className="mb-2 flex justify-center"
         role="img"
@@ -80,13 +118,30 @@ export const ResultCard: React.FC<ResultCardProps> = ({
         )}
       </div>
 
-      {/* Product Name */}
-      <h2 className="text-4xl font-display font-black text-theme-bg text-center leading-tight p-2 w-full">
-        {result.name}
-      </h2>
+      {/* Product Name + Voice Button */}
+      <div className="flex items-start justify-between gap-3 w-full">
+        <h2 className="text-4xl font-display font-black text-theme-bg text-center leading-tight p-2 flex-1">
+          {result.name}
+        </h2>
+        <button
+          onClick={handleSpeak}
+          className={cn(
+            'mt-2 w-12 h-12 flex-shrink-0 flex items-center justify-center border-4 border-theme-border rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-transform',
+            isPremium
+              ? 'bg-theme-bg text-theme-text hover:bg-theme-bg/80'
+              : 'bg-theme-accent/10 text-theme-accent',
+          )}
+          aria-label="Read result aloud"
+        >
+          {isPremium ? (
+            <Volume2 className="w-6 h-6" />
+          ) : (
+            <Lock className="w-6 h-6" />
+          )}
+        </button>
+      </div>
 
       {/* Status Badge */}
-
       <div
         className={cn(
           'flex items-center justify-center gap-3 px-8 py-4 rounded-full font-black text-2xl border-4 border-theme-border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]',
@@ -123,7 +178,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
         )}
       </ul>
 
-      {/* Action Buttons — only safe snacks can join the collection. */}
+      {/* Action Buttons — only safe snacks can join the collection */}
       <div
         className={cn(
           'grid gap-4 w-full px-2 pt-4',
@@ -160,21 +215,30 @@ export const ResultCard: React.FC<ResultCardProps> = ({
           Scan
         </button>
       </div>
+
+      {showPremiumModal && (
+        <PremiumGate
+          feature="Voice readout"
+          onClose={() => setShowPremiumModal(false)}
+        />
+      )}
     </motion.div>
   );
 };
 
 function getAllergenIcon(allergen: string) {
+  if (allergen.includes(':')) return allergen.slice(0, allergen.indexOf(':'));
   const map: Record<string, string> = {
     milk: '🥛',
-    eggs: '🥚',
+    egg: '🥚',
     peanuts: '🥜',
-    'tree nuts': '🌰',
+    tree_nuts: '🌰',
     wheat: '🌾',
     soy: '🫘',
     fish: '🐟',
-    'crustacean shellfish': '🦐',
-    sesame: '🫒',
+    shellfish: '🦐',
+    sesame: '🫛',
+    gluten: '🍞',
   };
-  return map[allergen.toLowerCase()] || '⚠️';
+  return map[allergen.toLowerCase()] ?? '⚠️';
 }

@@ -1,26 +1,23 @@
 import React from 'react';
 import { ResultCard } from './ResultCard';
 import { ProductResult } from '@/lib/open-food-facts';
+import { useSnackCollection } from '@/hooks/useSnackCollection';
 
 interface ResultViewProps {
   result: ProductResult;
   onReset: () => void;
   onCollect: () => void;
-  isCollected: boolean;
 }
 
-export function ResultView({
-  result,
-  onReset,
-  onCollect,
-  isCollected,
-}: ResultViewProps) {
+export function ResultView({ result, onReset, onCollect }: ResultViewProps) {
+  const { isCollected } = useSnackCollection();
+
   return (
     <ResultCard
       result={result}
       onReset={onReset}
       onCollect={onCollect}
-      isCollected={isCollected}
+      isCollected={isCollected(result.barcode)}
     />
   );
 }

@@ -72,17 +72,7 @@ export const UI = CONFIG;
 export const CAMERA = CONFIG.CAMERA;
 
 // Allergen types — the kid's allergies
-export type Allergy =
-  | 'peanuts'
-  | 'tree_nuts'
-  | 'milk'
-  | 'egg'
-  | 'wheat'
-  | 'soy'
-  | 'fish'
-  | 'shellfish'
-  | 'sesame'
-  | 'gluten';
+export type Allergy = string;
 
 export const ALLERGY_OPTIONS: {
   value: Allergy;
@@ -100,6 +90,61 @@ export const ALLERGY_OPTIONS: {
   { value: 'sesame', label: 'Sesame', emoji: '🫛' },
   { value: 'gluten', label: 'Gluten', emoji: '🍞' },
 ];
+
+// Emojis for custom allergen entries — covers common allergens beyond the built-in 10.
+// Shown in CustomAllergyInput alongside the built-in allergen emojis.
+export const CUSTOM_ALLERGEN_EMOJIS = [
+  '⚠️', // generic / unknown
+  '🌽',
+  '🍓',
+  '🍋',
+  '🍊',
+  '🍑',
+  '🥝',
+  '🍌',
+  '🫐', // fruits & corn
+  '🍅',
+  '🥑',
+  '🧄',
+  '🧅',
+  '🌶️', // vegetables & spice
+  '🍫',
+  '🍷',
+  '🍄',
+  '🌿', // cocoa, sulfites, mushroom, herbs
+  '🐷',
+  '🦑',
+  '🥩', // pork, molluscs, red meat
+] as const;
+
+// Profile avatar emojis for kids aged 5–10.
+// Ordered loosely: children → animals → fantasy/characters → activities.
+export const PROFILE_EMOJIS = [
+  '🧒',
+  '👦',
+  '👧',
+  '🦖',
+  '🦄',
+  '🦁',
+  '🐯',
+  '🐼',
+  '🦊',
+  '🐸',
+  '🐨',
+  '🐺',
+  '🐰',
+  '🦈',
+  '🐉',
+  '🦸',
+  '🧚',
+  '👸',
+  '🤴',
+  '🚀',
+  '🤠',
+  '🦋',
+  '🧸',
+  '⚽',
+] as const;
 
 // Keywords used to match allergens in Open Food Facts data
 export const ALLERGEN_KEYWORDS: Record<Allergy, string[]> = {
