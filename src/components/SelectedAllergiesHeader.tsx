@@ -35,7 +35,7 @@ export function SelectedAllergiesHeader() {
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0, opacity: 0 }}
-                className="flex items-center justify-center bg-theme-text border-4 border-theme-border p-3 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                className="flex items-center justify-center bg-white p-3 rounded-2xl shadow-lg"
               >
                 <span className="text-3xl" aria-label={label}>
                   {emoji}

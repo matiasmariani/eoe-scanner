@@ -75,7 +75,7 @@ export function ProfileSelector({ isOpen, onClose }: ProfileSelectorProps) {
           </h2>
           <button
             onClick={onClose}
-            className="w-10 h-10 flex items-center justify-center border-4 border-theme-border rounded-full bg-theme-text shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-transform"
+            className="w-10 h-10 flex items-center justify-center border-4 border-theme-border rounded-full bg-theme-text shadow-voxel active:scale-95 transition-transform"
           >
             <X className="w-5 h-5" />
           </button>
@@ -115,7 +115,7 @@ export function ProfileSelector({ isOpen, onClose }: ProfileSelectorProps) {
                   onClick={() =>
                     handleRemoveClick({ id: profile.id, name: profile.name })
                   }
-                  className="w-10 h-10 flex items-center justify-center border-4 border-theme-border rounded-full bg-redstone-red/10 text-redstone-red shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-transform"
+                  className="w-10 h-10 flex items-center justify-center border-4 border-theme-border rounded-full bg-redstone-red/10 text-redstone-red shadow-voxel active:scale-95 transition-transform"
                   aria-label={`Delete ${profile.name}`}
                 >
                   <Trash2 className="w-5 h-5" />
@@ -154,7 +154,7 @@ export function ProfileSelector({ isOpen, onClose }: ProfileSelectorProps) {
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="Profile name"
-                className="w-full p-3 border-4 border-theme-border rounded-xl font-bold text-xl text-theme-bg bg-theme-text"
+                className="w-full p-4 border-4 border-theme-border rounded-xl font-bold text-xl text-theme-bg bg-theme-text"
                 autoFocus
               />
 
@@ -178,13 +178,13 @@ export function ProfileSelector({ isOpen, onClose }: ProfileSelectorProps) {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowAddForm(false)}
-                  className="flex-1 p-3 border-4 border-theme-border rounded-xl font-black text-lg bg-theme-text text-theme-bg/60 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-transform"
+                  className="flex-1 p-3 border-4 border-theme-border rounded-xl font-black text-lg bg-theme-text text-theme-bg/60 shadow-voxel active:scale-95 transition-transform"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleAddProfile}
-                  className="flex-1 p-3 border-4 border-theme-border rounded-xl font-black text-lg bg-theme-primary text-theme-bg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-transform"
+                  className="flex-1 p-3 border-4 border-theme-border rounded-xl font-black text-lg bg-theme-primary text-theme-text shadow-voxel active:scale-95 transition-transform"
                 >
                   Save
                 </button>
@@ -200,7 +200,7 @@ export function ProfileSelector({ isOpen, onClose }: ProfileSelectorProps) {
               className="absolute inset-0 bg-black/50"
               onClick={() => setShowPremiumModal(false)}
             />
-            <div className="relative w-full max-w-sm bg-theme-bg border-4 border-theme-border shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-3xl p-6 space-y-4 animate-pop">
+            <div className="relative w-full max-w-sm bg-theme-bg border-4 border-theme-border shadow-voxel rounded-3xl p-6 space-y-4 animate-pop">
               <div className="flex items-center justify-center gap-3 p-4 bg-theme-accent/10 border-4 border-theme-accent rounded-2xl">
                 <Lock className="w-8 h-8 text-theme-accent" />
                 <span className="text-2xl font-display font-black text-theme-accent">
@@ -212,7 +212,7 @@ export function ProfileSelector({ isOpen, onClose }: ProfileSelectorProps) {
               </p>
               <button
                 onClick={() => setShowPremiumModal(false)}
-                className="w-full p-4 border-4 border-theme-border rounded-xl font-black text-xl bg-theme-primary text-theme-bg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-transform"
+                className="w-full p-4 border-4 border-theme-border rounded-xl font-black text-xl bg-theme-primary text-theme-text shadow-voxel active:scale-95 transition-transform"
               >
                 Got it!
               </button>

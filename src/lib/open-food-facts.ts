@@ -25,6 +25,9 @@ export interface ProductResult {
   // + allergen tags. Persisted so cache hits can re-check against the CURRENT
   // user allergies (including custom ones) instead of reusing a stale verdict.
   matchText?: string;
+  // Product allergens from the API (what the product contains)
+  allergensText?: string;
+  allergensTags?: string[];
 }
 
 export interface OpenFoodFactsResponse {
@@ -285,6 +288,8 @@ export async function fetchProductFromOpenFoodFacts(
     nutriscore_grade: raw.nutriscoreGrade,
     nutriscore_score: raw.nutriscoreScore,
     nova_group: raw.novaGroup,
+    allergensText: raw.allergensText,
+    allergensTags: raw.allergensTags,
   };
 }
 

@@ -42,14 +42,12 @@ export function CustomAllergyInput({ onAdd }: CustomAllergyInputProps) {
       <>
         <button
           onClick={() => setShowGate(true)}
-          className="w-full flex items-center justify-center gap-2 bg-theme-bg border-4 border-theme-border p-4 rounded-[2rem] shadow-voxel text-theme-text/60 hover:-translate-y-[1px] transition-all"
+          className="w-full flex items-center justify-center gap-2 bg-theme-primary p-4 rounded-2xl text-theme-text shadow-lg hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)] transition-all font-display font-black text-base uppercase tracking-tight"
           aria-label="Unlock custom allergens with Premium"
         >
-          <Crown className="w-5 h-5 text-theme-accent" />
-          <span className="font-display font-black text-base uppercase tracking-tight">
-            Custom Allergens
-          </span>
-          <span className="flex items-center gap-1 px-2 py-0.5 bg-theme-accent text-theme-border text-[10px] rounded-full border-2 border-theme-border shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+          <Crown className="w-5 h-5" />
+          Custom Allergens
+          <span className="flex items-center gap-1 px-2 py-0.5 bg-theme-accent text-white text-[10px] rounded-full shadow-lg">
             PREMIUM
           </span>
         </button>
@@ -64,11 +62,11 @@ export function CustomAllergyInput({ onAdd }: CustomAllergyInputProps) {
   }
 
   return (
-    <div className="bg-theme-bg border-4 border-theme-border p-6 rounded-[2.5rem] shadow-voxel space-y-4">
+    <div className="bg-white p-6 rounded-3xl shadow-lg space-y-4">
       <div className="flex items-center justify-between">
         <span className="text-theme-text font-display font-black text-lg uppercase tracking-tight flex items-center gap-2">
           Custom Allergen
-          <span className="flex items-center gap-1 px-2 py-0.5 bg-theme-accent text-theme-border text-[10px] rounded-full border-2 border-theme-border shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+          <span className="flex items-center gap-1 px-2 py-0.5 bg-theme-accent text-white text-[10px] rounded-full shadow-lg">
             <Crown className="w-3 h-3" />
             PREMIUM
           </span>
@@ -87,7 +85,7 @@ export function CustomAllergyInput({ onAdd }: CustomAllergyInputProps) {
           onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
           onFocus={() => value.length >= 2 && setShowSuggestions(true)}
           placeholder="e.g. Szechuan Pepper or Cider"
-          className="w-full bg-theme-bg border-2 border-theme-border p-4 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
+          className="w-full bg-theme-bg border-0 p-4 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent shadow-lg"
           aria-label="Enter custom allergen name"
           aria-autocomplete="list"
         />
@@ -95,21 +93,21 @@ export function CustomAllergyInput({ onAdd }: CustomAllergyInputProps) {
         {/* Suggestions Dropdown */}
         {showSuggestions && value.length >= 2 && (
           <div
-            className="absolute z-10 top-full mt-2 left-0 right-0 bg-theme-text border-4 border-theme-border rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden"
+            className="absolute z-10 top-full mt-2 left-0 right-0 bg-white rounded-2xl shadow-lg overflow-hidden"
             role="listbox"
           >
             {isLoading ? (
-              <div className="flex items-center justify-center gap-2 px-4 py-3 text-theme-bg">
+              <div className="flex items-center justify-center gap-2 px-4 py-3 text-theme-text">
                 <Loader className="w-4 h-4 animate-spin" aria-hidden="true" />
                 <span className="text-sm font-bold">Searching...</span>
               </div>
             ) : suggestions.length > 0 ? (
-              <ul className="divide-y divide-theme-border/30">
+              <ul className="divide-y divide-theme-border/20">
                 {suggestions.map((s, idx) => (
                   <li key={s.id || idx}>
                     <button
                       onClick={() => handleSuggestionClick(s.name)}
-                      className="w-full text-left px-4 py-3 font-body font-bold text-theme-bg hover:bg-theme-bg/20 active:bg-theme-border/30 transition-colors"
+                      className="w-full text-left px-4 py-3 font-body font-bold text-theme-text hover:bg-theme-primary/10 active:bg-theme-primary/20 transition-colors"
                       role="option"
                       aria-selected={value === s.name}
                     >
@@ -119,7 +117,7 @@ export function CustomAllergyInput({ onAdd }: CustomAllergyInputProps) {
                 ))}
               </ul>
             ) : (
-              <div className="px-4 py-3 text-sm font-body font-bold text-theme-bg/60">
+              <div className="px-4 py-3 text-sm font-body font-bold text-theme-text/60">
                 No suggestions found
               </div>
             )}
@@ -128,8 +126,8 @@ export function CustomAllergyInput({ onAdd }: CustomAllergyInputProps) {
       </div>
 
       {/* Emoji picker — middle */}
-      <div className="overflow-x-auto p-3 bg-theme-text border-2 border-theme-border rounded-2xl">
-        <div className="flex gap-1.5 pb-0.5">
+      <div className="overflow-x-auto p-4 bg-theme-bg rounded-2xl shadow-lg">
+        <div className="flex gap-2 pb-1">
           {[
             ...CUSTOM_ALLERGEN_EMOJIS,
             ...ALLERGY_OPTIONS.map((o) => o.emoji),
@@ -138,10 +136,10 @@ export function CustomAllergyInput({ onAdd }: CustomAllergyInputProps) {
               key={e}
               onClick={() => setEmoji(e)}
               className={cn(
-                'text-2xl p-1.5 rounded-lg transition-all shrink-0 active:scale-95',
+                'text-2xl p-2 rounded-lg transition-all shrink-0 active:scale-95 shadow-lg',
                 emoji === e
-                  ? 'bg-theme-accent scale-110 shadow-[1px_1px_0px_0px_rgba(0,0,0,0.4)]'
-                  : 'hover:bg-theme-bg/20',
+                  ? 'bg-theme-accent scale-110'
+                  : 'bg-white hover:bg-theme-primary/10',
               )}
               aria-label={e}
               aria-pressed={emoji === e}
@@ -156,7 +154,7 @@ export function CustomAllergyInput({ onAdd }: CustomAllergyInputProps) {
       <button
         onClick={() => handleAdd()}
         disabled={!value.trim()}
-        className="w-full flex items-center justify-center gap-2 bg-theme-primary border-4 border-theme-border p-4 rounded-2xl font-display font-black text-lg text-theme-border shadow-voxel active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all disabled:opacity-40"
+        className="w-full flex items-center justify-center gap-2 bg-theme-primary p-4 rounded-2xl font-display font-black text-lg text-theme-text shadow-lg hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)] active:scale-95 transition-all disabled:opacity-40"
       >
         <Plus className="w-5 h-5" aria-hidden="true" />
         Add {emoji}

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Planet, IceCream } from 'react-kawaii';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -15,9 +16,11 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { useIsPremium } from '@/lib/premium';
+import { useTheme } from '@/hooks/useTheme';
 import { useSpeakResult } from '@/hooks/useSpeakResult';
 import { PremiumGate } from '@/components/PremiumGate';
 import { NutritionBadges } from '@/components/NutritionBadges';
+import { getAllergenDisplay } from '@/lib/allergen-utils';
 import { type ProductResult } from '@/lib/open-food-facts';
 
 interface ResultCardProps {
@@ -35,8 +38,11 @@ export const ResultCard: React.FC<ResultCardProps> = ({
 }) => {
   const { activeProfile } = useAllergySettings();
   const isPremium = useIsPremium();
+  const { theme } = useTheme();
   const { speak } = useSpeakResult();
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+
+  const planetColor = '#79d461'; // Always green (happy safe planet)
 
   const isSafe = result.isSafe !== undefined ? result.isSafe : true;
 
@@ -91,13 +97,14 @@ export const ResultCard: React.FC<ResultCardProps> = ({
       animate={{ scale: 1, rotate: 0, opacity: 1 }}
       exit={{ scale: 0.5, opacity: 0, rotate: 10 }}
       className={cn(
-        'w-full max-w-md bg-theme-text border-4 border-theme-border shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center relative animate-pop p-6 space-y-4',
+        'w-full max-w-md bg-theme-bg shadow-lg flex flex-col items-center relative p-6 space-y-4 rounded-3xl',
+        isSafe && 'ring-2 ring-theme-primary/30',
       )}
     >
       {/* Close/Reset Button */}
       <button
         onClick={onReset}
-        className="absolute -top-4 -right-4 bg-theme-bg text-theme-text w-12 h-12 rounded-full flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:scale-110 transition-transform z-10"
+        className="absolute -top-4 -right-4 bg-white text-theme-text w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform z-10"
         aria-label="Close result"
       >
         ✕
@@ -115,7 +122,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             alt={result.name}
             width={256}
             height={256}
-            className="w-64 h-64 object-cover rounded-3xl border-4 border-theme-border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            className="w-64 h-64 object-cover rounded-3xl shadow-lg"
           />
         ) : (
           <div className="text-8xl">{result.icon || '📦'}</div>
@@ -124,15 +131,15 @@ export const ResultCard: React.FC<ResultCardProps> = ({
 
       {/* Product Name + Voice Button */}
       <div className="flex items-start justify-between gap-3 w-full">
-        <h2 className="text-4xl font-display font-black text-theme-bg text-center leading-tight p-2 flex-1">
+        <h2 className="text-4xl font-display font-black text-theme-text text-center leading-tight p-2 flex-1">
           {result.name}
         </h2>
         <button
           onClick={handleSpeak}
           className={cn(
-            'mt-2 w-12 h-12 flex-shrink-0 flex items-center justify-center border-4 border-theme-border rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-transform',
+            'mt-2 w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full shadow-lg active:scale-95 transition-transform',
             isPremium
-              ? 'bg-theme-bg text-theme-text hover:bg-theme-bg/80'
+              ? 'bg-white text-theme-text hover:bg-theme-primary/10'
               : 'bg-theme-accent/10 text-theme-accent',
           )}
           aria-label="Read result aloud"
@@ -145,40 +152,66 @@ export const ResultCard: React.FC<ResultCardProps> = ({
         </button>
       </div>
 
-      {/* Status Badge */}
-      <div
-        className={cn(
-          'flex items-center justify-center gap-3 px-8 py-4 rounded-full font-black text-2xl border-4 border-theme-border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]',
-          isSafe
-            ? 'bg-theme-primary/10 text-theme-primary'
-            : 'bg-redstone-red/10 text-redstone-red',
-        )}
+      {/* Status Badge with Planet Buddy & IceCream Celebration */}
+      <motion.div
+        animate={isSafe ? { scale: [1, 1.05, 1] } : {}}
+        transition={{ delay: 0.2, duration: 0.6 }}
+        className="flex flex-col items-center gap-4"
         role="status"
       >
-        {getStatusIcon()}
-        <span>{isSafe ? 'O.K' : 'STOP'}</span>
-      </div>
+        <div className="flex items-center justify-center gap-4">
+          <Planet
+            size={90}
+            mood={isSafe ? 'happy' : 'sad'}
+            color={isSafe ? planetColor : '#d81b00'}
+          />
+          {isSafe && (
+            <motion.div
+              animate={{ rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <IceCream size={90} mood="happy" color="#ffde00" />
+            </motion.div>
+          )}
+        </div>
+        <div
+          className={cn(
+            'px-8 py-3 rounded-full font-black text-2xl border-0 shadow-lg',
+            isSafe
+              ? 'bg-theme-primary text-theme-text'
+              : 'bg-redstone-red text-white',
+          )}
+        >
+          {isSafe ? 'O.K - Enjoy!' : 'STOP'}
+        </div>
+      </motion.div>
 
       {/* Allergens List */}
       <ul className="w-full flex flex-wrap justify-center gap-3 mb-2">
         {isSafe ? (
-          <li className="text-theme-bg/60 font-bold text-xl" aria-hidden="true">
+          <li
+            className="text-theme-text/60 font-bold text-xl"
+            aria-hidden="true"
+          >
             No allergens found!
           </li>
         ) : (
-          result.allergensFound?.map((allergen: string) => (
-            <li
-              key={allergen}
-              className="flex flex-col items-center gap-1 bg-redstone-red/5 p-3 rounded-2xl border-2 border-redstone-red/20"
-            >
-              <span className="text-3xl" role="img" aria-label={allergen}>
-                {getAllergenIcon(allergen)}
-              </span>
-              <span className="text-xs font-black uppercase text-redstone-red tracking-tighter">
-                {allergen}
-              </span>
-            </li>
-          ))
+          result.allergensFound?.map((allergen: string) => {
+            const { emoji, label } = getAllergenDisplay(allergen);
+            return (
+              <li
+                key={allergen}
+                className="flex flex-col items-center gap-2 bg-redstone-red/10 p-4 rounded-3xl shadow-lg"
+              >
+                <span className="text-4xl" role="img" aria-label={label}>
+                  {emoji}
+                </span>
+                <span className="text-xs font-black uppercase text-redstone-red tracking-tighter">
+                  {label}
+                </span>
+              </li>
+            );
+          })
         )}
       </ul>
 
@@ -197,34 +230,38 @@ export const ResultCard: React.FC<ResultCardProps> = ({
         )}
       >
         {isSafe && (
-          <button
+          <motion.button
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.95 }}
             onClick={onCollect}
             className={cn(
-              'flex items-center justify-center gap-3 p-6 border-4 border-theme-border rounded-3xl text-xl font-black transition-all active:scale-95',
+              'flex items-center justify-center gap-3 p-6 rounded-3xl text-xl font-black transition-all',
               isCollected
-                ? 'bg-theme-accent text-theme-bg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-                : 'bg-theme-text text-theme-bg/60 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]',
+                ? 'bg-theme-accent text-white shadow-lg hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)]'
+                : 'bg-white text-theme-text shadow-lg hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)]',
             )}
             aria-pressed={isCollected}
           >
             <Star
               className={cn(
                 'w-8 h-8',
-                isCollected ? 'fill-theme-accent text-theme-accent' : '',
+                isCollected ? 'fill-white text-white' : '',
               )}
               aria-hidden="true"
             />
-            {isCollected ? 'Collected' : 'Collect'}
-          </button>
+            {isCollected ? 'Saved' : 'Add to Safe'}
+          </motion.button>
         )}
 
-        <button
+        <motion.button
+          whileHover={{ y: -2 }}
+          whileTap={{ scale: 0.95 }}
           onClick={onReset}
-          className="flex items-center justify-center gap-3 p-6 border-4 border-theme-border bg-theme-bg text-theme-text rounded-3xl font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:scale-95 hover:translate-y-[-2px] transition-transform"
+          className="flex items-center justify-center gap-3 p-6 bg-white text-theme-text rounded-3xl font-black shadow-lg hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)] transition-all"
         >
           <RefreshCcw className="w-8 h-8" aria-hidden="true" />
-          Scan
-        </button>
+          Scan Again
+        </motion.button>
       </div>
 
       {showPremiumModal && (
@@ -236,20 +273,3 @@ export const ResultCard: React.FC<ResultCardProps> = ({
     </motion.div>
   );
 };
-
-function getAllergenIcon(allergen: string) {
-  if (allergen.includes(':')) return allergen.slice(0, allergen.indexOf(':'));
-  const map: Record<string, string> = {
-    milk: '🥛',
-    egg: '🥚',
-    peanuts: '🥜',
-    tree_nuts: '🌰',
-    wheat: '🌾',
-    soy: '🫘',
-    fish: '🐟',
-    shellfish: '🦐',
-    sesame: '🫛',
-    gluten: '🍞',
-  };
-  return map[allergen.toLowerCase()] ?? '⚠️';
-}

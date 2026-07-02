@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next';
 import { Fredoka, Nunito, Andika, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { AllergyProvider } from '@/contexts/AllergyContext';
-import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 
 const fredoka = Fredoka({
@@ -98,9 +97,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <ServiceWorkerRegister />
-        <ThemeProvider>
-          <AllergyProvider>{children}</AllergyProvider>
-        </ThemeProvider>
+        <AllergyProvider>{children}</AllergyProvider>
       </body>
     </html>
   );

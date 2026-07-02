@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 import { validateBarcode } from '@/lib/errorHandling';
 
@@ -31,15 +32,18 @@ export function BarcodeSearchForm({
   return (
     <form
       onSubmit={handleFormSubmit}
-      className="flex flex-col gap-4 w-full p-6 bg-theme-text border-4 border-theme-border rounded-2xl shadow-voxel"
+      className="flex flex-col gap-4 w-full p-6 bg-gradient-to-br from-theme-text to-theme-text/95 border-4 border-theme-border rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
     >
       <div className="relative flex-1">
         <label
           htmlFor="barcode-input"
-          className="block text-sm font-body font-bold text-theme-bg mb-2 uppercase tracking-wide"
+          className="block text-sm font-body font-bold text-theme-bg mb-1 uppercase tracking-wide"
         >
           Barcode Number
         </label>
+        <p className="text-xs text-theme-bg/70 mb-2 font-body">
+          Type or scan any product barcode
+        </p>
         <input
           id="barcode-input"
           type="text"
@@ -63,14 +67,16 @@ export function BarcodeSearchForm({
           </p>
         )}
       </div>
-      <button
+      <motion.button
+        whileHover={{ y: -2 }}
+        whileTap={{ scale: 0.95 }}
         type="submit"
-        className="bg-theme-primary border-4 border-theme-border px-4 py-3 rounded-xl shadow-voxel active:shadow-none active:translate-y-[2px] transition-all flex items-center justify-center gap-2 font-display font-black text-theme-border hover:-translate-y-[2px]"
+        className="bg-gradient-to-br from-theme-primary to-theme-primary/80 border-4 border-theme-border px-4 py-3 rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2 font-display font-black text-theme-border"
         aria-label="Search product"
       >
         <Search className="w-6 h-6" aria-hidden="true" />
         Search
-      </button>
+      </motion.button>
     </form>
   );
 }

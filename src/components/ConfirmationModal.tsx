@@ -37,7 +37,7 @@ export function ConfirmationModal({
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-theme-bg border-4 border-theme-border shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-3xl w-full max-w-md max-h-[90vh] flex flex-col p-6 space-y-4 overflow-y-auto"
+            className="bg-gradient-to-b from-theme-bg to-theme-bg/98 border-4 border-theme-border shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] rounded-3xl w-full max-w-md max-h-[90vh] flex flex-col p-6 space-y-5 overflow-y-auto"
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
@@ -63,19 +63,23 @@ export function ConfirmationModal({
               {message}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+              <motion.button
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={onClose}
-                className="bg-theme-text border-4 border-theme-border px-6 py-4 rounded-2xl font-display font-black text-lg text-theme-bg shadow-voxel hover:scale-105 active:shadow-none active:translate-y-[2px] transition-all min-w-[140px] min-h-[64px]"
+                className="bg-gradient-to-br from-theme-text to-theme-text/90 border-4 border-theme-border px-6 py-4 rounded-2xl font-display font-black text-lg text-theme-bg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all min-w-[140px] min-h-[64px]"
               >
                 {cancelText}
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={onConfirm}
-                className="bg-theme-primary border-4 border-theme-border px-6 py-4 rounded-2xl font-display font-black text-lg text-theme-border shadow-voxel hover:scale-105 active:shadow-none active:translate-y-[2px] transition-all min-w-[140px] min-h-[64px]"
+                className="bg-gradient-to-br from-theme-primary to-theme-primary/80 border-4 border-theme-border px-6 py-4 rounded-2xl font-display font-black text-lg text-theme-border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all min-w-[140px] min-h-[64px]"
               >
                 {confirmText}
-              </button>
+              </motion.button>
             </div>
           </motion.div>
         </motion.div>

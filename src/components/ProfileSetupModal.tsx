@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { UserPlus } from 'lucide-react';
+import { HumanCat, HumanDinosaur, Browser } from 'react-kawaii';
+import { UserPlus, Camera, ArrowRight } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { Allergy, PROFILE_EMOJIS } from '@/lib/constants';
 import { AllergyList } from '@/components/AllergyList';
@@ -21,10 +23,15 @@ export function ProfileSetupModal() {
     isHydrated,
   } = useAllergySettings();
   const isPremium = useIsPremium();
+  const { theme } = useTheme();
+
+  const profileColors = {
+    girl: theme === 'kitty' ? '#ff69b4' : '#ff69b4',
+    boy: theme === 'minecraft' ? '#79d461' : '#79d461',
+  };
   const [isCreating, setIsCreating] = useState(false);
   const [showProfileGate, setShowProfileGate] = useState(false);
   const [newName, setNewName] = useState('');
-  const [newEmoji, setNewEmoji] = useState('🧒');
   const [localAllergies, setLocalAllergies] = useState<Allergy[]>([]);
 
   const toggleLocalAllergy = (allergy: Allergy) => {
@@ -37,9 +44,8 @@ export function ProfileSetupModal() {
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
-    await createProfile(newName.trim(), newEmoji, localAllergies);
+    await createProfile(newName.trim(), '🧒', localAllergies);
     setNewName('');
-    setNewEmoji('🧒');
     setLocalAllergies([]);
     setIsCreating(false);
   };
@@ -50,52 +56,37 @@ export function ProfileSetupModal() {
   if (profiles.length === 0) {
     return (
       <div
-        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto"
         role="dialog"
         aria-modal="true"
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
           animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          className="bg-theme-text border-4 border-theme-border shadow-voxel p-8 max-w-xl w-full rounded-[3rem] text-center overflow-y-auto max-h-[90vh]"
+          className="bg-theme-bg shadow-lg p-8 max-w-xl w-full rounded-3xl text-center overflow-y-auto max-h-[90vh] my-4"
         >
-          <h2 className="text-4xl font-display font-black text-theme-bg uppercase tracking-tighter mb-8">
+          <h2 className="text-4xl font-display font-black text-theme-text uppercase tracking-tighter mb-2">
             Who are you?
           </h2>
+          <p className="text-lg text-theme-text/70 font-body mb-8">
+            Your snack journey starts here
+          </p>
           <div className="space-y-6">
-            <div className="flex flex-col gap-4">
-              <input
-                type="text"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder="Your name"
-                className="w-full bg-theme-bg border-2 border-theme-border p-4 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
-              />
-              <div className="flex flex-wrap justify-center gap-2">
-                {PROFILE_EMOJIS.map((e) => (
-                  <button
-                    key={e}
-                    type="button"
-                    onClick={() => setNewEmoji(e)}
-                    className={cn(
-                      'text-3xl p-3 rounded-2xl border-2 transition-all active:scale-95',
-                      newEmoji === e
-                        ? 'bg-theme-accent border-theme-border scale-110'
-                        : 'bg-theme-bg border-theme-border/30 hover:border-theme-border/60',
-                    )}
-                    aria-label={e}
-                    aria-pressed={newEmoji === e}
-                  >
-                    {e}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Your name"
+              className="w-full bg-white border-0 p-4 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent shadow-lg"
+            />
 
-            <div className="bg-theme-bg/50 border-2 border-theme-border/50 p-6 rounded-[2rem] space-y-6">
-              <h3 className="text-xl font-display font-black text-theme-bg uppercase tracking-wide">
-                Any allergies?
+            <div className="bg-theme-primary/10 p-6 rounded-2xl space-y-6 shadow-lg">
+              <h3 className="text-xl font-display font-black text-theme-text uppercase tracking-wide">
+                🎯 Any allergies?
               </h3>
+              <p className="text-sm text-theme-text/70 font-body">
+                We can add more later!
+              </p>
               <AllergyList
                 allergies={localAllergies}
                 toggleAllergy={toggleLocalAllergy}
@@ -111,13 +102,16 @@ export function ProfileSetupModal() {
               />
             </div>
 
-            <button
+            <motion.button
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.95 }}
               onClick={handleCreate}
               disabled={!newName.trim()}
-              className="w-full bg-theme-primary border-4 border-theme-border py-4 rounded-[2.5rem] text-2xl font-display font-black shadow-[0_4px_0_0_rgba(0,170,0,0.5)] active:shadow-none disabled:opacity-50 transition-all hover:-translate-y-[2px]"
+              className="w-full bg-theme-primary py-4 rounded-3xl text-2xl font-display font-black shadow-lg hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)] active:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 text-theme-text"
             >
-              START SCANNING!
-            </button>
+              <Camera className="w-8 h-8" aria-hidden="true" />
+              <span>START SCANNING!</span>
+            </motion.button>
           </div>
         </motion.div>
       </div>
@@ -127,33 +121,45 @@ export function ProfileSetupModal() {
   if (profiles.length > 1 && !activeProfile) {
     return (
       <div
-        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto"
         role="dialog"
         aria-modal="true"
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.9, rotate: 2 }}
           animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          className="bg-theme-text border-4 border-theme-border shadow-voxel p-8 max-w-md w-full rounded-[3rem]"
+          className="bg-theme-bg shadow-lg p-8 max-w-md w-full rounded-3xl my-4"
         >
-          <h2 className="text-4xl font-display font-black text-theme-bg uppercase tracking-tighter mb-8 text-center">
+          <h2 className="text-4xl font-display font-black text-theme-text uppercase tracking-tighter mb-8 text-center">
             Who is scanning?
           </h2>
           <div className="grid grid-cols-2 gap-4 mb-8">
-            {profiles.map((p) => (
-              <button
+            {profiles.map((p, idx) => (
+              <motion.button
                 key={p.id}
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setActiveProfileId(p.id)}
-                className="flex items-center gap-3 p-4 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[1px]"
+                className="flex flex-col items-center gap-2 p-4 bg-theme-primary rounded-2xl shadow-lg hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)] transition-all"
               >
-                <span className="text-2xl">{p.emoji}</span>
-                <span className="font-black uppercase truncate text-theme-text">
+                {idx % 2 === 0 ? (
+                  <HumanCat size={60} mood="happy" color={profileColors.girl} />
+                ) : (
+                  <HumanDinosaur
+                    size={60}
+                    mood="happy"
+                    color={profileColors.boy}
+                  />
+                )}
+                <span className="font-black uppercase text-center truncate text-theme-text text-sm">
                   {p.name}
                 </span>
-              </button>
+              </motion.button>
             ))}
           </div>
-          <button
+          <motion.button
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => {
               if (!isPremium) {
                 setShowProfileGate(true);
@@ -161,11 +167,11 @@ export function ProfileSetupModal() {
               }
               setIsCreating(true);
             }}
-            className="w-full flex items-center justify-center gap-2 bg-theme-accent border-4 border-theme-border p-4 rounded-2xl font-black uppercase text-theme-border shadow-voxel active:translate-y-[1px] transition-all"
+            className="w-full flex items-center justify-center gap-2 bg-theme-accent p-4 rounded-3xl font-black uppercase text-white shadow-lg hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)] transition-all"
           >
             <UserPlus className="w-5 h-5" />
             Add New Person
-          </button>
+          </motion.button>
           {showProfileGate && (
             <PremiumGate
               feature="Multiple profiles"
@@ -173,48 +179,31 @@ export function ProfileSetupModal() {
             />
           )}
           {isCreating && (
-            <div className="mt-6 p-4 bg-theme-bg border-4 border-theme-border rounded-2xl space-y-4">
+            <div className="mt-6 p-4 bg-white rounded-2xl space-y-4 shadow-lg">
               <input
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="Name"
-                className="w-full bg-theme-bg border-2 border-theme-border p-2 rounded-xl font-body font-bold text-theme-text placeholder:text-theme-text/40"
+                className="w-full bg-white border-0 p-3 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 shadow-lg focus:outline-none focus:ring-4 focus:ring-theme-accent"
               />
-              <div className="overflow-x-auto -mx-1 px-1">
-                <div className="flex gap-1.5 pb-0.5">
-                  {PROFILE_EMOJIS.map((e) => (
-                    <button
-                      key={e}
-                      type="button"
-                      onClick={() => setNewEmoji(e)}
-                      className={cn(
-                        'text-xl p-1.5 rounded-lg border-2 transition-all shrink-0 active:scale-95',
-                        newEmoji === e
-                          ? 'bg-theme-accent border-theme-border scale-110'
-                          : 'border-transparent hover:border-theme-border/40',
-                      )}
-                      aria-label={e}
-                      aria-pressed={newEmoji === e}
-                    >
-                      {e}
-                    </button>
-                  ))}
-                </div>
-              </div>
               <div className="flex gap-2">
-                <button
+                <motion.button
+                  whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={handleCreate}
-                  className="flex-1 bg-theme-primary border-2 border-theme-border py-2 rounded-xl text-sm font-black uppercase text-theme-text shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]"
+                  className="flex-1 bg-theme-primary py-3 rounded-2xl text-sm font-black uppercase text-theme-text shadow-lg hover:shadow-[0_8px_16px_rgba(0,0,0,0.15)] transition-all"
                 >
                   Create
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setIsCreating(false)}
-                  className="flex-1 bg-theme-bg border-2 border-theme-border py-2 rounded-xl text-sm font-black uppercase text-theme-text shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]"
+                  className="flex-1 bg-white py-3 rounded-2xl text-sm font-black uppercase text-theme-text shadow-lg hover:shadow-[0_8px_16px_rgba(0,0,0,0.15)] transition-all"
                 >
                   Cancel
-                </button>
+                </motion.button>
               </div>
             </div>
           )}

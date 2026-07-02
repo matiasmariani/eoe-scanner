@@ -1,4 +1,28 @@
-import { ALLERGEN_KEYWORDS } from '@/lib/constants';
+import { ALLERGEN_KEYWORDS, ALLERGY_OPTIONS } from '@/lib/constants';
+
+/**
+ * Splits a stored allergy entry into its display parts. Custom allergens are
+ * stored as "emoji:value" (see CustomAllergyInput); built-ins are the bare
+ * value and look up their emoji/label from ALLERGY_OPTIONS. Use this anywhere
+ * an allergy is shown to the user — never render the raw stored string, since
+ * for custom entries that still has the "emoji:" prefix glued to the label.
+ */
+export function getAllergenDisplay(allergen: string): {
+  emoji: string;
+  label: string;
+} {
+  if (allergen.includes(':')) {
+    const idx = allergen.indexOf(':');
+    const emoji = allergen.slice(0, idx).trim();
+    const label = allergen.slice(idx + 1).trim();
+    return { emoji: emoji || '⚠️', label: label || allergen };
+  }
+  const option = ALLERGY_OPTIONS.find((o) => o.value === allergen);
+  return {
+    emoji: option?.emoji ?? '⚠️',
+    label: option?.label ?? allergen,
+  };
+}
 
 // Escape a string so it can be embedded literally in a RegExp.
 function escapeRegExp(s: string): string {

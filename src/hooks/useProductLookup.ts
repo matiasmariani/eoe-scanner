@@ -15,6 +15,7 @@ import { useAllergySettings } from '@/contexts/AllergyContext';
 import { lookupProductAction } from '@/app/actions';
 import { dbService } from '@/lib/db';
 import { useHistory } from '@/hooks/useHistory';
+import { saveProduct } from '@/lib/product-db';
 
 export function useProductLookup() {
   const [mode, setMode] = useState<
@@ -79,6 +80,7 @@ export function useProductLookup() {
             );
         const refreshed = { ...enrichedResult, isSafe, allergensFound };
         await addHistory(code, refreshed);
+        await saveProduct(refreshed);
         setResult(refreshed);
         setMode('result');
         return;
@@ -92,6 +94,7 @@ export function useProductLookup() {
       } else {
         // 3. Save to IndexedDB for future use
         await addHistory(code, result);
+        await saveProduct(result);
         setResult(result);
         setMode('result');
       }

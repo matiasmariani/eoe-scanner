@@ -3,9 +3,12 @@
 import React, { useState } from 'react';
 import { Info } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
+import { Planet, MOODS } from 'react-kawaii';
 import { cn } from '@/lib/utils';
 import { useIsPremium } from '@/lib/premium';
 import { NutritionInfoModal } from '@/components/NutritionInfoModal';
+
+type KawaiiMood = (typeof MOODS)[number];
 
 interface NutritionBadgesProps {
   nutriscoreGrade?: string;
@@ -34,35 +37,58 @@ export function NutritionBadges({
 
   if (!hasValidNutriScore && !hasValidNova) return null;
 
-  const getNutriEmojiAndColor = (grade?: string) => {
+  // Grade A (best) -> green/blissful, grade E (worst) -> red/ko, with
+  // intermediate moods/colors stepping down in between.
+  const getNutriMoodAndColor = (
+    grade?: string,
+  ): {
+    mood: KawaiiMood;
+    kawaiiColor: string;
+    badgeClass: string;
+    label: string;
+  } => {
     const g = grade?.toUpperCase();
     switch (g) {
       case 'A':
         return {
-          emoji: '😍',
-          color: 'bg-green-500 text-white',
+          mood: 'blissful',
+          kawaiiColor: '#22c55e',
+          badgeClass: 'bg-green-500 text-white',
           label: 'Excellent',
         };
       case 'B':
-        return { emoji: '😊', color: 'bg-lime-400 text-black', label: 'Good' };
+        return {
+          mood: 'happy',
+          kawaiiColor: '#a3d977',
+          badgeClass: 'bg-lime-400 text-black',
+          label: 'Good',
+        };
       case 'C':
-        return { emoji: '😐', color: 'bg-yellow-400 text-black', label: 'OK' };
+        return {
+          mood: 'sad',
+          kawaiiColor: '#f4c542',
+          badgeClass: 'bg-yellow-400 text-black',
+          label: 'OK',
+        };
       case 'D':
         return {
-          emoji: '😕',
-          color: 'bg-orange-500 text-white',
+          mood: 'shocked',
+          kawaiiColor: '#f2994a',
+          badgeClass: 'bg-orange-500 text-white',
           label: 'Poor',
         };
       case 'E':
         return {
-          emoji: '😤',
-          color: 'bg-red-700 text-white',
+          mood: 'ko',
+          kawaiiColor: '#c0392b',
+          badgeClass: 'bg-red-700 text-white',
           label: 'Very Poor',
         };
       default:
         return {
-          emoji: '❓',
-          color: 'bg-gray-400 text-white',
+          mood: 'excited',
+          kawaiiColor: '#9ca3af',
+          badgeClass: 'bg-gray-400 text-white',
           label: 'Unknown',
         };
     }
@@ -98,7 +124,7 @@ export function NutritionBadges({
     }
   };
 
-  const nutri = getNutriEmojiAndColor(nutriscoreGrade);
+  const nutri = getNutriMoodAndColor(nutriscoreGrade);
 
   return (
     <>
@@ -108,15 +134,13 @@ export function NutritionBadges({
           <div className="relative">
             <div
               className={cn(
-                'flex items-center gap-4 px-6 py-4 rounded-2xl border-4 border-theme-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)]',
-                nutri.color,
+                'flex items-center gap-4 px-6 py-4 rounded-2xl shadow-lg',
+                nutri.badgeClass,
               )}
               role="img"
               aria-label={`Nutri-Score: ${nutri.label}`}
             >
-              <span className="text-5xl" aria-hidden="true">
-                {nutri.emoji}
-              </span>
+              <Planet size={56} mood={nutri.mood} color={nutri.kawaiiColor} />
               <div className="flex flex-col items-start gap-0">
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-black">
@@ -137,7 +161,7 @@ export function NutritionBadges({
             {/* Info Icon — Top Right Corner */}
             <button
               onClick={() => setShowNutriInfo(true)}
-              className="absolute -top-2 -right-2 bg-theme-text text-theme-bg w-8 h-8 rounded-full flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,0.4)] hover:scale-110 active:scale-95 transition-transform z-10"
+              className="absolute -top-2 -right-2 bg-white text-theme-text w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-transform z-10"
               aria-label="Learn about Nutri-Score"
               title="What does this mean?"
             >
@@ -150,7 +174,7 @@ export function NutritionBadges({
         {hasValidNova && (
           <div className="relative">
             <div
-              className="flex items-center gap-4 px-6 py-4 rounded-2xl border-4 border-theme-border bg-theme-bg shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)]"
+              className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-white shadow-lg"
               role="img"
               aria-label={`Processing level: ${getNovaLabel(novaGroup)}`}
             >
@@ -170,7 +194,7 @@ export function NutritionBadges({
             {/* Info Icon — Top Right Corner */}
             <button
               onClick={() => setShowNovaInfo(true)}
-              className="absolute -top-2 -right-2 bg-theme-text text-theme-bg w-8 h-8 rounded-full flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,0.4)] hover:scale-110 active:scale-95 transition-transform z-10"
+              className="absolute -top-2 -right-2 bg-white text-theme-text w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-transform z-10"
               aria-label="Learn about processing levels"
               title="What does this mean?"
             >

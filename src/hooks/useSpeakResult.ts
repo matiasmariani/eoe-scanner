@@ -1,5 +1,7 @@
 'use client';
 
+import { getAllergenDisplay } from '@/lib/allergen-utils';
+
 export function useSpeakResult() {
   function speak(
     profileName: string,
@@ -14,7 +16,9 @@ export function useSpeakResult() {
     if (isSafe) {
       text = `${profileName}, ${productName} is safe!`;
     } else {
-      const list = allergensFound.join(', ');
+      const list = allergensFound
+        .map((a) => getAllergenDisplay(a).label)
+        .join(', ');
       text = `Warning! ${profileName}, ${productName} is not safe. It has ${list}.`;
     }
 

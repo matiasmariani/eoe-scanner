@@ -3,20 +3,39 @@
 import React from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, CheckCircle2, AlertCircle, X } from 'lucide-react';
+import { File } from 'react-kawaii';
+import {
+  Trash2,
+  CheckCircle2,
+  AlertCircle,
+  X,
+  ListFilter,
+  Check,
+  AlertTriangle,
+} from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
 import { useHistory } from '@/hooks/useHistory';
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { SnackScout } from '@/components/SnackScout';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
+import { ProductDetailModal } from '@/components/ProductDetailModal';
+import { getAllergenDisplay } from '@/lib/allergen-utils';
+import { type ProductResult } from '@/lib/open-food-facts';
+import { cn } from '@/lib/utils';
 
 export function HistoryView({ onClose }: { onClose: () => void }) {
   const { history, removeHistory } = useHistory();
   const { adultMode } = useAllergySettings();
+  const { theme } = useTheme();
   const [filter, setFilter] = React.useState<'all' | 'good' | 'bad'>('all');
+
+  const fileColor = theme === 'kitty' ? '#ff69b4' : '#79d461';
   const [modalConfig, setModalConfig] = React.useState<{
     isOpen: boolean;
     item?: { barcode: string; name: string };
   }>({ isOpen: false });
+  const [detailProduct, setDetailProduct] =
+    React.useState<ProductResult | null>(null);
 
   const handleRemoveClick = (item: { barcode: string; name: string }) => {
     setModalConfig({ isOpen: true, item });
@@ -47,12 +66,12 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="min-h-screen bg-theme-bg flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-theme-bg via-theme-bg to-theme-bg/95 flex flex-col">
       <header className="w-full max-w-md mx-auto px-6 py-8 flex items-center justify-between gap-4">
         <SnackScout size="sm" />
         <button
           onClick={onClose}
-          className="p-3 bg-theme-text rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-theme-primary text-theme-primary hover:bg-theme-primary hover:text-theme-text transition-all active:scale-90"
+          className="p-3 bg-theme-text rounded-full shadow-lg text-theme-primary hover:bg-theme-primary hover:text-theme-text transition-all active:scale-90"
           aria-label="Close history"
         >
           <X className="w-6 h-6" aria-hidden="true" />
@@ -61,32 +80,51 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
 
       <div className="flex-1 w-full max-w-md mx-auto px-4 pb-16">
         <div className="text-center mb-6">
+          <motion.div
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 2.5, repeat: Infinity }}
+            className="mb-4 flex justify-center"
+          >
+            <File size={80} mood="happy" color={fileColor} />
+          </motion.div>
           <h2 className="text-3xl font-display font-black text-theme-text">
             History
           </h2>
           <p className="text-lg font-bold text-theme-primary mt-1">
-            Your scanning journey 📜
+            Your scanning journey
           </p>
         </div>
 
-        <div className="flex justify-center gap-2 mb-6">
-          {(['all', 'good', 'bad'] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              aria-pressed={filter === f}
-              className={`px-4 py-2 rounded-xl border-4 border-theme-border font-display font-black uppercase transition-all ${
-                filter === f
-                  ? 'bg-theme-accent text-theme-border shadow-voxel'
-                  : 'bg-theme-bg text-theme-text hover:bg-theme-bg/80'
-              }`}
-            >
-              {f}
-            </button>
-          ))}
+        <div className="flex justify-center gap-3 mb-6">
+          {(['all', 'good', 'bad'] as const).map((f) => {
+            const Icon =
+              f === 'good' ? Check : f === 'bad' ? AlertTriangle : ListFilter;
+            return (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                aria-pressed={filter === f}
+                className={`px-5 py-3 rounded-2xl font-display font-black uppercase text-sm transition-all flex items-center gap-2 shadow-lg ${
+                  filter === f
+                    ? 'bg-theme-accent text-white'
+                    : 'bg-white text-theme-text hover:bg-theme-bg/50'
+                }`}
+                title={
+                  f === 'good'
+                    ? 'Show safe foods'
+                    : f === 'bad'
+                      ? 'Show unsafe foods'
+                      : 'Show all scans'
+                }
+              >
+                <Icon className="w-5 h-5" aria-hidden="true" />
+                <span className="hidden sm:inline">{f}</span>
+              </button>
+            );
+          })}
         </div>
 
-        <ul className="space-y-4">
+        <ul className="space-y-5">
           <AnimatePresence mode="popLayout">
             {history
               .filter((item) => {
@@ -102,9 +140,15 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                   exit={{ opacity: 0, scale: 0.95 }}
                   className="relative"
                 >
-                  <div className="bg-theme-text border-4 border-theme-border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4 flex items-center gap-4 rounded-2xl">
+                  <button
+                    onClick={() => setDetailProduct(item.result)}
+                    className={cn(
+                      'w-full bg-theme-primary shadow-lg p-4 flex items-center gap-4 rounded-2xl text-left transition-all active:scale-95',
+                      item.result.isSafe ? '' : 'ring-2 ring-redstone-red/30',
+                    )}
+                  >
                     <div
-                      className="w-16 h-16 bg-theme-bg/10 rounded-xl flex items-center justify-center text-3xl shrink-0 overflow-hidden"
+                      className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl shrink-0 overflow-hidden bg-white shadow-lg"
                       aria-hidden="true"
                     >
                       {item.result.image_url ? (
@@ -120,19 +164,22 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                       )}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col gap-1">
-                      <h3 className="font-black text-xl text-theme-bg truncate">
+                      <h3 className="font-black text-xl text-theme-text truncate">
                         {item.result.name}
                       </h3>
-                      <p className="text-base text-theme-bg/80 truncate font-bold">
+                      <p className="text-base text-theme-text/80 truncate font-bold">
                         {item.result.brand}
                       </p>
                       {!item.result.isSafe &&
                         item.result.allergensFound.length > 0 && (
                           <p className="text-base font-black text-redstone-red truncate">
-                            Contains: {item.result.allergensFound.join(', ')}
+                            Contains:{' '}
+                            {item.result.allergensFound
+                              .map((a) => getAllergenDisplay(a).label)
+                              .join(', ')}
                           </p>
                         )}
-                      <p className="text-base text-theme-bg/70 mt-auto font-bold">
+                      <p className="text-base text-theme-text/70 mt-auto font-bold">
                         {new Date(item.timestamp).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
@@ -165,7 +212,7 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                         </button>
                       )}
                     </div>
-                  </div>
+                  </button>
                 </motion.li>
               ))}
           </AnimatePresence>
@@ -178,6 +225,14 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
         title="Remove Item?"
         message={`Are you sure you want to remove ${modalConfig.item?.name || 'this item'} from your history?`}
       />
+
+      {detailProduct && (
+        <ProductDetailModal
+          product={detailProduct}
+          isOpen={!!detailProduct}
+          onClose={() => setDetailProduct(null)}
+        />
+      )}
     </div>
   );
 }

@@ -2,27 +2,45 @@
 
 import React from 'react';
 import { useTheme } from '@/hooks/useTheme';
-import { Palette } from 'lucide-react';
+import { UserRound, Heart } from 'lucide-react';
 
 export const ThemeSelector = () => {
   const { theme, toggleTheme, mounted } = useTheme();
 
   if (!mounted) {
-    return <div className="p-3 w-fit" />;
+    return <div className="w-fit" />;
   }
 
   return (
-    <button
-      onClick={toggleTheme}
-      className="p-3 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
-      aria-label={`Toggle theme (currently ${theme})`}
-      title={
-        theme === 'minecraft'
-          ? 'Switch to Kitty Theme 🎀'
-          : 'Switch to Minecraft Theme ⛏️'
-      }
-    >
-      <Palette className="w-6 h-6 text-theme-accent" aria-hidden="true" />
-    </button>
+    <div className="flex items-center gap-1 bg-white/70 rounded-full p-1.5 shadow-lg border-2 border-white/50">
+      <button
+        onClick={() => {
+          if (theme !== 'minecraft') toggleTheme();
+        }}
+        className={`p-2.5 rounded-full transition-all font-black text-sm flex items-center justify-center ${
+          theme === 'minecraft'
+            ? 'bg-theme-primary text-theme-text shadow-md scale-110'
+            : 'text-theme-text/60 hover:text-theme-text'
+        }`}
+        aria-label="Boy theme"
+        title="Boy Theme"
+      >
+        👦
+      </button>
+      <button
+        onClick={() => {
+          if (theme !== 'kitty') toggleTheme();
+        }}
+        className={`p-2.5 rounded-full transition-all font-black text-sm flex items-center justify-center ${
+          theme === 'kitty'
+            ? 'bg-theme-primary text-theme-text shadow-md scale-110'
+            : 'text-theme-text/60 hover:text-theme-text'
+        }`}
+        aria-label="Girl theme"
+        title="Girl Theme"
+      >
+        👧
+      </button>
+    </div>
   );
 };

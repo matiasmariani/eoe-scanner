@@ -109,7 +109,7 @@ export function PremiumGate({ feature, onClose }: PremiumGateProps) {
 
             <button
               onClick={handleSubscribe}
-              className="w-full bg-theme-accent border-4 border-theme-border py-4 rounded-2xl text-xl font-display font-black text-theme-border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all"
+              className="w-full bg-theme-accent border-4 border-theme-border py-4 rounded-2xl text-xl font-display font-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all"
             >
               Subscribe · $4.99/month
             </button>
@@ -179,7 +179,7 @@ export function PremiumGate({ feature, onClose }: PremiumGateProps) {
             </div>
             <button
               onClick={handleSubscribe}
-              className="w-full bg-theme-accent border-4 border-theme-border py-4 rounded-2xl text-xl font-display font-black text-theme-border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all"
+              className="w-full bg-theme-accent border-4 border-theme-border py-4 rounded-2xl text-xl font-display font-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all"
             >
               Try Again
             </button>

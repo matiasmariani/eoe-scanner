@@ -39,28 +39,36 @@
   --font-data: 'Andika', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Voxel/arcade design tokens */
-  --shadow-voxel: 4px 4px 0px var(--color-theme-shadow);
+  /* Soft shadow design tokens (modern playful) */
+  --shadow-voxel: 0 8px 16px rgba(0, 0, 0, 0.1);
+  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
   --animate-pop: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* Card and Button tokens for consistency */
+  --radius-full: 9999px;
+  --radius-3xl: 1.5rem;
+  --radius-2xl: 1.25rem;
+  --radius-xl: 1rem;
 }
 
 /* Theme Definitions */
 [data-theme='minecraft'] {
-  --theme-primary-val: #79d461;
-  --theme-accent-val: #00a3a3;
-  --theme-bg-val: #313131;
-  --theme-text-val: #ffffff;
-  --theme-border-val: #000000;
+  --theme-primary-val: #a8d5ff;
+  --theme-accent-val: #ff8c42;
+  --theme-bg-val: #f8f6f4;
+  --theme-text-val: #2c2c2c;
+  --theme-border-val: #e0ddd9;
   --theme-shadow-val: #000000;
 }
 
 [data-theme='kitty'] {
-  --theme-primary-val: #ff1493;
-  --theme-accent-val: #c5a000;
-  --theme-bg-val: #ffd1dc;
+  --theme-primary-val: #ffc5d9;
+  --theme-accent-val: #ffb366;
+  --theme-bg-val: #f8f6f4;
   --theme-text-val: #2c2c2c;
-  --theme-border-val: #2c2c2c;
-  --theme-shadow-val: #2c2c2c;
+  --theme-border-val: #e0ddd9;
+  --theme-shadow-val: #000000;
 }
 
 @keyframes pop {
@@ -141,12 +149,23 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-deep-stone);
+  background: var(--theme-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-grass-green);
+  background: var(--theme-accent);
   border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-accent);
+  opacity: 0.8;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-color: var(--theme-accent) var(--theme-bg);
+  scrollbar-width: thin;
 }
 
 /* Focus styles for accessibility */

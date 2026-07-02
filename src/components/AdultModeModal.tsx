@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Key, HelpCircle, Check } from 'lucide-react';
+import { Lock, HelpCircle, X } from 'lucide-react';
 import { OTPInput } from 'input-otp';
 import { dbService } from '@/lib/db';
 import { useAllergySettings } from '@/contexts/AllergyContext';
+import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 
 type ModalView = 'pin-entry' | 'pin-setup' | 'pin-recovery';
@@ -18,6 +19,7 @@ export function AdultModeModal({
   onClose: () => void;
 }) {
   const { setAdultMode, adultMode } = useAllergySettings();
+  const { theme } = useTheme();
   const [view, setView] = useState<ModalView>('pin-entry');
   const [pin, setPin] = useState('');
   const [setupPin, setSetupPin] = useState('');
@@ -91,42 +93,40 @@ export function AdultModeModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className={cn(
-          'w-full max-w-md p-8 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-2xl',
-          'data-[theme=kitty]:bg-pink-50 data-[theme=kitty]:border-[#2C2C2C] data-[theme=kitty]:shadow-[8px_8px_0px_0px_rgba(44,44,44,1)] data-[theme=kitty]:rounded-3xl',
-        )}
+        className="w-full max-w-md p-8 bg-theme-bg shadow-lg rounded-3xl"
       >
-        <div className="flex justify-between items-start mb-6">
+        <div className="flex justify-between items-start mb-8">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-100 border-2 border-black rounded-lg">
-              <Lock className="w-6 h-6 text-amber-600" />
+            <div className="p-3 bg-theme-primary rounded-full shadow-lg">
+              <Lock className="w-6 h-6 text-theme-text" />
             </div>
-            <h2 className="text-2xl font-black uppercase tracking-tight">
-              Adult Gate
+            <h2 className="text-3xl font-display font-black uppercase tracking-tight text-theme-text">
+              Adult Mode
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-black font-bold"
+            className="text-theme-text/60 hover:text-theme-text transition-colors"
+            aria-label="Close"
           >
-            ✕
+            <X className="w-6 h-6" />
           </button>
         </div>
 
         <div className="space-y-6">
           {error && (
-            <p className="text-sm font-bold text-red-600 bg-red-50 p-2 border-2 border-red-600 rounded-lg text-center">
+            <p className="text-sm font-bold text-redstone-red bg-redstone-red/10 p-3 rounded-2xl text-center shadow-lg">
               {error}
             </p>
           )}
 
           {view === 'pin-entry' && (
             <div className="space-y-4">
-              <p className="text-sm font-medium text-gray-600 text-center">
+              <p className="text-sm font-body font-bold text-theme-text/70 text-center">
                 Enter your 4-digit PIN to unlock adult settings
               </p>
               <div className="flex justify-center">
@@ -142,7 +142,7 @@ export function AdultModeModal({
                       {slots.map((slot, i) => (
                         <div
                           key={i}
-                          className="w-14 h-14 text-center text-2xl font-black border-4 border-black bg-white text-black rounded-xl flex items-center justify-center"
+                          className="w-14 h-14 text-center text-2xl font-black border-0 bg-white text-theme-text rounded-2xl flex items-center justify-center shadow-lg"
                         >
                           {slot.char}
                         </div>
@@ -153,7 +153,7 @@ export function AdultModeModal({
               </div>
               <button
                 onClick={handleVerifyPin}
-                className="w-full py-4 bg-green-500 text-white font-black uppercase border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:shadow-none transition-all"
+                className="w-full py-4 bg-theme-primary text-theme-text font-display font-black uppercase rounded-3xl shadow-lg hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)] active:scale-95 transition-all"
               >
                 {adultMode ? 'Lock Adult Mode' : 'Unlock Now'}
               </button>
@@ -163,7 +163,7 @@ export function AdultModeModal({
                   setView('pin-recovery');
                   setError('');
                 }}
-                className="w-full py-2 text-sm font-bold text-gray-500 hover:text-black transition-colors"
+                className="w-full py-2 text-sm font-bold text-theme-text/60 hover:text-theme-text transition-colors"
               >
                 Forgot PIN?
               </button>
@@ -172,43 +172,43 @@ export function AdultModeModal({
 
           {view === 'pin-setup' && (
             <div className="space-y-4">
-              <p className="text-sm font-medium text-gray-600 text-center">
+              <p className="text-sm font-body font-bold text-theme-text/70 text-center">
                 Set up your adult access credentials
               </p>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-black uppercase text-gray-500 mb-1 block">
+                  <label className="text-xs font-body font-bold uppercase text-theme-text/60 mb-2 block">
                     4-Digit PIN
                   </label>
                   <input
                     type="text"
                     maxLength={4}
                     placeholder="1234"
-                    className="w-full p-3 border-4 border-black bg-white text-black rounded-xl font-black text-xl"
+                    className="w-full p-4 border-0 bg-white text-theme-text rounded-2xl font-black text-xl shadow-lg placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
                     value={setupPin}
                     onChange={(e) => setSetupPin(e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-black uppercase text-gray-500 mb-1 block">
+                  <label className="text-xs font-body font-bold uppercase text-theme-text/60 mb-2 block">
                     Security Question
                   </label>
                   <input
                     type="text"
                     placeholder="e.g. First pet's name?"
-                    className="w-full p-3 border-4 border-black bg-white text-black rounded-xl font-bold"
+                    className="w-full p-4 border-0 bg-white text-theme-text rounded-2xl font-bold shadow-lg placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
                     value={setupQuestion}
                     onChange={(e) => setSetupQuestion(e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-black uppercase text-gray-500 mb-1 block">
+                  <label className="text-xs font-body font-bold uppercase text-theme-text/60 mb-2 block">
                     Answer
                   </label>
                   <input
                     type="text"
                     placeholder="e.g. Buddy"
-                    className="w-full p-3 border-4 border-black bg-white text-black rounded-xl font-bold"
+                    className="w-full p-4 border-0 bg-white text-theme-text rounded-2xl font-bold shadow-lg placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
                     value={setupAnswer}
                     onChange={(e) => setSetupAnswer(e.target.value)}
                   />
@@ -216,7 +216,7 @@ export function AdultModeModal({
               </div>
               <button
                 onClick={handleCompleteSetup}
-                className="w-full py-4 bg-green-500 text-white font-black uppercase border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:shadow-none transition-all"
+                className="w-full py-4 bg-theme-primary text-theme-text font-display font-black uppercase rounded-3xl shadow-lg hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)] active:scale-95 transition-all"
               >
                 Save & Unlock
               </button>
@@ -226,26 +226,26 @@ export function AdultModeModal({
           {view === 'pin-recovery' && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 justify-center mb-2">
-                <HelpCircle className="w-5 h-5 text-amber-600" />
-                <p className="text-sm font-medium text-gray-600">
+                <HelpCircle className="w-5 h-5 text-theme-primary" />
+                <p className="text-sm font-body font-bold text-theme-text/70">
                   Verify your identity
                 </p>
               </div>
               <div className="space-y-3">
-                <div className="p-3 bg-amber-50 border-2 border-amber-200 rounded-lg text-center italic font-medium text-amber-800">
+                <div className="p-4 bg-theme-primary/10 rounded-2xl text-center italic font-body font-bold text-theme-text shadow-lg">
                   {recoveryQuestion || 'Loading question...'}
                 </div>
                 <input
                   type="text"
                   placeholder="Your answer"
-                  className="w-full p-3 border-4 border-black bg-white text-black rounded-xl font-bold"
+                  className="w-full p-4 border-0 bg-white text-theme-text rounded-2xl font-bold shadow-lg placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
                   value={recoveryAnswer}
                   onChange={(e) => setRecoveryAnswer(e.target.value)}
                 />
               </div>
               <button
                 onClick={handleRecoverPin}
-                className="w-full py-4 bg-amber-500 text-white font-black uppercase border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:shadow-none transition-all"
+                className="w-full py-4 bg-theme-accent text-white font-display font-black uppercase rounded-3xl shadow-lg hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)] active:scale-95 transition-all"
               >
                 Verify Answer
               </button>
@@ -254,7 +254,7 @@ export function AdultModeModal({
                   setView('pin-entry');
                   setError('');
                 }}
-                className="w-full py-2 text-sm font-bold text-gray-500 hover:text-black transition-colors"
+                className="w-full py-2 text-sm font-bold text-theme-text/60 hover:text-theme-text transition-colors"
               >
                 Back to PIN
               </button>

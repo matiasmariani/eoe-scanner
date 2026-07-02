@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/hooks/useTheme';
+import { Astronaut, HumanCat } from 'react-kawaii';
 import { cn } from '@/lib/utils';
 
 interface SnackScoutProps {
@@ -11,37 +12,33 @@ interface SnackScoutProps {
 }
 
 /**
- * Snack Scout wordmark + mascot. The app's brand lockup.
+ * SnackBuddy wordmark + mascot. The app's brand lockup with our friendly astronaut companion.
  */
 export function SnackScout({ size = 'lg', className }: SnackScoutProps) {
   const { theme } = useTheme();
   const isLarge = size === 'lg';
-  const mascot = theme === 'kitty' ? '🕵️‍♀️' : '🕵️';
 
   return (
     <div
+      key={theme}
       className={cn(
-        'flex items-center justify-center bg-grass-green border-4 border-ink-navy rounded-full shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]',
+        'flex items-center justify-center bg-theme-primary rounded-full shadow-lg',
         isLarge ? 'gap-3 px-6 py-3 w-full' : 'gap-2 px-4 py-2',
         className,
       )}
     >
-      <span
-        className={isLarge ? 'text-3xl' : 'text-2xl'}
-        role="img"
-        aria-label={
-          theme === 'kitty' ? 'Female detective scout' : 'Detective scout'
-        }
-      >
-        {mascot}
-      </span>
+      {theme === 'minecraft' ? (
+        <Astronaut size={isLarge ? 80 : 60} mood="happy" color="#FF8C42" />
+      ) : (
+        <HumanCat size={isLarge ? 80 : 60} mood="happy" color="#79d461" />
+      )}
       <span
         className={cn(
-          'font-display font-black text-block-white tracking-tight',
+          'font-display font-black text-theme-text tracking-tight',
           isLarge ? 'text-3xl' : 'text-xl',
         )}
       >
-        Snack Scout
+        SnackBuddy
       </span>
     </div>
   );

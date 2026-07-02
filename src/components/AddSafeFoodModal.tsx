@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Loader } from 'lucide-react';
+import { Zap, Loader, Barcode, Camera, PenTool } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSafeFoods } from '@/hooks/useSafeFoods';
 import { useIsPremium } from '@/lib/premium';
@@ -127,17 +127,17 @@ export function AddSafeFoodModal({
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-theme-text border-4 border-theme-border shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-3xl w-full max-w-md p-6 space-y-4"
+        className="bg-theme-bg shadow-lg rounded-3xl w-full max-w-md p-6 space-y-4"
         role="dialog"
         aria-modal="true"
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-display font-black text-theme-bg">
+          <h2 className="text-2xl font-display font-black text-theme-text">
             Add Safe Food
           </h2>
           <button
             onClick={onClose}
-            className="w-10 h-10 flex items-center justify-center bg-theme-bg text-theme-text rounded-full"
+            className="w-10 h-10 flex items-center justify-center bg-theme-primary text-theme-text rounded-full shadow-lg hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)] transition-all"
             aria-label="Close"
           >
             ✕
@@ -146,7 +146,9 @@ export function AddSafeFoodModal({
 
         {/* Mode selector - all premium */}
         <div className="grid grid-cols-3 gap-2">
-          <button
+          <motion.button
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => {
               if (!isPremium) {
                 setShowPremiumGate(true);
@@ -157,15 +159,19 @@ export function AddSafeFoodModal({
               setError(null);
             }}
             className={cn(
-              'py-3 rounded-2xl border-4 border-theme-border font-display font-black text-sm transition-all',
+              'py-3 px-2 rounded-2xl font-display font-black text-sm transition-all flex flex-col items-center gap-1 shadow-lg',
               mode === 'barcode'
-                ? 'bg-theme-primary text-theme-border shadow-voxel'
-                : 'bg-theme-bg text-theme-text/60 hover:text-theme-text',
+                ? 'bg-theme-primary text-theme-text'
+                : 'bg-white text-theme-text/60 hover:text-theme-text hover:bg-theme-bg/50',
             )}
+            title="Type or scan a barcode"
           >
-            Barcode
-          </button>
-          <button
+            <Barcode className="w-5 h-5" aria-hidden="true" />
+            <span className="text-xs">Barcode</span>
+          </motion.button>
+          <motion.button
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => {
               if (!isPremium) {
                 setShowPremiumGate(true);
@@ -176,15 +182,19 @@ export function AddSafeFoodModal({
               setError(null);
             }}
             className={cn(
-              'py-3 rounded-2xl border-4 border-theme-border font-display font-black text-sm transition-all',
+              'py-3 px-2 rounded-2xl font-display font-black text-sm transition-all flex flex-col items-center gap-1 shadow-lg',
               mode === 'scan'
-                ? 'bg-theme-primary text-theme-border shadow-voxel'
-                : 'bg-theme-bg text-theme-text/60 hover:text-theme-text',
+                ? 'bg-theme-primary text-theme-text'
+                : 'bg-white text-theme-text/60 hover:text-theme-text hover:bg-theme-bg/50',
             )}
+            title="Use camera to scan"
           >
-            📷 Scan
-          </button>
-          <button
+            <Camera className="w-5 h-5" aria-hidden="true" />
+            <span className="text-xs">Scan</span>
+          </motion.button>
+          <motion.button
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => {
               if (!isPremium) {
                 setShowPremiumGate(true);
@@ -195,14 +205,16 @@ export function AddSafeFoodModal({
               setError(null);
             }}
             className={cn(
-              'py-3 rounded-2xl border-4 border-theme-border font-display font-black text-sm transition-all',
+              'py-3 px-2 rounded-2xl font-display font-black text-sm transition-all flex flex-col items-center gap-1 shadow-lg',
               mode === 'manual'
-                ? 'bg-theme-primary text-theme-border shadow-voxel'
-                : 'bg-theme-bg text-theme-text/60 hover:text-theme-text',
+                ? 'bg-theme-primary text-theme-text'
+                : 'bg-white text-theme-text/60 hover:text-theme-text hover:bg-theme-bg/50',
             )}
+            title="Type food details"
           >
-            ✏️ Manual
-          </button>
+            <PenTool className="w-5 h-5" aria-hidden="true" />
+            <span className="text-xs">Manual</span>
+          </motion.button>
         </div>
 
         {error && (
@@ -214,25 +226,40 @@ export function AddSafeFoodModal({
         {/* Barcode Entry Mode */}
         {mode === 'barcode' && !scannedProduct && (
           <div className="space-y-3">
-            <input
-              type="tel"
-              value={barcode}
-              onChange={(e) => setBarcode(e.target.value)}
-              onKeyDown={(e) =>
-                e.key === 'Enter' && !isPremium
-                  ? setShowPremiumGate(true)
-                  : handleScan()
+            <div>
+              <label
+                htmlFor="barcode-input"
+                className="block text-sm font-body font-bold text-theme-text mb-2 uppercase tracking-wide"
+              >
+                Barcode Number
+              </label>
+              <input
+                id="barcode-input"
+                type="tel"
+                value={barcode}
+                onChange={(e) => setBarcode(e.target.value)}
+                onKeyDown={(e) =>
+                  e.key === 'Enter' && !isPremium
+                    ? setShowPremiumGate(true)
+                    : handleScan()
+                }
+                placeholder="Enter barcode number"
+                disabled={!isPremium}
+                className={`w-full border-0 p-3 rounded-xl shadow-lg font-body font-bold focus:outline-none focus:ring-4 focus:ring-theme-accent ${
+                  isPremium
+                    ? 'bg-theme-bg text-theme-text placeholder:text-theme-text/40'
+                    : 'bg-theme-bg/50 text-theme-text/50 placeholder:text-theme-text/20 cursor-not-allowed'
+                }`}
+                autoFocus
+              />
+            </div>
+            <motion.button
+              whileHover={
+                !isLoading && isPremium && barcode.trim() ? { y: -2 } : {}
               }
-              placeholder="Enter barcode number"
-              disabled={!isPremium}
-              className={`w-full border-2 border-theme-border p-3 rounded-xl font-body font-bold focus:outline-none focus:ring-4 focus:ring-theme-accent ${
-                isPremium
-                  ? 'bg-theme-bg text-theme-text placeholder:text-theme-text/40'
-                  : 'bg-theme-bg/50 text-theme-text/50 placeholder:text-theme-text/20 cursor-not-allowed'
-              }`}
-              autoFocus
-            />
-            <button
+              whileTap={
+                !isLoading && isPremium && barcode.trim() ? { scale: 0.95 } : {}
+              }
               onClick={() => {
                 if (!isPremium) {
                   setShowPremiumGate(true);
@@ -241,10 +268,12 @@ export function AddSafeFoodModal({
                 handleScan();
               }}
               disabled={isLoading || !barcode.trim() || !isPremium}
-              className={`w-full py-3 border-4 border-theme-border rounded-2xl font-display font-black flex items-center justify-center gap-2 active:shadow-none active:translate-y-[2px] transition-all ${
-                isPremium
-                  ? 'bg-theme-primary text-theme-border shadow-voxel disabled:opacity-50'
-                  : 'bg-theme-primary/50 text-theme-border/50 cursor-not-allowed opacity-50'
+              className={`w-full py-3 rounded-2xl font-display font-black flex items-center justify-center gap-2 transition-all shadow-lg ${
+                isPremium && !isLoading && barcode.trim()
+                  ? 'bg-theme-primary text-theme-text hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)]'
+                  : isPremium
+                    ? 'bg-theme-primary text-theme-text opacity-50 cursor-not-allowed'
+                    : 'bg-theme-primary/50 text-theme-text/50 cursor-not-allowed opacity-50'
               }`}
             >
               {isLoading ? (
@@ -252,8 +281,8 @@ export function AddSafeFoodModal({
               ) : (
                 <Zap className="w-5 h-5" />
               )}
-              {isLoading ? 'Looking up...' : 'Lookup Product'}
-            </button>
+              {isLoading ? 'Looking up...' : 'Lookup'}
+            </motion.button>
           </div>
         )}
 
@@ -269,7 +298,7 @@ export function AddSafeFoodModal({
         {/* Scan Mode - Confirmation */}
         {mode === 'scan' && scannedProduct && (
           <div className="space-y-3">
-            <div className="p-4 bg-theme-bg border-2 border-theme-border rounded-xl">
+            <div className="p-4 bg-theme-bg rounded-xl shadow-lg">
               <p className="font-bold text-theme-text text-lg">
                 <strong>Name:</strong> {scannedProduct.name}
               </p>
@@ -280,60 +309,68 @@ export function AddSafeFoodModal({
               )}
             </div>
             <div className="flex gap-2">
-              <button
+              <motion.button
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setScannedProduct(null)}
-                className="flex-1 py-3 bg-theme-bg border-4 border-theme-border rounded-2xl font-display font-black text-theme-text active:shadow-none active:translate-y-[2px]"
+                className="flex-1 py-3 bg-theme-bg rounded-2xl font-display font-black text-theme-text shadow-lg"
               >
                 Scan Again
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleSaveScanned}
-                className="flex-1 py-3 bg-theme-primary border-4 border-theme-border rounded-2xl font-display font-black text-theme-border shadow-voxel active:shadow-none active:translate-y-[2px]"
+                className="flex-1 py-3 bg-theme-primary rounded-2xl font-display font-black text-theme-text shadow-lg"
               >
                 Save
-              </button>
+              </motion.button>
             </div>
           </div>
         )}
 
         {mode === 'barcode' && scannedProduct && (
           <div className="space-y-3">
-            <div className="p-4 bg-theme-bg border-2 border-theme-border rounded-xl">
+            <div className="p-4 bg-theme-bg rounded-xl shadow-lg">
               <p className="font-bold text-theme-text">
                 <strong>Name:</strong> {scannedProduct.name}
               </p>
               {scannedProduct.brand && (
-                <p className="text-sm text-theme-text/70">
+                <p className="text-sm text-theme-text/70 mt-1">
                   <strong>Brand:</strong> {scannedProduct.brand}
                 </p>
               )}
             </div>
             <div className="flex gap-2">
-              <button
+              <motion.button
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setScannedProduct(null)}
-                className="flex-1 py-3 bg-theme-bg border-4 border-theme-border rounded-2xl font-display font-black text-theme-text active:shadow-none active:translate-y-[2px]"
+                className="flex-1 py-3 bg-theme-bg rounded-2xl font-display font-black text-theme-text shadow-lg"
               >
-                Back
-              </button>
-              <button
+                ← Back
+              </motion.button>
+              <motion.button
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleSaveScanned}
-                className="flex-1 py-3 bg-theme-primary border-4 border-theme-border rounded-2xl font-display font-black text-theme-border shadow-voxel active:shadow-none active:translate-y-[2px]"
+                className="flex-1 py-3 bg-theme-primary rounded-2xl font-display font-black text-theme-text shadow-lg"
               >
                 Save
-              </button>
+              </motion.button>
             </div>
           </div>
         )}
 
         {/* Manual Entry Mode */}
         {mode === 'manual' && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div>
               <label
                 htmlFor="manual-name"
-                className="block text-sm font-body font-bold text-theme-bg mb-2"
+                className="block text-sm font-body font-bold text-theme-text mb-2"
               >
-                Food Name *
+                Food Name <span className="text-redstone-red">*</span>
               </label>
               <input
                 id="manual-name"
@@ -341,16 +378,16 @@ export function AddSafeFoodModal({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Apple"
-                className="w-full bg-theme-bg border-2 border-theme-border p-4 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
+                className="w-full bg-white border-0 p-4 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent shadow-lg bg-white"
                 autoFocus
               />
             </div>
             <div>
               <label
                 htmlFor="manual-brand"
-                className="block text-sm font-body font-bold text-theme-bg mb-2"
+                className="block text-sm font-body font-bold text-theme-text mb-2"
               >
-                Brand (optional)
+                Brand <span className="text-theme-text/40">(optional)</span>
               </label>
               <input
                 id="manual-brand"
@@ -358,31 +395,33 @@ export function AddSafeFoodModal({
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
                 placeholder="e.g., Granny Smith"
-                className="w-full bg-theme-bg border-2 border-theme-border p-4 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
+                className="w-full bg-white border-0 p-4 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent shadow-lg bg-white"
               />
             </div>
             <div>
               <label
                 htmlFor="manual-notes"
-                className="block text-sm font-body font-bold text-theme-bg mb-2"
+                className="block text-sm font-body font-bold text-theme-text mb-2"
               >
-                Notes (optional)
+                Notes <span className="text-theme-text/40">(optional)</span>
               </label>
               <textarea
                 id="manual-notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="e.g., Always washed before eating"
-                className="w-full bg-theme-bg border-2 border-theme-border p-4 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent resize-none"
+                className="w-full bg-white border-2 border-theme-border p-4 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent resize-none shadow-lg"
                 rows={3}
               />
             </div>
-            <button
+            <motion.button
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.95 }}
               onClick={handleSaveManual}
-              className="w-full py-4 bg-theme-primary border-4 border-theme-border rounded-2xl font-display font-black text-theme-border shadow-voxel active:shadow-none active:translate-y-[2px]"
+              className="w-full py-4 bg-theme-primary rounded-2xl font-display font-black text-theme-text shadow-lg hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)]"
             >
               Save Food
-            </button>
+            </motion.button>
           </div>
         )}
 

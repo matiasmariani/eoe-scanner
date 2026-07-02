@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Folder, IceCream } from 'react-kawaii';
 import { Plus, Trash2, Mail, Copy, Check, Edit2, X } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
 import { useSafeFoods } from '@/hooks/useSafeFoods';
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { useIsPremium } from '@/lib/premium';
@@ -22,6 +24,9 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
   const { safeFoods, deleteSafeFood, updateSafeFood } = useSafeFoods(profileId);
   const { activeProfile, allergies, adultMode } = useAllergySettings();
   const isPremium = useIsPremium();
+  const { theme } = useTheme();
+
+  const folderColor = theme === 'kitty' ? '#ff69b4' : '#4dfff3';
   const [showAddModal, setShowAddModal] = useState(false);
   const [showPremiumGate, setShowPremiumGate] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -119,12 +124,12 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
   };
 
   return (
-    <div className="min-h-screen bg-theme-bg flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-theme-bg via-theme-bg to-theme-bg/95 flex flex-col">
       <header className="w-full max-w-md mx-auto px-6 py-8 flex items-center justify-between gap-4">
         <SnackScout size="sm" />
         <button
           onClick={onClose}
-          className="p-3 bg-theme-text rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-theme-primary text-theme-primary hover:bg-theme-primary hover:text-theme-text transition-all active:scale-90"
+          className="p-3 bg-theme-text rounded-full shadow-lg text-theme-primary hover:bg-theme-primary hover:text-theme-text transition-all active:scale-90"
           aria-label="Close safe foods"
         >
           <X className="w-6 h-6" aria-hidden="true" />
@@ -134,6 +139,17 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
       <div className="flex-1 w-full max-w-md mx-auto px-4 pb-16 flex flex-col">
         {/* Title Section */}
         <div className="text-center mb-6">
+          <motion.div
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="mb-4 flex justify-center"
+          >
+            {safeFoods.length === 0 ? (
+              <IceCream size={80} mood="happy" color="#ffde00" />
+            ) : (
+              <Folder size={80} mood="happy" color={folderColor} />
+            )}
+          </motion.div>
           <h2 className="text-3xl font-display font-black text-theme-text">
             Safe Foods
           </h2>
@@ -146,29 +162,35 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
 
         {/* Action Buttons */}
         <div className="space-y-2 pb-4">
-          <button
+          <motion.button
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setShowAddModal(true)}
-            className="w-full flex items-center justify-center gap-2 bg-theme-primary text-theme-border border-4 border-theme-border px-6 py-4 rounded-2xl font-display font-black shadow-voxel active:shadow-none active:translate-y-[2px] transition-all hover:-translate-y-[2px]"
+            className="w-full flex items-center justify-center gap-2 bg-theme-primary text-theme-text px-6 py-4 rounded-2xl font-display font-black shadow-lg hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)] transition-all"
             title="Add a new safe food"
             aria-label="Add safe food"
           >
             <Plus className="w-6 h-6" aria-hidden="true" />
             Add Safe Food
-          </button>
+          </motion.button>
           {safeFoods.length > 0 && (
             <div className="flex gap-2">
-              <button
+              <motion.button
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleEmail}
-                className="flex-1 flex items-center justify-center gap-2 bg-theme-accent text-theme-bg border-4 border-theme-border px-4 py-3 rounded-2xl font-display font-black shadow-voxel active:shadow-none active:translate-y-[2px] transition-all hover:-translate-y-[2px]"
+                className="flex-1 flex items-center justify-center gap-2 bg-theme-accent text-theme-bg px-4 py-3 rounded-2xl font-display font-black shadow-lg hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)] transition-all"
                 title="Open email client with pre-filled allergen list"
                 aria-label="Email safe foods and allergens"
               >
                 <Mail className="w-6 h-6" aria-hidden="true" />
                 Email
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleCopy}
-                className="flex-1 flex items-center justify-center gap-2 bg-theme-text text-theme-bg border-4 border-theme-border px-4 py-3 rounded-2xl font-display font-black shadow-voxel active:shadow-none active:translate-y-[2px] transition-all hover:-translate-y-[2px]"
+                className="flex-1 flex items-center justify-center gap-2 bg-white text-theme-text px-4 py-3 rounded-2xl font-display font-black shadow-lg hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)] transition-all"
                 title="Copy allergen list to clipboard"
                 aria-label={
                   copied ? 'Copied to clipboard' : 'Copy to clipboard'
@@ -180,7 +202,7 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
                   <Copy className="w-6 h-6" aria-hidden="true" />
                 )}
                 {copied ? 'Copied' : 'Copy'}
-              </button>
+              </motion.button>
             </div>
           )}
         </div>
@@ -190,13 +212,15 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
           {safeFoods.length === 0 ? (
             <div className="flex items-center justify-center min-h-[360px] text-center">
               <div>
-                <span
+                <motion.div
+                  animate={{ y: [0, -12, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
                   className="text-7xl mb-4 block"
                   role="img"
-                  aria-label="Empty"
+                  aria-label="Empty shelf"
                 >
                   📚
-                </span>
+                </motion.div>
                 <h3 className="text-2xl font-display font-black text-theme-text mb-2">
                   No Safe Foods Yet
                 </h3>
@@ -216,7 +240,8 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.9, opacity: 0 }}
-                    className="bg-theme-text border-4 border-theme-border rounded-2xl p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] list-none"
+                    whileHover={{ y: -2 }}
+                    className="bg-theme-primary rounded-2xl p-4 shadow-lg hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)] list-none transition-shadow"
                   >
                     {editingId === food.id ? (
                       // Edit Mode
@@ -224,7 +249,7 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
                         <div>
                           <label
                             htmlFor={`edit-name-${food.id}`}
-                            className="block text-xs font-body font-bold text-theme-bg mb-1 uppercase tracking-wide"
+                            className="block text-xs font-body font-bold text-theme-text/60 mb-1 uppercase tracking-wide"
                           >
                             Name
                           </label>
@@ -233,14 +258,14 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
                             type="text"
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
-                            className="w-full bg-theme-bg border-2 border-theme-border p-3 rounded-xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
+                            className="w-full bg-white border-0 p-3 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent shadow-lg"
                             autoFocus
                           />
                         </div>
                         <div>
                           <label
                             htmlFor={`edit-brand-${food.id}`}
-                            className="block text-xs font-body font-bold text-theme-bg mb-1 uppercase tracking-wide"
+                            className="block text-xs font-body font-bold text-theme-text/60 mb-1 uppercase tracking-wide"
                           >
                             Brand (optional)
                           </label>
@@ -249,13 +274,13 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
                             type="text"
                             value={editBrand}
                             onChange={(e) => setEditBrand(e.target.value)}
-                            className="w-full bg-theme-bg border-2 border-theme-border p-3 rounded-xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
+                            className="w-full bg-white border-0 p-3 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent shadow-lg"
                           />
                         </div>
                         <div>
                           <label
                             htmlFor={`edit-notes-${food.id}`}
-                            className="block text-xs font-body font-bold text-theme-bg mb-1 uppercase tracking-wide"
+                            className="block text-xs font-body font-bold text-theme-text/60 mb-1 uppercase tracking-wide"
                           >
                             Notes (optional)
                           </label>
@@ -263,20 +288,20 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
                             id={`edit-notes-${food.id}`}
                             value={editNotes}
                             onChange={(e) => setEditNotes(e.target.value)}
-                            className="w-full bg-theme-bg border-2 border-theme-border p-3 rounded-xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent resize-none"
+                            className="w-full bg-white border-0 p-3 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent shadow-lg resize-none"
                             rows={2}
                           />
                         </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => saveEdit(food.id)}
-                            className="flex-1 py-3 bg-theme-primary border-4 border-theme-border rounded-xl font-display font-black text-theme-border shadow-voxel active:shadow-none active:translate-y-[2px] transition-all"
+                            className="flex-1 py-3 bg-white rounded-2xl font-display font-black text-theme-text shadow-lg hover:shadow-[0_8px_16px_rgba(0,0,0,0.15)] active:scale-95 transition-all"
                           >
                             Save
                           </button>
                           <button
                             onClick={cancelEdit}
-                            className="flex-1 py-3 bg-theme-bg border-4 border-theme-border rounded-xl font-display font-black text-theme-text active:shadow-none active:translate-y-[2px] transition-all"
+                            className="flex-1 py-3 bg-white rounded-2xl font-display font-black text-theme-text shadow-lg hover:shadow-[0_8px_16px_rgba(0,0,0,0.15)] active:scale-95 transition-all"
                           >
                             Cancel
                           </button>
@@ -286,20 +311,20 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
                       // View Mode
                       <div className="flex items-start gap-3">
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-black text-xl text-theme-bg truncate">
+                          <h3 className="font-black text-xl text-theme-text truncate">
                             {food.name}
                           </h3>
                           {food.brand && (
-                            <p className="text-sm text-theme-bg/80 truncate mt-0.5">
+                            <p className="text-sm text-theme-text/80 truncate mt-0.5">
                               {food.brand}
                             </p>
                           )}
                           {food.notes && (
-                            <p className="text-xs text-theme-bg/70 italic mt-1.5 line-clamp-2">
+                            <p className="text-xs text-theme-text/70 italic mt-1.5 line-clamp-2">
                               &quot;{food.notes}&quot;
                             </p>
                           )}
-                          <p className="text-xs text-theme-bg/60 mt-2 font-bold uppercase tracking-wide">
+                          <p className="text-xs text-theme-text/60 mt-2 font-bold uppercase tracking-wide">
                             {food.source === 'scanned'
                               ? '📷 Scanned'
                               : '✏️ Manual'}
@@ -310,7 +335,7 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
                             {food.source === 'manual' && (
                               <button
                                 onClick={() => startEdit(food)}
-                                className="w-10 h-10 flex items-center justify-center bg-theme-bg border-2 border-theme-border text-theme-text rounded-full hover:bg-theme-accent hover:text-theme-bg transition-all active:scale-95"
+                                className="w-10 h-10 flex items-center justify-center bg-white text-theme-text rounded-full hover:bg-theme-accent hover:text-white shadow-lg transition-all active:scale-95"
                                 aria-label={`Edit ${food.name}`}
                                 title="Edit"
                               >
@@ -319,7 +344,7 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
                             )}
                             <button
                               onClick={() => confirmDelete(food)}
-                              className="w-10 h-10 flex items-center justify-center bg-redstone-red text-white rounded-full hover:bg-redstone-red/80 transition-all active:scale-95"
+                              className="w-10 h-10 flex items-center justify-center bg-redstone-red text-white rounded-full hover:bg-redstone-red/80 shadow-lg transition-all active:scale-95"
                               aria-label={`Delete ${food.name}`}
                               title="Delete"
                             >

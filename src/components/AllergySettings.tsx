@@ -76,13 +76,13 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
         initial={{ opacity: 1, scale: 0.9, rotate: -2 }}
         animate={{ opacity: 1, scale: 1, rotate: 0 }}
         exit={{ opacity: 0, scale: 0.9, rotate: 2 }}
-        className="bg-theme-text border-4 border-theme-border shadow-voxel p-8 max-w-md w-full max-h-[90vh] overflow-y-auto rounded-[3rem]"
+        className="bg-theme-bg shadow-lg p-8 max-w-md w-full max-h-[90vh] overflow-y-auto rounded-3xl"
         role="document"
       >
         <div className="flex items-center justify-between mb-8">
           <h2
             id="allergy-settings-title"
-            className="text-4xl font-display font-black text-theme-bg leading-tight uppercase tracking-tighter"
+            className="text-4xl font-display font-black text-theme-text leading-tight uppercase tracking-tighter"
           >
             My Allergies
           </h2>
@@ -90,19 +90,18 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
             onClick={() =>
               setModalConfig({ isOpen: true, type: 'RESET_ALLERGIES' })
             }
-            className="bg-theme-bg border-4 border-theme-border px-6 py-2 rounded-full shadow-voxel hover:-translate-y-[1px] active:shadow-none transition-all"
+            className="bg-theme-primary px-6 py-2 rounded-full shadow-lg hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)] active:shadow-md transition-all text-theme-text font-black text-xs uppercase"
             aria-label="Reset all allergies"
+            title="Reset"
           >
-            <span className="text-xs font-black uppercase text-redstone-red">
-              RESET
-            </span>
+            RESET
           </button>
         </div>
 
         {/* Profile Switcher */}
         <div className="mb-10 space-y-4">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-theme-bg font-display font-black text-xl uppercase tracking-wide">
+            <span className="text-theme-text font-display font-black text-xl uppercase tracking-wide">
               Who is scanning?
             </span>
             {!isCreatingProfile && (
@@ -114,10 +113,10 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
                   }
                   setIsCreatingProfile(true);
                 }}
-                className="p-2 bg-theme-accent border-2 border-theme-border rounded-lg shadow-voxel hover:-translate-y-[1px] active:translate-y-[1px] transition-all"
+                className="p-3 bg-theme-primary rounded-lg shadow-lg hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)] active:shadow-md transition-all"
                 aria-label="Add new person"
               >
-                <UserPlus className="w-5 h-5 text-theme-border" />
+                <UserPlus className="w-6 h-6 text-theme-text" />
               </button>
             )}
           </div>
@@ -128,10 +127,10 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
                 <button
                   onClick={() => setActiveProfileId(profile.id)}
                   className={cn(
-                    'flex items-center gap-2 px-4 py-2 border-2 rounded-2xl transition-all active:translate-x-[1px] active:translate-y-[1px] shadow-voxel',
+                    'flex items-center gap-2 px-5 py-3 rounded-2xl transition-all shadow-lg',
                     activeProfile?.id === profile.id
-                      ? 'bg-theme-bg text-theme-text border-theme-border'
-                      : 'bg-theme-bg/40 text-theme-bg border-theme-border/40 hover:border-theme-border/60',
+                      ? 'bg-theme-primary text-theme-text'
+                      : 'bg-white text-theme-text hover:bg-theme-bg/50',
                   )}
                 >
                   <span className="text-xl">{profile.emoji}</span>
@@ -149,7 +148,7 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
                         profile: { id: profile.id, name: profile.name },
                       });
                     }}
-                    className="absolute -top-2 -right-2 p-2 bg-redstone-red text-theme-text rounded-full border-2 border-theme-border shadow-voxel"
+                    className="absolute -top-2 -right-2 p-2 bg-redstone-red text-white rounded-full border-2 border-theme-border shadow-lg"
                     aria-label={`Delete ${profile.name}`}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -167,13 +166,13 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-theme-bg border-4 border-theme-border p-4 rounded-2xl space-y-3">
+                <div className="bg-white p-4 rounded-2xl space-y-3 shadow-lg">
                   <input
                     type="text"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="Name"
-                    className="w-full bg-theme-bg border-2 border-theme-border p-4 rounded-xl font-body font-bold text-theme-text placeholder:text-theme-text/40"
+                    className="w-full bg-theme-bg border-0 p-4 rounded-xl font-body font-bold text-theme-text placeholder:text-theme-text/40 shadow-lg"
                     autoFocus
                   />
                   <div className="overflow-x-auto -mx-1 px-1">
@@ -184,10 +183,10 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
                           type="button"
                           onClick={() => setNewEmoji(e)}
                           className={cn(
-                            'text-xl p-1.5 rounded-lg border-2 transition-all shrink-0 active:scale-95',
+                            'text-xl p-1.5 rounded-lg transition-all shrink-0 active:scale-95 shadow-lg',
                             newEmoji === e
-                              ? 'bg-theme-accent border-theme-border scale-110'
-                              : 'border-transparent hover:border-theme-border/40',
+                              ? 'bg-theme-accent scale-110'
+                              : 'bg-theme-bg/50 hover:bg-theme-bg',
                           )}
                           aria-label={e}
                           aria-pressed={newEmoji === e}
@@ -200,13 +199,13 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
                   <div className="flex gap-2">
                     <button
                       onClick={handleCreate}
-                      className="flex-1 bg-theme-accent border-2 border-theme-border py-2 rounded-xl text-sm font-black uppercase text-theme-border shadow-voxel hover:-translate-y-[1px] active:translate-y-[1px] transition-all"
+                      className="flex-1 bg-theme-primary py-2 rounded-xl text-sm font-black uppercase text-theme-text shadow-lg hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)] transition-all"
                     >
                       Create
                     </button>
                     <button
                       onClick={() => setIsCreatingProfile(false)}
-                      className="flex-1 bg-theme-bg border-2 border-theme-border py-2 rounded-xl text-sm font-black uppercase text-theme-text shadow-voxel hover:-translate-y-[1px] active:translate-y-[1px] transition-all"
+                      className="flex-1 bg-theme-bg py-2 rounded-xl text-sm font-black uppercase text-theme-text shadow-lg hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)] transition-all"
                     >
                       Cancel
                     </button>
@@ -217,10 +216,10 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
           </AnimatePresence>
         </div>
 
-        <div className="border-t-4 border-theme-border/30 pt-8 mb-8">
-          <p className="text-theme-bg/80 font-body font-bold mb-8 leading-relaxed text-xl px-2 border-l-4 border-theme-accent pl-4">
+        <div className="border-t-2 border-theme-border/30 pt-8 mb-8">
+          <div className="text-theme-text font-body font-bold mb-8 leading-relaxed text-lg px-4 py-3 border-l-4 border-theme-accent bg-theme-primary/20 rounded-xl">
             Pick the allergen you need to watch out for!
-          </p>
+          </div>
 
           <div
             className="space-y-8 mb-10"
@@ -242,10 +241,10 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
 
         <button
           onClick={onClose}
-          className="w-full bg-theme-primary border-4 border-theme-border py-7 rounded-[2.5rem] text-3xl font-display font-black shadow-voxel active:shadow-none hover:-translate-y-[2px] transition-all"
+          className="w-full bg-theme-primary py-7 rounded-3xl text-3xl font-display font-black shadow-lg active:shadow-md hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)] transition-all text-theme-text"
           aria-label="Save and close allergy settings"
         >
-          GOT IT!
+          DONE!
         </button>
       </motion.div>
       {showProfileGate && (
