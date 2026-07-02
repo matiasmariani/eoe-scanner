@@ -160,7 +160,35 @@ export class DBService {
     return db.history.delete(barcode);
   }
 
+  async getAdultPin(): Promise<string | undefined> {
+    const record = await db.settings.get('adultPin');
+    return record?.value;
+  }
+
+  async saveAdultPin(pin: string) {
+    return db.settings.put({ id: 'adultPin', value: pin });
+  }
+
+  async getAdultSecurityQuestion(): Promise<string | undefined> {
+    const record = await db.settings.get('adultSecurityQuestion');
+    return record?.value;
+  }
+
+  async saveAdultSecurityQuestion(question: string) {
+    return db.settings.put({ id: 'adultSecurityQuestion', value: question });
+  }
+
+  async getAdultSecurityAnswer(): Promise<string | undefined> {
+    const record = await db.settings.get('adultSecurityAnswer');
+    return record?.value;
+  }
+
+  async saveAdultSecurityAnswer(answer: string) {
+    return db.settings.put({ id: 'adultSecurityAnswer', value: answer });
+  }
+
   // Profile methods
+
   async getActiveProfileId(): Promise<string | undefined> {
     const record = await db.settings.get('activeProfileId');
     return record?.value;

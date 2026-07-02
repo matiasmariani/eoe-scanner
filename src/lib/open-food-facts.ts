@@ -165,9 +165,10 @@ async function fetchRawProduct(barcode: string): Promise<RawProduct> {
     }
 
     const json = await response.json();
+    console.log('OFF API raw response:', JSON.stringify(json, null, 2));
     const data = OpenFoodFactsResponseSchema.safeParse(json);
-
     if (!data.success) {
+      console.log('OFF Schema validation error:', data.error);
       logError('open-food-facts-validation', data.error);
       return { notFound: true, error: ERROR_MSG };
     }

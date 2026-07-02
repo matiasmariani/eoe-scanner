@@ -4,10 +4,12 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import { useHistory } from '@/hooks/useHistory';
+import { useAllergySettings } from '@/contexts/AllergyContext';
 import { SnackScout } from '@/components/SnackScout';
 
 export function HistoryView({ onClose }: { onClose: () => void }) {
   const { history, removeHistory } = useHistory();
+  const { adultMode } = useAllergySettings();
   const [filter, setFilter] = React.useState<'all' | 'good' | 'bad'>('all');
 
   if (history === undefined) {
@@ -125,16 +127,18 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                           <AlertCircle className="w-5 h-5 text-redstone-red" />
                         </div>
                       )}
-                      <button
-                        onClick={() =>
-                          item.barcode !== undefined &&
-                          removeHistory(item.barcode)
-                        }
-                        className="w-8 h-8 flex items-center justify-center text-redstone-red hover:bg-redstone-red/10 rounded-lg transition-colors"
-                        aria-label="Remove from history"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
+                      {adultMode && (
+                        <button
+                          onClick={() =>
+                            item.barcode !== undefined &&
+                            removeHistory(item.barcode)
+                          }
+                          className="w-8 h-8 flex items-center justify-center text-redstone-red hover:bg-redstone-red/10 rounded-lg transition-colors"
+                          aria-label="Remove from history"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </motion.li>

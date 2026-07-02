@@ -18,6 +18,8 @@ export interface AllergyContextType {
   profiles: Profile[];
   /** False until the stored active-profile pointer has been resolved on mount. */
   isHydrated: boolean;
+  adultMode: boolean;
+  setAdultMode: (mode: boolean) => void;
   toggleAllergy: (allergy: Allergy) => Promise<void>;
   clearAllergies: () => Promise<void>;
   setActiveProfileId: (id: string) => Promise<void>;
@@ -44,6 +46,7 @@ export function AllergyProvider({ children }: { children: ReactNode }) {
     null,
   );
   const [isHydrated, setIsHydrated] = useState(false);
+  const [adultMode, setAdultModeState] = useState(false);
 
   // Live query is the single source of truth for profile data.
   const profiles = useLiveQuery(() => db.profiles.toArray(), []);
@@ -85,7 +88,12 @@ export function AllergyProvider({ children }: { children: ReactNode }) {
     try {
       const profile = await dbService.getProfile(activeProfileId);
       if (!profile) return;
-      const next = profile.allergies.includes(allergy)
+      const isRemoving = profile.allergies.includes(allergy);
+      if (isRemoving && !adultMode) {
+        console.warn('Adult mode required to remove allergens');
+        return;
+      }
+      const next = isRemoving
         ? profile.allergies.filter((a) => a !== allergy)
         : [...profile.allergies, allergy];
       await dbService.saveProfile({ ...profile, allergies: next });
@@ -95,7 +103,7 @@ export function AllergyProvider({ children }: { children: ReactNode }) {
   };
 
   const clearAllergies = async () => {
-    if (!activeProfileId) return;
+    if (!activeProfileId || !adultMode) return;
     try {
       const profile = await dbService.getProfile(activeProfileId);
       if (!profile) return;
@@ -129,6 +137,10 @@ export function AllergyProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteProfile = async (id: string) => {
+    if (!adultMode) {
+      console.warn('Adult mode required to delete profiles');
+      return;
+    }
     await dbService.deleteProfile(id);
     if (activeProfileId !== id) return;
 
@@ -142,6 +154,10 @@ export function AllergyProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const setAdultMode = (mode: boolean) => {
+    setAdultModeState(mode);
+  };
+
   return (
     <AllergyContext.Provider
       value={{
@@ -149,6 +165,8 @@ export function AllergyProvider({ children }: { children: ReactNode }) {
         activeProfile,
         profiles: profiles ?? [],
         isHydrated,
+        adultMode,
+        setAdultMode,
         toggleAllergy,
         clearAllergies,
         setActiveProfileId,

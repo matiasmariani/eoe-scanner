@@ -9,6 +9,8 @@ import {
   ShieldCheck,
   Album,
   History,
+  UserRound,
+  Check,
 } from 'lucide-react';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { Scanner } from '@/components/Scanner';
@@ -21,18 +23,23 @@ import { ResultView } from '@/components/ResultView';
 import { SnackScout } from '@/components/SnackScout';
 import { SnackCollection } from '@/components/SnackCollection';
 import { HistoryView } from '@/components/HistoryView';
+import { AdultModeModal } from '@/components/AdultModeModal';
+import { useAllergySettings } from '@/contexts/AllergyContext';
 import { useProductLookup } from '@/hooks/useProductLookup';
 import { useHistory } from '@/hooks/useHistory';
 import { useSnackCollection } from '@/hooks/useSnackCollection';
 import { PremiumGate } from '@/components/PremiumGate';
 import { useIsPremium } from '@/lib/premium';
+import { cn } from '@/lib/utils';
 
 export function HomeClient() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isAdultModalOpen, setIsAdultModalOpen] = useState(false);
   const [showHistoryGate, setShowHistoryGate] = useState(false);
   const isPremium = useIsPremium();
+  const { adultMode } = useAllergySettings();
 
   const {
     mode,
@@ -286,6 +293,27 @@ export function HomeClient() {
       )}
 
       <ProfileSetupModal />
+
+      <AdultModeModal
+        isOpen={isAdultModalOpen}
+        onClose={() => setIsAdultModalOpen(false)}
+      />
+
+      <motion.button
+        onClick={() => setIsAdultModalOpen(true)}
+        className={cn(
+          'fixed bottom-24 right-6 w-16 h-16 z-40 rounded-full border-4 border-black shadow-voxel flex items-center justify-center active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all hover:-translate-y-[2px]',
+          'bg-theme-primary text-theme-bg',
+          'data-[theme=kitty]:bg-bow-red data-[theme=kitty]:text-white',
+        )}
+        aria-label="Adult settings"
+      >
+        {adultMode ? (
+          <Check className="w-8 h-8" aria-hidden="true" />
+        ) : (
+          <UserRound className="w-8 h-8" aria-hidden="true" />
+        )}
+      </motion.button>
 
       {/* Disclaimer footer — always visible */}
       <footer className="fixed bottom-0 left-0 right-0 z-30 flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 px-4 py-2 bg-theme-bg/95 backdrop-blur-sm border-t border-theme-border/10 text-center">
