@@ -23,14 +23,14 @@ export function SnackScout({ size = 'lg', className }: SnackScoutProps) {
       key={theme}
       className={cn(
         'flex items-center justify-center bg-theme-primary rounded-full shadow-lg',
-        isLarge ? 'gap-3 px-6 py-3 w-full' : 'gap-2 px-4 py-2',
+        isLarge ? 'gap-[15px] px-6 py-3 w-full' : 'gap-[15px] px-4 py-2',
         className,
       )}
     >
       {theme === 'minecraft' ? (
-        <Astronaut size={isLarge ? 80 : 60} mood="happy" color="#FF8C42" />
+        <Astronaut size={isLarge ? 96 : 72} mood="happy" color="#FF8C42" />
       ) : (
-        <HumanCat size={isLarge ? 80 : 60} mood="happy" color="#79d461" />
+        <HumanCat size={isLarge ? 96 : 72} mood="happy" color="#79d461" />
       )}
       <span
         className={cn(
@@ -38,7 +38,16 @@ export function SnackScout({ size = 'lg', className }: SnackScoutProps) {
           isLarge ? 'text-3xl' : 'text-xl',
         )}
       >
-        SnackBuddy
+        Snack
+        <span className="relative inline-block text-[#D9534F]">
+          Buddy
+          <span
+            className="absolute top-[1px] -right-3 text-base leading-none"
+            aria-hidden="true"
+          >
+            🍎
+          </span>
+        </span>
       </span>
     </div>
   );

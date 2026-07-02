@@ -226,7 +226,8 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
                 </h3>
                 <p className="text-lg text-theme-text/60 font-bold px-6">
                   Tap &quot;Add Safe Food&quot; to create a trusted foods list
-                  parents will love.
+                  parents will love. You can even email your safe foods and
+                  allergens to family, friends, and teachers.
                 </p>
               </div>
             </div>

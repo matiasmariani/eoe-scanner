@@ -26,8 +26,19 @@ import {
 import { getAllergenDisplay } from '@/lib/allergen-utils';
 
 const MAX_LIVES = 3;
-const ROUND_SECONDS = 45;
+const LEVEL_SECONDS = 22;
 const GRID_CELLS = 9;
+
+// Per-level difficulty. Levels get faster and busier, bottoming/topping out
+// around level 8 so it stays hard but playable. `levelIndex` is 0-based.
+function levelDifficulty(levelIndex: number) {
+  return {
+    maxConcurrent: Math.min(2 + Math.floor(levelIndex / 2), 5), // 2 → 5
+    baseLifetime: Math.max(1900 - levelIndex * 180, 650), // 1900 → 650ms
+    baseInterval: Math.max(1150 - levelIndex * 110, 470), // 1150 → 470ms
+    unsafeBias: Math.min(0.3 + levelIndex * 0.06, 0.65), // more decoys later
+  };
+}
 
 type Phase = 'intro' | 'playing' | 'gameOver';
 
@@ -59,8 +70,10 @@ export function SnackAttackGame({ profileId, onExit }: SnackAttackGameProps) {
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
   const [lives, setLives] = useState(MAX_LIVES);
-  const [timeLeft, setTimeLeft] = useState(ROUND_SECONDS);
+  const [level, setLevel] = useState(1);
+  const [timeLeft, setTimeLeft] = useState(LEVEL_SECONDS);
   const [toast, setToast] = useState<string | null>(null);
+  const [levelBanner, setLevelBanner] = useState<string | null>(null);
   const [burst, setBurst] = useState<Burst | null>(null);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
 
@@ -69,9 +82,10 @@ export function SnackAttackGame({ profileId, onExit }: SnackAttackGameProps) {
   // cleanup() reliably stops the game on unmount, close, or game-over.
   const deckRef = useRef<GameCard[]>([]);
   const snacksRef = useRef<ActiveSnack[]>([]);
-  const timeLeftRef = useRef(ROUND_SECONDS);
+  const timeLeftRef = useRef(LEVEL_SECONDS);
   const streakRef = useRef(0);
   const livesRef = useRef(MAX_LIVES);
+  const levelRef = useRef(1);
   const phaseRef = useRef<Phase>('intro');
   const snackIdRef = useRef(0);
   const burstIdRef = useRef(0);
@@ -79,6 +93,7 @@ export function SnackAttackGame({ profileId, onExit }: SnackAttackGameProps) {
   const spawnTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const countdown = useRef<ReturnType<typeof setInterval> | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const bannerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const recordedRef = useRef(false);
 
   useEffect(() => {
@@ -93,6 +108,9 @@ export function SnackAttackGame({ profileId, onExit }: SnackAttackGameProps) {
   useEffect(() => {
     phaseRef.current = phase;
   }, [phase]);
+  useEffect(() => {
+    levelRef.current = level;
+  }, [level]);
 
   const availableCards = useMemo(
     () => (history ? buildDeck(history, allergies) : []),
@@ -102,10 +120,26 @@ export function SnackAttackGame({ profileId, onExit }: SnackAttackGameProps) {
   const clearAllTimers = () => {
     if (spawnTimer.current) clearTimeout(spawnTimer.current);
     if (countdown.current) clearInterval(countdown.current);
+    if (bannerTimer.current) clearTimeout(bannerTimer.current);
     removalTimers.current.forEach((t) => clearTimeout(t));
     removalTimers.current.clear();
     spawnTimer.current = null;
     countdown.current = null;
+  };
+
+  // Advance to the next (faster, busier) level, carrying hearts and score.
+  const nextLevel = () => {
+    removalTimers.current.forEach((t) => clearTimeout(t));
+    removalTimers.current.clear();
+    setSnacks([]);
+    const newLevel = levelRef.current + 1;
+    levelRef.current = newLevel;
+    setLevel(newLevel);
+    timeLeftRef.current = LEVEL_SECONDS;
+    setTimeLeft(LEVEL_SECONDS);
+    setLevelBanner(`Level ${newLevel}!`);
+    if (bannerTimer.current) clearTimeout(bannerTimer.current);
+    bannerTimer.current = setTimeout(() => setLevelBanner(null), 1300);
   };
 
   const endGame = () => {
@@ -116,22 +150,29 @@ export function SnackAttackGame({ profileId, onExit }: SnackAttackGameProps) {
 
   const spawnOne = () => {
     if (phaseRef.current !== 'playing') return;
+    const diff = levelDifficulty(levelRef.current - 1);
+    // Within-level ramp shaves a little more off speed as the level's clock
+    // runs down, layered on top of the per-level base.
     const progress = Math.min(
-      (ROUND_SECONDS - timeLeftRef.current) / ROUND_SECONDS,
+      (LEVEL_SECONDS - timeLeftRef.current) / LEVEL_SECONDS,
       1,
     );
-    const maxConcurrent = 1 + Math.floor(progress * 2); // 1 → 3
-    const lifetime = 2000 - progress * 1000; // 2000 → 1000ms
+    const lifetime = diff.baseLifetime * (1 - progress * 0.15);
     const current = snacksRef.current;
-    if (current.length < maxConcurrent) {
+    if (current.length < diff.maxConcurrent) {
       const occupied = new Set(current.map((s) => s.cell));
       const free: number[] = [];
       for (let i = 0; i < GRID_CELLS; i++) {
         if (!occupied.has(i)) free.push(i);
       }
       const deck = deckRef.current;
+      // Bias toward unsafe "decoy" snacks at higher levels so the player has
+      // to read faster, not just tap faster. Falls back to any snack.
+      const unsafe = deck.filter((c) => !c.isSafe);
+      const pool =
+        unsafe.length && Math.random() < diff.unsafeBias ? unsafe : deck;
       const cell = free[Math.floor(Math.random() * free.length)];
-      const card = deck[Math.floor(Math.random() * deck.length)];
+      const card = pool[Math.floor(Math.random() * pool.length)];
       if (cell !== undefined && card) {
         const id = ++snackIdRef.current;
         const removal = setTimeout(() => {
@@ -143,15 +184,15 @@ export function SnackAttackGame({ profileId, onExit }: SnackAttackGameProps) {
       }
     }
     // Reschedule with a difficulty-adjusted interval.
-    const interval = 1200 - progress * 600; // 1200 → 600ms
+    const interval = diff.baseInterval * (1 - progress * 0.15);
     spawnTimer.current = setTimeout(spawnOne, interval);
   };
 
   // Drive the round while playing; the cleanup stops every timer.
   useEffect(() => {
     if (phase !== 'playing') return;
-    timeLeftRef.current = ROUND_SECONDS;
-    setTimeLeft(ROUND_SECONDS);
+    timeLeftRef.current = LEVEL_SECONDS;
+    setTimeLeft(LEVEL_SECONDS);
     spawnTimer.current = setTimeout(spawnOne, 700);
     countdown.current = setInterval(() => {
       setTimeLeft((t) => {
@@ -164,10 +205,10 @@ export function SnackAttackGame({ profileId, onExit }: SnackAttackGameProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
-  // End on the clock running out.
+  // Surviving the level's clock (with hearts left) advances to the next,
+  // faster level. Running out of hearts ends the game (handled in `whack`).
   useEffect(() => {
-    if (phase === 'playing' && timeLeft <= 0) endGame();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (phase === 'playing' && timeLeft <= 0) nextLevel();
   }, [timeLeft, phase]);
 
   // Record stats once per finished round (no mid-game save by design).
@@ -190,8 +231,11 @@ export function SnackAttackGame({ profileId, onExit }: SnackAttackGameProps) {
     setStreak(0);
     setBestStreak(0);
     setLives(MAX_LIVES);
+    setLevel(1);
+    levelRef.current = 1;
     setSnacks([]);
     setToast(null);
+    setLevelBanner(null);
     setBurst(null);
     deckRef.current = buildDeck(history ?? [], allergies);
     setPhase('playing');
@@ -230,14 +274,10 @@ export function SnackAttackGame({ profileId, onExit }: SnackAttackGameProps) {
     }
   };
 
+  // The run always ends by running out of hearts, so reflect how FAR they got
+  // rather than always showing a knocked-out mascot.
   const gameOverMood: KawaiiMood =
-    lives <= 0
-      ? 'ko'
-      : score >= 200
-        ? 'lovestruck'
-        : score >= 80
-          ? 'happy'
-          : 'sad';
+    level >= 6 ? 'lovestruck' : level >= 3 ? 'happy' : 'ko';
   const multiplier = streakMultiplier(streak);
 
   return (
@@ -273,10 +313,10 @@ export function SnackAttackGame({ profileId, onExit }: SnackAttackGameProps) {
           <div className="flex items-center gap-3">
             <p className="text-lg font-bold text-theme-text/70 leading-snug">
               Tap ONLY the snacks that are safe for you before they hide. Tap a
-              bad one and you lose a ❤️. You have {ROUND_SECONDS} seconds!
+              bad one and you lose a ❤️. Survive each level and it gets faster!
             </p>
             <SpeakButton
-              text={`Snack Attack! Tap only the snacks that are safe for you before they hide. Tap a bad one and you lose a heart. You have ${ROUND_SECONDS} seconds!`}
+              text="Snack Attack! Tap only the snacks that are safe for you before they hide. Tap a bad one and you lose a heart. Survive each level and it gets faster!"
               label="Hear how to play"
             />
           </div>
@@ -292,7 +332,7 @@ export function SnackAttackGame({ profileId, onExit }: SnackAttackGameProps) {
         </div>
       ) : phase === 'gameOver' ? (
         <GameOverScreen
-          title={lives <= 0 ? 'Out of hearts!' : "Time's up!"}
+          title={`Reached Level ${level}!`}
           score={score}
           bestStreak={bestStreak}
           mood={gameOverMood}
@@ -311,6 +351,13 @@ export function SnackAttackGame({ profileId, onExit }: SnackAttackGameProps) {
               role="status"
               aria-live="polite"
             >
+              <motion.span
+                key={level}
+                animate={{ scale: [1, 1.2, 1] }}
+                className="px-3 py-1 bg-theme-primary text-theme-text font-display font-black text-sm rounded-full shadow-lg"
+              >
+                Lvl {level}
+              </motion.span>
               {multiplier > 1 && (
                 <motion.span
                   key={multiplier}
@@ -330,7 +377,7 @@ export function SnackAttackGame({ profileId, onExit }: SnackAttackGameProps) {
           <div className="w-full h-3 bg-white rounded-full overflow-hidden shadow-inner">
             <motion.div
               className="h-full bg-theme-accent"
-              animate={{ width: `${(timeLeft / ROUND_SECONDS) * 100}%` }}
+              animate={{ width: `${(timeLeft / LEVEL_SECONDS) * 100}%` }}
               transition={{ ease: 'linear', duration: 1 }}
             />
           </div>
@@ -406,6 +453,22 @@ export function SnackAttackGame({ profileId, onExit }: SnackAttackGameProps) {
           >
             <span className="px-5 py-3 bg-redstone-red text-white font-display font-black rounded-2xl shadow-lg text-center">
               {toast}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Level-up celebration banner */}
+      <AnimatePresence>
+        {levelBanner && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none"
+          >
+            <span className="px-8 py-4 bg-theme-accent text-white font-display font-black text-3xl rounded-3xl shadow-lg">
+              🚀 {levelBanner}
             </span>
           </motion.div>
         )}

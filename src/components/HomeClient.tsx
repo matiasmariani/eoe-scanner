@@ -167,21 +167,14 @@ export function HomeClient() {
                   {activeProfile?.name ? (
                     <>
                       <span className="text-theme-primary">
-                        {activeProfile.name}
+                        {activeProfile.name}&apos;s
                       </span>
-                      <span>&apos;s</span>
                     </>
                   ) : (
                     'Your'
                   )}{' '}
-                  snack explorer
+                  snack friend!
                 </h2>
-                <SpeakButton
-                  text={`Hi ${activeProfile?.name ?? 'there'}! Tap Scan Snack to check a snack with the camera. Tap Browse to search for a snack. Or type a barcode number to check it.`}
-                  size="sm"
-                  className="mt-3"
-                  label="Hear what to do"
-                />
               </div>
 
               {/* Action Buttons - Floating */}
@@ -434,6 +427,21 @@ export function HomeClient() {
 
       {showProfileManager && (
         <ProfileManagerModal onClose={() => setShowProfileManager(false)} />
+      )}
+
+      {/* Floating read-aloud button — ripple draws young/non-reader kids to it */}
+      {mode === 'idle' && (
+        <div className="fixed bottom-3 right-3 z-40">
+          <span
+            className="absolute inset-0 rounded-full bg-theme-accent/40 animate-ping"
+            aria-hidden="true"
+          />
+          <SpeakButton
+            text={`Hi ${activeProfile?.name ?? 'there'}! Tap Scan Snack to check a snack with the camera. Tap Browse to search for a snack. Or type a barcode number to check it.`}
+            className="relative bg-theme-accent text-white shadow-xl"
+            label="Hear what to do"
+          />
+        </div>
       )}
 
       {/* Disclaimer footer — always visible */}
