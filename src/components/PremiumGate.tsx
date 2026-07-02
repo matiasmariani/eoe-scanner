@@ -7,11 +7,13 @@ import { purchasePremium } from '@/lib/premium';
 type PurchaseState = 'idle' | 'loading' | 'success' | 'error';
 
 const FEATURES = [
-  'Voice readout for every scan',
-  'Custom allergens',
-  'Multiple profiles',
-  'Full scan history',
-  'Unlimited allergens',
+  'Build your safe foods library',
+  'Email allergen lists to parents & teachers',
+  'Copy-paste allergen summaries anywhere',
+  'Voice readout for every scan result',
+  'Custom allergens for your family',
+  'Manage multiple profiles in one app',
+  'Full scan history at your fingertips',
 ];
 
 interface PremiumGateProps {
@@ -78,11 +80,15 @@ export function PremiumGate({ feature, onClose }: PremiumGateProps) {
                 id="premium-gate-title"
                 className="text-3xl font-display font-black text-theme-text uppercase tracking-tight"
               >
-                Go Premium
+                Level Up to Premium
               </h3>
               <p className="text-base font-bold text-theme-text/70 leading-snug">
-                <span className="font-black text-theme-accent">{feature}</span>{' '}
-                is a Premium feature. Unlock everything for $4.99/month.
+                Get instant barcode scanning, safe foods management, and more —
+                all for{' '}
+                <span className="text-theme-accent font-black">
+                  $4.99/month
+                </span>
+                .
               </p>
             </div>
 

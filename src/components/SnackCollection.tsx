@@ -114,10 +114,10 @@ export function SnackCollection({ onClose }: SnackCollectionProps) {
                   <h3 className="text-base font-display font-black text-theme-bg leading-tight line-clamp-2">
                     {snack.name}
                   </h3>
-                  <p className="text-xs font-bold text-theme-bg/60 truncate w-full mt-0.5">
+                  <p className="text-sm font-bold text-theme-bg/60 truncate w-full mt-0.5">
                     {snack.brand}
                   </p>
-                  <div className="flex items-center gap-1 text-theme-primary text-xs font-black uppercase mt-2">
+                  <div className="flex items-center gap-1 text-theme-primary text-sm font-black uppercase mt-2">
                     <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
                     Safe
                   </div>

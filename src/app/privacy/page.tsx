@@ -86,7 +86,16 @@ export default function PrivacyPage() {
               </a>
               . When you scan a barcode, a request is sent to the Open Food
               Facts API containing the barcode number. No personal information
-              is included in this request. Open Food Facts has its own{' '}
+              is included in this request. Read the{' '}
+              <a
+                href="https://world.openfoodfacts.org/terms-of-use"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green-700 underline"
+              >
+                Open Food Facts Terms of Use
+              </a>{' '}
+              and their{' '}
               <a
                 href="https://world.openfoodfacts.org/privacy"
                 target="_blank"
@@ -100,11 +109,39 @@ export default function PrivacyPage() {
           </li>
           <li className="flex gap-3">
             <span className="font-black text-gray-900 shrink-0">
-              No other data sources
+              USDA Food Data Central
             </span>
             <span>
-              Snack Scout does not connect to any other external APIs or
-              third-party services for product data.
+              <a
+                href="https://fdc.nal.usda.gov"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green-700 underline"
+              >
+                fdc.nal.usda.gov
+              </a>{' '}
+              — The USDA&apos;s official food composition database. When you
+              search for products, requests containing your search query are
+              sent to the USDA Food Data Central API. No personal information is
+              included in these requests. Review the{' '}
+              <a
+                href="https://fdc.nal.usda.gov/api-guide.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green-700 underline"
+              >
+                USDA API documentation
+              </a>{' '}
+              and their{' '}
+              <a
+                href="https://www.usda.gov/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green-700 underline"
+              >
+                privacy policy
+              </a>
+              .
             </span>
           </li>
         </ul>

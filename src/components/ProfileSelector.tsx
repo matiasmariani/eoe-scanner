@@ -67,7 +67,7 @@ export function ProfileSelector({ isOpen, onClose }: ProfileSelectorProps) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-theme-bg border-4 border-theme-border shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-t-3xl sm:rounded-3xl p-6 space-y-6 animate-pop">
+      <div className="relative w-full max-w-md bg-theme-bg border-4 border-theme-border shadow-voxel rounded-t-3xl sm:rounded-3xl p-6 space-y-6 animate-pop">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-display font-black text-theme-bg">

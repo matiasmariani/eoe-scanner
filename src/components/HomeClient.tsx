@@ -82,7 +82,7 @@ export function HomeClient() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="p-2 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
+              className="p-3 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
               aria-label="Allergy settings"
               title="Settings"
             >
@@ -204,24 +204,11 @@ export function HomeClient() {
 
                 <button
                   onClick={() => setShowSearchModal(true)}
-                  className={cn(
-                    'w-full flex items-center justify-center gap-3 py-4 px-6 rounded-3xl border-4 border-theme-border font-display font-black text-lg transition-all',
-                    isPremium
-                      ? 'bg-theme-accent text-theme-border shadow-voxel hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]'
-                      : 'bg-theme-bg text-theme-text/40 border-theme-text/20 cursor-not-allowed opacity-60',
-                  )}
-                  disabled={!isPremium}
-                  aria-label={
-                    isPremium ? 'Browse safe snacks' : 'Browse (Premium)'
-                  }
+                  className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-3xl border-4 border-theme-border bg-theme-accent text-theme-border shadow-voxel active:shadow-none active:translate-x-[4px] active:translate-y-[4px] font-display font-black text-lg transition-all hover:-translate-y-[2px]"
+                  aria-label="Browse safe snacks"
                 >
                   <span>🔍</span>
                   <span>Browse Safe Snacks</span>
-                  {!isPremium && (
-                    <span className="text-xs bg-theme-text/20 px-2 py-1 rounded-full">
-                      Premium
-                    </span>
-                  )}
                 </button>
 
                 <div className="flex items-center gap-4">
@@ -350,10 +337,12 @@ export function HomeClient() {
       )}
 
       {showSafeFoods && activeProfile && (
-        <SafeFoodsView
-          profileId={activeProfile.id}
-          onClose={() => setShowSafeFoods(false)}
-        />
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <SafeFoodsView
+            profileId={activeProfile.id}
+            onClose={() => setShowSafeFoods(false)}
+          />
+        </div>
       )}
 
       {showHistoryGate && (
@@ -387,13 +376,13 @@ export function HomeClient() {
       </motion.button>
 
       {/* Disclaimer footer — always visible */}
-      <footer className="fixed bottom-0 left-0 right-0 z-30 flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 px-4 py-2 bg-theme-bg/95 backdrop-blur-sm border-t border-theme-border/10 text-center">
-        <p className="text-xs font-body font-bold text-theme-text/70 leading-tight">
+      <footer className="fixed bottom-0 left-0 right-0 z-30 flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 px-4 py-3 bg-theme-bg/95 backdrop-blur-sm border-t border-theme-border/10 text-center">
+        <p className="text-sm font-body font-bold text-theme-text/80 leading-tight">
           Not medical advice · Data from Open Food Facts (may contain errors)
         </p>
         <a
           href="/privacy"
-          className="text-xs font-black text-theme-text underline underline-offset-2 shrink-0"
+          className="text-sm font-black text-theme-primary underline underline-offset-2 shrink-0 hover:opacity-80 transition-opacity"
         >
           Privacy Policy
         </a>

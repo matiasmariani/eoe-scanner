@@ -2,13 +2,14 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Mail, Copy, Check, Edit2 } from 'lucide-react';
+import { Plus, Trash2, Mail, Copy, Check, Edit2, X } from 'lucide-react';
 import { useSafeFoods } from '@/hooks/useSafeFoods';
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { useIsPremium } from '@/lib/premium';
 import { AddSafeFoodModal } from '@/components/AddSafeFoodModal';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { PremiumGate } from '@/components/PremiumGate';
+import { SnackScout } from '@/components/SnackScout';
 import { generateAllergenEmail } from '@/lib/email-generator';
 import { SafeFood } from '@/lib/db';
 
@@ -118,214 +119,244 @@ export function SafeFoodsView({ profileId, onClose }: SafeFoodsViewProps) {
   };
 
   return (
-    <motion.div
-      initial={{ x: '100%' }}
-      animate={{ x: 0 }}
-      exit={{ x: '100%' }}
-      className="fixed inset-0 z-40 bg-theme-bg flex flex-col"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b-4 border-theme-border">
-        <h1 className="text-2xl font-display font-black text-theme-text">
-          Safe Foods
-        </h1>
+    <div className="min-h-screen bg-theme-bg flex flex-col">
+      <header className="w-full max-w-md mx-auto px-6 py-8 flex items-center justify-between gap-4">
+        <SnackScout size="sm" />
         <button
           onClick={onClose}
-          className="w-12 h-12 flex items-center justify-center bg-theme-text text-theme-bg rounded-full font-black"
-          aria-label="Close"
+          className="p-3 bg-theme-text rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-theme-primary text-theme-primary hover:bg-theme-primary hover:text-theme-text transition-all active:scale-90"
+          aria-label="Close safe foods"
         >
-          ←
+          <X className="w-6 h-6" aria-hidden="true" />
         </button>
-      </div>
+      </header>
 
-      {/* Action Buttons */}
-      <div className="p-4 border-b-4 border-theme-border space-y-3">
-        <button
-          onClick={() => setShowAddModal(true)}
-          disabled={!adultMode}
-          className={`w-full flex items-center justify-center gap-2 border-4 border-theme-border px-6 py-4 rounded-2xl font-display font-black transition-all ${adultMode ? 'bg-theme-primary text-theme-border shadow-voxel active:shadow-none active:translate-y-[2px] cursor-pointer' : 'bg-theme-primary/40 text-theme-border/40 opacity-50 cursor-not-allowed'}`}
-          title={adultMode ? 'Add a new safe food' : 'Parent mode required'}
-          aria-disabled={!adultMode}
-        >
-          <Plus className="w-6 h-6" aria-hidden="true" />
-          Add Safe Food
-        </button>
-        <div className="flex gap-2">
-          <button
-            onClick={handleEmail}
-            disabled={!isPremium}
-            className={`flex-1 flex items-center justify-center gap-2 border-4 border-theme-border px-4 py-3 rounded-2xl font-display font-black transition-all ${
-              isPremium
-                ? 'bg-theme-accent text-theme-bg shadow-voxel active:shadow-none active:translate-y-[2px] hover:-translate-y-[2px] cursor-pointer'
-                : 'bg-theme-accent/50 text-theme-bg/50 opacity-50 cursor-not-allowed'
-            }`}
-            title={
-              isPremium
-                ? 'Open email client with pre-filled allergen list'
-                : 'Premium feature'
-            }
-            aria-label="Email safe foods and allergens"
-          >
-            <Mail className="w-6 h-6" aria-hidden="true" />
-            Email
-          </button>
-          <button
-            onClick={handleCopy}
-            disabled={!isPremium}
-            className={`flex-1 flex items-center justify-center gap-2 border-4 border-theme-border px-4 py-3 rounded-2xl font-display font-black transition-all ${
-              isPremium
-                ? 'bg-theme-text text-theme-bg shadow-voxel active:shadow-none active:translate-y-[2px] hover:-translate-y-[2px] cursor-pointer'
-                : 'bg-theme-text/50 text-theme-bg/50 opacity-50 cursor-not-allowed'
-            }`}
-            title={
-              isPremium ? 'Copy allergen list to clipboard' : 'Premium feature'
-            }
-            aria-label={
-              copied && isPremium ? 'Copied to clipboard' : 'Copy to clipboard'
-            }
-          >
-            {copied && isPremium ? (
-              <Check className="w-6 h-6" />
-            ) : (
-              <Copy className="w-6 h-6" aria-hidden="true" />
-            )}
-            {copied && isPremium ? 'Copied' : 'Copy'}
-          </button>
+      <div className="flex-1 w-full max-w-md mx-auto px-4 pb-16 flex flex-col">
+        {/* Title Section */}
+        <div className="text-center mb-6">
+          <h2 className="text-3xl font-display font-black text-theme-text">
+            Safe Foods
+          </h2>
+          <p className="text-lg font-bold text-theme-primary mt-1">
+            {safeFoods.length > 0
+              ? `${safeFoods.length} saved · Parent approved ✓`
+              : 'Create a list of trusted foods'}
+          </p>
         </div>
-      </div>
 
-      {/* List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        <AnimatePresence mode="popLayout">
-          {safeFoods.length === 0 ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="text-center py-12"
-            >
-              <p className="text-2xl font-display font-black text-theme-text/40">
-                No Safe Foods Yet
-              </p>
-            </motion.div>
-          ) : (
-            safeFoods.map((food) => (
-              <motion.div
-                key={food.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="bg-theme-text border-4 border-theme-border rounded-2xl p-4 shadow-voxel"
+        {/* Action Buttons */}
+        <div className="space-y-2 pb-4">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="w-full flex items-center justify-center gap-2 bg-theme-primary text-theme-border border-4 border-theme-border px-6 py-4 rounded-2xl font-display font-black shadow-voxel active:shadow-none active:translate-y-[2px] transition-all hover:-translate-y-[2px]"
+            title="Add a new safe food"
+            aria-label="Add safe food"
+          >
+            <Plus className="w-6 h-6" aria-hidden="true" />
+            Add Safe Food
+          </button>
+          {safeFoods.length > 0 && (
+            <div className="flex gap-2">
+              <button
+                onClick={handleEmail}
+                className="flex-1 flex items-center justify-center gap-2 bg-theme-accent text-theme-bg border-4 border-theme-border px-4 py-3 rounded-2xl font-display font-black shadow-voxel active:shadow-none active:translate-y-[2px] transition-all hover:-translate-y-[2px]"
+                title="Open email client with pre-filled allergen list"
+                aria-label="Email safe foods and allergens"
               >
-                {editingId === food.id ? (
-                  // Edit Mode
-                  <div className="space-y-3">
-                    <input
-                      type="text"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      className="w-full bg-theme-bg border-2 border-theme-border p-3 rounded-xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
-                      autoFocus
-                    />
-                    <input
-                      type="text"
-                      value={editBrand}
-                      onChange={(e) => setEditBrand(e.target.value)}
-                      placeholder="Brand"
-                      className="w-full bg-theme-bg border-2 border-theme-border p-3 rounded-xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
-                    />
-                    <textarea
-                      value={editNotes}
-                      onChange={(e) => setEditNotes(e.target.value)}
-                      placeholder="Notes"
-                      className="w-full bg-theme-bg border-2 border-theme-border p-3 rounded-xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent resize-none"
-                      rows={2}
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => saveEdit(food.id)}
-                        className="flex-1 py-2 bg-theme-primary border-4 border-theme-border rounded-xl font-display font-black text-theme-border shadow-voxel active:shadow-none active:translate-y-[2px]"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={cancelEdit}
-                        className="flex-1 py-2 bg-theme-bg border-4 border-theme-border rounded-xl font-display font-black text-theme-text active:shadow-none active:translate-y-[2px]"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
+                <Mail className="w-6 h-6" aria-hidden="true" />
+                Email
+              </button>
+              <button
+                onClick={handleCopy}
+                className="flex-1 flex items-center justify-center gap-2 bg-theme-text text-theme-bg border-4 border-theme-border px-4 py-3 rounded-2xl font-display font-black shadow-voxel active:shadow-none active:translate-y-[2px] transition-all hover:-translate-y-[2px]"
+                title="Copy allergen list to clipboard"
+                aria-label={
+                  copied ? 'Copied to clipboard' : 'Copy to clipboard'
+                }
+              >
+                {copied ? (
+                  <Check className="w-6 h-6" />
                 ) : (
-                  // View Mode
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <h3 className="text-2xl font-display font-black text-theme-bg">
-                        {food.name}
-                      </h3>
-                      {food.brand && (
-                        <p className="text-lg font-body font-bold text-theme-bg/80 mt-1">
-                          {food.brand}
-                        </p>
-                      )}
-                      {food.notes && (
-                        <p className="text-base font-body text-theme-bg/70 italic mt-2">
-                          &quot;{food.notes}&quot;
-                        </p>
-                      )}
-                      <p className="text-sm font-body text-theme-bg/60 mt-3 font-bold">
-                        {food.source === 'scanned' ? '📷 Scanned' : '✏️ Manual'}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      {food.source === 'manual' && adultMode && (
-                        <button
-                          onClick={() => startEdit(food)}
-                          className="w-10 h-10 flex items-center justify-center bg-theme-bg border-2 border-theme-border text-theme-text rounded-full hover:bg-theme-accent hover:text-theme-bg transition-all active:scale-95"
-                          aria-label={`Edit ${food.name}`}
-                          title="Edit"
-                        >
-                          <Edit2 className="w-5 h-5" aria-hidden="true" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => confirmDelete(food)}
-                        className="w-10 h-10 flex items-center justify-center bg-redstone-red text-white rounded-full hover:bg-redstone-red/80 transition-all active:scale-95"
-                        aria-label={`Delete ${food.name}`}
-                        title="Delete"
-                      >
-                        <Trash2 className="w-5 h-5" aria-hidden="true" />
-                      </button>
-                    </div>
-                  </div>
+                  <Copy className="w-6 h-6" aria-hidden="true" />
                 )}
-              </motion.div>
-            ))
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
           )}
-        </AnimatePresence>
-      </div>
+        </div>
 
-      <AddSafeFoodModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        profileId={profileId}
-      />
+        {/* List */}
+        <div className="flex-1 overflow-y-auto">
+          {safeFoods.length === 0 ? (
+            <div className="flex items-center justify-center min-h-[360px] text-center">
+              <div>
+                <span
+                  className="text-7xl mb-4 block"
+                  role="img"
+                  aria-label="Empty"
+                >
+                  📚
+                </span>
+                <h3 className="text-2xl font-display font-black text-theme-text mb-2">
+                  No Safe Foods Yet
+                </h3>
+                <p className="text-lg text-theme-text/60 font-bold px-6">
+                  Tap &quot;Add Safe Food&quot; to create a trusted foods list
+                  parents will love.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <AnimatePresence mode="popLayout">
+              <ul className="space-y-3" role="list">
+                {safeFoods.map((food) => (
+                  <motion.li
+                    key={food.id}
+                    layout
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    className="bg-theme-text border-4 border-theme-border rounded-2xl p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] list-none"
+                  >
+                    {editingId === food.id ? (
+                      // Edit Mode
+                      <div className="space-y-3">
+                        <div>
+                          <label
+                            htmlFor={`edit-name-${food.id}`}
+                            className="block text-xs font-body font-bold text-theme-bg mb-1 uppercase tracking-wide"
+                          >
+                            Name
+                          </label>
+                          <input
+                            id={`edit-name-${food.id}`}
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="w-full bg-theme-bg border-2 border-theme-border p-3 rounded-xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
+                            autoFocus
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor={`edit-brand-${food.id}`}
+                            className="block text-xs font-body font-bold text-theme-bg mb-1 uppercase tracking-wide"
+                          >
+                            Brand (optional)
+                          </label>
+                          <input
+                            id={`edit-brand-${food.id}`}
+                            type="text"
+                            value={editBrand}
+                            onChange={(e) => setEditBrand(e.target.value)}
+                            className="w-full bg-theme-bg border-2 border-theme-border p-3 rounded-xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor={`edit-notes-${food.id}`}
+                            className="block text-xs font-body font-bold text-theme-bg mb-1 uppercase tracking-wide"
+                          >
+                            Notes (optional)
+                          </label>
+                          <textarea
+                            id={`edit-notes-${food.id}`}
+                            value={editNotes}
+                            onChange={(e) => setEditNotes(e.target.value)}
+                            className="w-full bg-theme-bg border-2 border-theme-border p-3 rounded-xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent resize-none"
+                            rows={2}
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => saveEdit(food.id)}
+                            className="flex-1 py-3 bg-theme-primary border-4 border-theme-border rounded-xl font-display font-black text-theme-border shadow-voxel active:shadow-none active:translate-y-[2px] transition-all"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={cancelEdit}
+                            className="flex-1 py-3 bg-theme-bg border-4 border-theme-border rounded-xl font-display font-black text-theme-text active:shadow-none active:translate-y-[2px] transition-all"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      // View Mode
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-black text-xl text-theme-bg truncate">
+                            {food.name}
+                          </h3>
+                          {food.brand && (
+                            <p className="text-sm text-theme-bg/80 truncate mt-0.5">
+                              {food.brand}
+                            </p>
+                          )}
+                          {food.notes && (
+                            <p className="text-xs text-theme-bg/70 italic mt-1.5 line-clamp-2">
+                              &quot;{food.notes}&quot;
+                            </p>
+                          )}
+                          <p className="text-xs text-theme-bg/60 mt-2 font-bold uppercase tracking-wide">
+                            {food.source === 'scanned'
+                              ? '📷 Scanned'
+                              : '✏️ Manual'}
+                          </p>
+                        </div>
+                        {adultMode && (
+                          <div className="flex gap-2">
+                            {food.source === 'manual' && (
+                              <button
+                                onClick={() => startEdit(food)}
+                                className="w-10 h-10 flex items-center justify-center bg-theme-bg border-2 border-theme-border text-theme-text rounded-full hover:bg-theme-accent hover:text-theme-bg transition-all active:scale-95"
+                                aria-label={`Edit ${food.name}`}
+                                title="Edit"
+                              >
+                                <Edit2 className="w-5 h-5" aria-hidden="true" />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => confirmDelete(food)}
+                              className="w-10 h-10 flex items-center justify-center bg-redstone-red text-white rounded-full hover:bg-redstone-red/80 transition-all active:scale-95"
+                              aria-label={`Delete ${food.name}`}
+                              title="Delete"
+                            >
+                              <Trash2 className="w-5 h-5" aria-hidden="true" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </motion.li>
+                ))}
+              </ul>
+            </AnimatePresence>
+          )}
+        </div>
 
-      <ConfirmationModal
-        isOpen={deleteConfirm.isOpen}
-        onClose={() => setDeleteConfirm({ isOpen: false })}
-        onConfirm={handleConfirmDelete}
-        title="Remove Safe Food?"
-        message={`Are you sure you want to remove "${deleteConfirm.foodName}"?`}
-      />
-
-      {showPremiumGate && (
-        <PremiumGate
-          feature="Email & Copy"
-          onClose={() => setShowPremiumGate(false)}
+        <AddSafeFoodModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          profileId={profileId}
         />
-      )}
-    </motion.div>
+
+        <ConfirmationModal
+          isOpen={deleteConfirm.isOpen}
+          onClose={() => setDeleteConfirm({ isOpen: false })}
+          onConfirm={handleConfirmDelete}
+          title="Remove Safe Food?"
+          message={`Are you sure you want to remove "${deleteConfirm.foodName}"?`}
+        />
+
+        {showPremiumGate && (
+          <PremiumGate
+            feature="Email & Copy"
+            onClose={() => setShowPremiumGate(false)}
+          />
+        )}
+      </div>
+    </div>
   );
 }

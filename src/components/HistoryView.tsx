@@ -123,7 +123,7 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                       <h3 className="font-black text-xl text-theme-bg truncate">
                         {item.result.name}
                       </h3>
-                      <p className="text-sm text-theme-bg/80 truncate">
+                      <p className="text-base text-theme-bg/80 truncate font-bold">
                         {item.result.brand}
                       </p>
                       {!item.result.isSafe &&
@@ -132,7 +132,7 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                             Contains: {item.result.allergensFound.join(', ')}
                           </p>
                         )}
-                      <p className="text-xs text-theme-bg/70 mt-auto">
+                      <p className="text-base text-theme-bg/70 mt-auto font-bold">
                         {new Date(item.timestamp).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',

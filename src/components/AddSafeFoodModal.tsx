@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Zap, Loader } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSafeFoods } from '@/hooks/useSafeFoods';
+import { useIsPremium } from '@/lib/premium';
 import {
   fetchProductFromOpenFoodFacts,
   type ProductResult,
@@ -12,6 +13,7 @@ import {
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { Scanner } from '@/components/Scanner';
 import { ScannerErrorBoundary } from '@/components/ScannerErrorBoundary';
+import { PremiumGate } from '@/components/PremiumGate';
 
 interface AddSafeFoodModalProps {
   isOpen: boolean;
@@ -28,6 +30,7 @@ export function AddSafeFoodModal({
 }: AddSafeFoodModalProps) {
   const { addSafeFood, error, setError } = useSafeFoods(profileId);
   const { activeProfile } = useAllergySettings();
+  const isPremium = useIsPremium();
   const [mode, setMode] = useState<Mode>('barcode');
   const [barcode, setBarcode] = useState('');
   const [name, setName] = useState('');
@@ -37,6 +40,7 @@ export function AddSafeFoodModal({
   const [scannedProduct, setScannedProduct] = useState<ProductResult | null>(
     null,
   );
+  const [showPremiumGate, setShowPremiumGate] = useState(false);
 
   const resetForm = () => {
     setMode('barcode');
@@ -140,10 +144,14 @@ export function AddSafeFoodModal({
           </button>
         </div>
 
-        {/* Mode selector - always visible */}
+        {/* Mode selector - all premium */}
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => {
+              if (!isPremium) {
+                setShowPremiumGate(true);
+                return;
+              }
               setMode('barcode');
               setScannedProduct(null);
               setError(null);
@@ -159,6 +167,10 @@ export function AddSafeFoodModal({
           </button>
           <button
             onClick={() => {
+              if (!isPremium) {
+                setShowPremiumGate(true);
+                return;
+              }
               setMode('scan');
               setScannedProduct(null);
               setError(null);
@@ -174,6 +186,10 @@ export function AddSafeFoodModal({
           </button>
           <button
             onClick={() => {
+              if (!isPremium) {
+                setShowPremiumGate(true);
+                return;
+              }
               setMode('manual');
               setScannedProduct(null);
               setError(null);
@@ -202,15 +218,34 @@ export function AddSafeFoodModal({
               type="tel"
               value={barcode}
               onChange={(e) => setBarcode(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleScan()}
+              onKeyDown={(e) =>
+                e.key === 'Enter' && !isPremium
+                  ? setShowPremiumGate(true)
+                  : handleScan()
+              }
               placeholder="Enter barcode number"
-              className="w-full bg-theme-bg border-2 border-theme-border p-3 rounded-xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
+              disabled={!isPremium}
+              className={`w-full border-2 border-theme-border p-3 rounded-xl font-body font-bold focus:outline-none focus:ring-4 focus:ring-theme-accent ${
+                isPremium
+                  ? 'bg-theme-bg text-theme-text placeholder:text-theme-text/40'
+                  : 'bg-theme-bg/50 text-theme-text/50 placeholder:text-theme-text/20 cursor-not-allowed'
+              }`}
               autoFocus
             />
             <button
-              onClick={() => handleScan()}
-              disabled={isLoading || !barcode.trim()}
-              className="w-full py-3 bg-theme-primary border-4 border-theme-border rounded-2xl font-display font-black text-theme-border disabled:opacity-50 flex items-center justify-center gap-2 active:shadow-none active:translate-y-[2px] shadow-voxel"
+              onClick={() => {
+                if (!isPremium) {
+                  setShowPremiumGate(true);
+                  return;
+                }
+                handleScan();
+              }}
+              disabled={isLoading || !barcode.trim() || !isPremium}
+              className={`w-full py-3 border-4 border-theme-border rounded-2xl font-display font-black flex items-center justify-center gap-2 active:shadow-none active:translate-y-[2px] transition-all ${
+                isPremium
+                  ? 'bg-theme-primary text-theme-border shadow-voxel disabled:opacity-50'
+                  : 'bg-theme-primary/50 text-theme-border/50 cursor-not-allowed opacity-50'
+              }`}
             >
               {isLoading ? (
                 <Loader className="w-5 h-5 animate-spin" />
@@ -349,6 +384,13 @@ export function AddSafeFoodModal({
               Save Food
             </button>
           </div>
+        )}
+
+        {showPremiumGate && (
+          <PremiumGate
+            feature="Add Safe Foods"
+            onClose={() => setShowPremiumGate(false)}
+          />
         )}
       </motion.div>
     </motion.div>

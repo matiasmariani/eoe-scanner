@@ -31,18 +31,24 @@ export function BarcodeSearchForm({
   return (
     <form
       onSubmit={handleFormSubmit}
-      className="flex flex-col gap-4 w-full p-6 bg-block-white border-4 border-ink-navy rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+      className="flex flex-col gap-4 w-full p-6 bg-theme-text border-4 border-theme-border rounded-2xl shadow-voxel"
     >
       <div className="relative flex-1">
+        <label
+          htmlFor="barcode-input"
+          className="block text-sm font-body font-bold text-theme-bg mb-2 uppercase tracking-wide"
+        >
+          Barcode Number
+        </label>
         <input
+          id="barcode-input"
           type="text"
           pattern="[0-9]*"
           inputMode="numeric"
           placeholder="Enter barcode..."
           value={barcode}
           onChange={(e) => setBarcode(e.target.value)}
-          className="w-full p-4 border-4 border-ink-navy text-center text-base font-data font-bold focus:ring-4 focus:ring-grass-green outline-none bg-deep-stone text-block-white rounded-xl"
-          aria-label="Barcode input"
+          className="w-full p-4 border-4 border-theme-border text-center text-base font-body font-bold focus:outline-none focus:ring-4 focus:ring-theme-accent bg-theme-bg text-theme-text rounded-xl"
           aria-describedby={
             error && errorType === 'barcode' ? 'barcode-error' : undefined
           }
@@ -59,10 +65,11 @@ export function BarcodeSearchForm({
       </div>
       <button
         type="submit"
-        className="bg-grass-green border-4 border-ink-navy px-4 py-3 rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] hover:-translate-y-[2px] transition-all flex items-center justify-center"
+        className="bg-theme-primary border-4 border-theme-border px-4 py-3 rounded-xl shadow-voxel active:shadow-none active:translate-y-[2px] transition-all flex items-center justify-center gap-2 font-display font-black text-theme-border hover:-translate-y-[2px]"
         aria-label="Search product"
       >
-        <Search className="w-6 h-6 text-block-white" aria-hidden="true" />
+        <Search className="w-6 h-6" aria-hidden="true" />
+        Search
       </button>
     </form>
   );
