@@ -57,7 +57,14 @@ export const OpenFoodFactsProductSchema = z.object({
 });
 
 export const OpenFoodFactsResponseSchema = z.object({
-  status: z.enum(['success', 'failure']),
+  // OFF v3 returns these status variants; anything other than 'failure' that
+  // carries a product is treated as found downstream.
+  status: z.enum([
+    'success',
+    'success_with_warnings',
+    'success_with_errors',
+    'failure',
+  ]),
   result: z
     .object({
       name: z.string().optional(),

@@ -13,6 +13,7 @@ import {
   Check,
   BookOpen,
   Search,
+  Gamepad2,
 } from 'lucide-react';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { Scanner } from '@/components/Scanner';
@@ -28,6 +29,8 @@ import { HistoryView } from '@/components/HistoryView';
 import { AdultModeModal } from '@/components/AdultModeModal';
 import { ProductSearchModal } from '@/components/ProductSearchModal';
 import { SafeFoodsView } from '@/components/SafeFoodsView';
+import { GameHub } from '@/components/GameHub';
+import { SpeakButton } from '@/components/SpeakButton';
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { useProductLookup } from '@/hooks/useProductLookup';
 import { useHistory } from '@/hooks/useHistory';
@@ -44,6 +47,8 @@ export function HomeClient() {
   const [showHistoryGate, setShowHistoryGate] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showSafeFoods, setShowSafeFoods] = useState(false);
+  const [isGameOpen, setIsGameOpen] = useState(false);
+  const [showGameGate, setShowGameGate] = useState(false);
   const isPremium = useIsPremium();
   const { adultMode, activeProfile } = useAllergySettings();
 
@@ -87,6 +92,20 @@ export function HomeClient() {
             title="Reset"
           >
             <RefreshCcw className="w-5 h-5" aria-hidden="true" />
+          </button>
+          <button
+            onClick={() => {
+              if (!isPremium) {
+                setShowGameGate(true);
+                return;
+              }
+              setIsGameOpen(true);
+            }}
+            className="p-2.5 bg-theme-primary text-theme-text hover:bg-theme-primary/90 rounded-full transition-all shadow-lg"
+            aria-label="Play mini-games"
+            title="Games"
+          >
+            <Gamepad2 className="w-5 h-5" aria-hidden="true" />
           </button>
           <button
             onClick={() => setIsAdultModalOpen(true)}
@@ -144,6 +163,12 @@ export function HomeClient() {
                   )}{' '}
                   snack explorer
                 </h2>
+                <SpeakButton
+                  text={`Hi ${activeProfile?.name ?? 'there'}! Tap Scan Snack to check a snack with the camera. Tap Browse to search for a snack. Or type a barcode number to check it.`}
+                  size="sm"
+                  className="mt-3"
+                  label="Hear what to do"
+                />
               </div>
 
               {/* Action Buttons - Floating */}
@@ -165,6 +190,14 @@ export function HomeClient() {
                   <Search className="w-6 h-6 inline mr-2" aria-hidden="true" />
                   Browse
                 </button>
+
+                <BarcodeSearchForm
+                  barcode={barcode}
+                  setBarcode={setBarcode}
+                  onSearch={handleManualSubmit}
+                  error={error}
+                  errorType="barcode"
+                />
               </div>
 
               {/* Category Cards Grid */}
@@ -352,6 +385,24 @@ export function HomeClient() {
             onClose={() => setShowSafeFoods(false)}
           />
         </div>
+      )}
+
+      {isGameOpen && activeProfile && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* key remounts on profile switch → fresh deck + per-profile stats */}
+          <GameHub
+            key={activeProfile.id}
+            profileId={activeProfile.id}
+            onClose={() => setIsGameOpen(false)}
+          />
+        </div>
+      )}
+
+      {showGameGate && (
+        <PremiumGate
+          feature="Snack mini-games"
+          onClose={() => setShowGameGate(false)}
+        />
       )}
 
       {showHistoryGate && (

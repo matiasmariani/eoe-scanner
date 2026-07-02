@@ -14,6 +14,7 @@ const FEATURES = [
   'Custom allergens for your family',
   'Manage multiple profiles in one app',
   'Full scan history at your fingertips',
+  'Four fun snack mini-games',
 ];
 
 interface PremiumGateProps {

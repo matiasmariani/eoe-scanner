@@ -158,6 +158,43 @@ Simple cartoonish viewport with:
 - Simple text labels ("Scan here!")
 ```
 
+## Mini-Games (Premium)
+
+Two premium-gated games built from the child's own scan history, launched from
+the `Gamepad2` button in the home top bar. Non-premium taps open the standard
+`PremiumGate`. Each game is a full-screen view (`fixed inset-0 z-50` overlay,
+`bg-theme-bg` gradient, `SnackScout size="sm"` header) following all the rules
+below — white cards, soft shadows, dark text, `bg-theme-accent` CTAs.
+
+### Shared language
+
+- **Mascot feedback**: kawaii `Planet` whose mood tracks performance — `happy`
+  → `blissful` (2+ streak) → `excited` (4+) → `lovestruck` (6+); `shocked`/`sad`
+  on mistakes, `ko` when out of hearts.
+- **Lives**: 3 hearts (`HeartsBar`), pop-out on loss, shake on the rest.
+- **Score**: +10 × streak multiplier (×2 at 3, ×3 at 6). Correct answers fire an
+  `EmojiBurst` (⭐✨🎉) + floating `+points` — no confetti library.
+- **Teaching moment**: mistakes always explain WHY using `getAllergenDisplay()`
+  allergen chips (emoji + label), never the raw `emoji:label` string.
+- **Empty state**: fewer than 4 unique history snacks → friendly "Scan more
+  snacks to play!" with a sad Planet.
+- **Stats**: high score / best streak / games played persisted per game per
+  profile in IndexedDB (`gameStats:<gameId>:<profileId>`).
+
+### Snack Sort (swipe)
+
+Card stack; swipe right = Good/safe, left = Bad/unsafe, or tap the big round
+✓ / ✗ buttons. Cards are white `rounded-3xl shadow-lg`, rotate while dragging
+with green/red corner stamps; wrong answers pause with a teaching overlay.
+
+### Snack Attack (whack-a-snack)
+
+3×3 grid of white `rounded-2xl shadow-lg` holes; snacks pop up and you tap only
+the safe ones before they hide. 45-second round with a `bg-theme-accent`
+countdown bar; difficulty ramps (faster spawns, shorter lifetimes, up to 3 at
+once). Wrong taps cost a heart and show a non-blocking red toast (too fast for a
+modal).
+
 ## Dos ✅
 
 - Use soft rounded corners everywhere

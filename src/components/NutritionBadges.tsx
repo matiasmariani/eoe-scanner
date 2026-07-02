@@ -6,6 +6,7 @@ import { AnimatePresence } from 'framer-motion';
 import { Planet, MOODS } from 'react-kawaii';
 import { cn } from '@/lib/utils';
 import { useIsPremium } from '@/lib/premium';
+import { nutriHealthPercent } from '@/lib/nutrition-utils';
 import { NutritionInfoModal } from '@/components/NutritionInfoModal';
 
 type KawaiiMood = (typeof MOODS)[number];
@@ -14,23 +15,25 @@ interface NutritionBadgesProps {
   nutriscoreGrade?: string;
   nutriscoreScore?: number;
   novaGroup?: number;
+  compact?: boolean;
+  align?: 'start' | 'center';
 }
 
 export function NutritionBadges({
   nutriscoreGrade,
-  nutriscoreScore,
   novaGroup,
+  compact = false,
+  align = 'center',
 }: NutritionBadgesProps) {
   const isPremium = useIsPremium();
   const [showNutriInfo, setShowNutriInfo] = useState(false);
   const [showNovaInfo, setShowNovaInfo] = useState(false);
 
-  // Only show Nutri-Score if data is valid (0-100 score)
-  const hasValidNutriScore =
-    nutriscoreGrade &&
-    nutriscoreScore !== undefined &&
-    nutriscoreScore >= 0 &&
-    nutriscoreScore <= 100;
+  // Show Nutri-Score whenever we have a valid A–E grade. (The raw OFF
+  // `nutriscoreScore` is an experimental scale — negative = healthy — so it
+  // can't gate validity or be shown as "/100"; we derive healthiness instead.)
+  const healthPercent = nutriHealthPercent(nutriscoreGrade);
+  const hasValidNutriScore = healthPercent !== null;
 
   // Only show NOVA if classified (1-3, skip 4 "Not classified")
   const hasValidNova = novaGroup && novaGroup >= 1 && novaGroup <= 3;
@@ -80,7 +83,8 @@ export function NutritionBadges({
       case 'E':
         return {
           mood: 'ko',
-          kawaiiColor: '#c0392b',
+          // Dark-dark red so the planet reads against the red-700 badge.
+          kawaiiColor: '#4a0d0d',
           badgeClass: 'bg-red-700 text-white',
           label: 'Very Poor',
         };
@@ -128,31 +132,56 @@ export function NutritionBadges({
 
   return (
     <>
-      <div className="w-full flex flex-wrap justify-center gap-6 px-2">
+      <div
+        className={cn(
+          'w-full flex flex-wrap gap-4 px-2',
+          align === 'center' ? 'justify-center' : 'justify-start',
+        )}
+      >
         {/* Nutri-Score Badge */}
         {isPremium && hasValidNutriScore && (
           <div className="relative">
             <div
               className={cn(
-                'flex items-center gap-4 px-6 py-4 rounded-2xl shadow-lg',
+                'flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg',
+                compact && 'px-3 py-2 rounded-xl',
                 nutri.badgeClass,
               )}
               role="img"
               aria-label={`Nutri-Score: ${nutri.label}`}
             >
-              <Planet size={56} mood={nutri.mood} color={nutri.kawaiiColor} />
+              <Planet
+                size={compact ? 32 : 56}
+                mood={nutri.mood}
+                color={nutri.kawaiiColor}
+              />
               <div className="flex flex-col items-start gap-0">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-black">
-                    {nutriscoreGrade.toUpperCase()}
+                <div className="flex items-baseline gap-1">
+                  <span
+                    className={cn(
+                      'font-black',
+                      compact ? 'text-lg' : 'text-2xl',
+                    )}
+                  >
+                    {nutriscoreGrade?.toUpperCase()}
                   </span>
-                  {nutriscoreScore !== undefined && (
-                    <span className="text-sm font-bold">
-                      {nutriscoreScore}/100
+                  {healthPercent !== null && (
+                    <span
+                      className={cn(
+                        'font-bold',
+                        compact ? 'text-[10px]' : 'text-sm',
+                      )}
+                    >
+                      {healthPercent}/100
                     </span>
                   )}
                 </div>
-                <span className="text-xs font-bold opacity-80">
+                <span
+                  className={cn(
+                    'font-bold opacity-80',
+                    compact ? 'text-[10px]' : 'text-xs',
+                  )}
+                >
                   {nutri.label}
                 </span>
               </div>
@@ -160,12 +189,18 @@ export function NutritionBadges({
 
             {/* Info Icon — Top Right Corner */}
             <button
-              onClick={() => setShowNutriInfo(true)}
-              className="absolute -top-2 -right-2 bg-white text-theme-text w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-transform z-10"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowNutriInfo(true);
+              }}
+              className="absolute -top-2 -right-2 bg-white text-theme-text w-6 h-6 rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-transform z-10"
               aria-label="Learn about Nutri-Score"
               title="What does this mean?"
             >
-              <Info className="w-5 h-5" aria-hidden="true" />
+              <Info
+                className={cn('w-4 h-4', !compact && 'w-5 h-5')}
+                aria-hidden="true"
+              />
             </button>
           </div>
         )}
@@ -174,18 +209,37 @@ export function NutritionBadges({
         {hasValidNova && (
           <div className="relative">
             <div
-              className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-white shadow-lg"
+              className={cn(
+                'flex items-center gap-3 px-4 py-3 rounded-2xl bg-white shadow-lg',
+                compact && 'px-3 py-2 rounded-xl',
+              )}
               role="img"
               aria-label={`Processing level: ${getNovaLabel(novaGroup)}`}
             >
-              <span className="text-5xl" aria-hidden="true">
+              <span
+                className={cn(
+                  'leading-none',
+                  compact ? 'text-2xl' : 'text-5xl',
+                )}
+                aria-hidden="true"
+              >
                 {getNovaEmoji(novaGroup)}
               </span>
               <div className="flex flex-col items-start gap-0">
-                <span className="text-xs font-black uppercase text-theme-text/80">
+                <span
+                  className={cn(
+                    'font-black uppercase text-theme-text/80',
+                    compact ? 'text-[10px]' : 'text-xs',
+                  )}
+                >
                   Processing
                 </span>
-                <span className="text-sm font-bold text-theme-text">
+                <span
+                  className={cn(
+                    'font-bold text-theme-text',
+                    compact ? 'text-xs' : 'text-sm',
+                  )}
+                >
                   {getNovaLabel(novaGroup)}
                 </span>
               </div>
@@ -193,12 +247,18 @@ export function NutritionBadges({
 
             {/* Info Icon — Top Right Corner */}
             <button
-              onClick={() => setShowNovaInfo(true)}
-              className="absolute -top-2 -right-2 bg-white text-theme-text w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-transform z-10"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowNovaInfo(true);
+              }}
+              className="absolute -top-2 -right-2 bg-white text-theme-text w-6 h-6 rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-transform z-10"
               aria-label="Learn about processing levels"
               title="What does this mean?"
             >
-              <Info className="w-5 h-5" aria-hidden="true" />
+              <Info
+                className={cn('w-4 h-4', !compact && 'w-5 h-5')}
+                aria-hidden="true"
+              />
             </button>
           </div>
         )}

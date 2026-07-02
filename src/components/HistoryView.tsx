@@ -140,10 +140,10 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                   exit={{ opacity: 0, scale: 0.95 }}
                   className="relative"
                 >
-                  <button
+                  <div
                     onClick={() => setDetailProduct(item.result)}
                     className={cn(
-                      'w-full bg-theme-primary shadow-lg p-4 flex items-center gap-4 rounded-2xl text-left transition-all active:scale-95',
+                      'w-full bg-theme-primary shadow-lg p-4 flex items-center gap-4 rounded-2xl text-left transition-all active:scale-95 cursor-pointer',
                       item.result.isSafe ? '' : 'ring-2 ring-redstone-red/30',
                     )}
                   >
@@ -187,6 +187,7 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                         })}
                       </p>
                     </div>
+
                     <div className="flex items-center gap-2">
                       {item.result.isSafe ? (
                         <div className="w-8 h-8 rounded-full bg-theme-primary/20 flex items-center justify-center">
@@ -212,7 +213,7 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                         </button>
                       )}
                     </div>
-                  </button>
+                  </div>
                 </motion.li>
               ))}
           </AnimatePresence>

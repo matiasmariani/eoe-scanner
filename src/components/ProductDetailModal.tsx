@@ -1,11 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { X, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
 import { ProductResult } from '@/lib/open-food-facts';
 import { getAllergenDisplay } from '@/lib/allergen-utils';
+import { nutriHealthPercent, healthBarColor } from '@/lib/nutrition-utils';
+import { NutritionInfoModal } from '@/components/NutritionInfoModal';
 import { cn } from '@/lib/utils';
 
 interface ProductDetailModalProps {
@@ -19,6 +21,9 @@ export function ProductDetailModal({
   isOpen,
   onClose,
 }: ProductDetailModalProps) {
+  const [showNutriInfo, setShowNutriInfo] = useState(false);
+  const [showNovaInfo, setShowNovaInfo] = useState(false);
+
   if (!isOpen) return null;
 
   const getNutriscoreColor = (grade?: string) => {
@@ -200,7 +205,15 @@ export function ProductDetailModal({
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   {nutriscoreGrade && (
-                    <div className="flex flex-col items-center p-4 bg-white rounded-3xl shadow-lg">
+                    <div className="relative flex flex-col items-center p-4 bg-white rounded-3xl shadow-lg">
+                      <button
+                        onClick={() => setShowNutriInfo(true)}
+                        className="absolute top-2 right-2 w-7 h-7 rounded-full bg-theme-bg text-theme-text flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-transform"
+                        aria-label="What does Nutri-Score mean?"
+                        title="What does this mean?"
+                      >
+                        <Info className="w-4 h-4" aria-hidden="true" />
+                      </button>
                       <p className="text-xs font-bold text-theme-text/70 mb-3">
                         Nutri-Score
                       </p>
@@ -215,7 +228,15 @@ export function ProductDetailModal({
                     </div>
                   )}
                   {hasNova && (
-                    <div className="flex flex-col items-center p-4 bg-white rounded-3xl shadow-lg">
+                    <div className="relative flex flex-col items-center p-4 bg-white rounded-3xl shadow-lg">
+                      <button
+                        onClick={() => setShowNovaInfo(true)}
+                        className="absolute top-2 right-2 w-7 h-7 rounded-full bg-theme-bg text-theme-text flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-transform"
+                        aria-label="What does the processing level mean?"
+                        title="What does this mean?"
+                      >
+                        <Info className="w-4 h-4" aria-hidden="true" />
+                      </button>
                       <p className="text-xs font-bold text-theme-text/70 mb-3">
                         Processing
                       </p>
@@ -232,27 +253,32 @@ export function ProductDetailModal({
             );
           })()}
 
-          {/* Nutriscore Score */}
-          {product.nutriscore_score !== undefined && (
-            <div className="mb-6 p-4 bg-theme-primary/10 rounded-2xl">
-              <p className="text-sm font-black uppercase text-theme-text mb-2">
-                Health Score
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-3 bg-gray-300 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-green-500 to-red-500"
-                    style={{
-                      width: `${(product.nutriscore_score / 100) * 100}%`,
-                    }}
-                  />
-                </div>
-                <p className="font-bold text-lg text-theme-text">
-                  {product.nutriscore_score}/100
+          {/* Health Score — derived from the A–E grade (higher = healthier) */}
+          {(() => {
+            const health = nutriHealthPercent(product.nutriscore_grade);
+            if (health === null) return null;
+            return (
+              <div className="mb-6 p-4 bg-theme-primary/10 rounded-2xl">
+                <p className="text-sm font-black uppercase text-theme-text mb-2">
+                  Health Score
                 </p>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-3 bg-gray-300 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${health}%`,
+                        backgroundColor: healthBarColor(health),
+                      }}
+                    />
+                  </div>
+                  <p className="font-bold text-lg text-theme-text">
+                    {health}/100
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Ingredients */}
           {product.ingredients && (
@@ -341,6 +367,24 @@ export function ProductDetailModal({
           </motion.button>
         </motion.div>
       </div>
+
+      {/* Nutrition legend modals */}
+      <AnimatePresence>
+        {showNutriInfo && (
+          <NutritionInfoModal
+            type="nutriscore"
+            isOpen={showNutriInfo}
+            onClose={() => setShowNutriInfo(false)}
+          />
+        )}
+        {showNovaInfo && (
+          <NutritionInfoModal
+            type="nova"
+            isOpen={showNovaInfo}
+            onClose={() => setShowNovaInfo(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
