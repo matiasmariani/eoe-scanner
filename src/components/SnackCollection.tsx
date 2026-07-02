@@ -1,11 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, CheckCircle2 } from 'lucide-react';
 import { useSnackCollection, scoutRank } from '@/hooks/useSnackCollection';
 import { CollectedSnack } from '@/lib/db';
 import { SnackScout } from '@/components/SnackScout';
+import { ConfirmationModal } from '@/components/ConfirmationModal';
 
 interface SnackCollectionProps {
   onClose: () => void;
@@ -13,6 +15,25 @@ interface SnackCollectionProps {
 
 export function SnackCollection({ onClose }: SnackCollectionProps) {
   const { snacks, removeSnack } = useSnackCollection();
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    snack?: CollectedSnack;
+  }>({ isOpen: false });
+
+  const handleRemoveClick = (snack: CollectedSnack) => {
+    setModalConfig({ isOpen: true, snack });
+  };
+
+  const handleConfirmRemove = () => {
+    if (modalConfig.snack?.barcode) {
+      removeSnack(modalConfig.snack.barcode);
+    }
+    setModalConfig({ isOpen: false });
+  };
+
+  const handleCloseModal = () => {
+    setModalConfig({ isOpen: false });
+  };
 
   return (
     <div className="min-h-screen bg-theme-bg flex flex-col">
@@ -66,7 +87,7 @@ export function SnackCollection({ onClose }: SnackCollectionProps) {
                   className="bg-theme-text rounded-[2rem] border-4 border-theme-border shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 flex flex-col items-center text-center relative"
                 >
                   <button
-                    onClick={() => removeSnack(snack.barcode)}
+                    onClick={() => handleRemoveClick(snack)}
                     className="absolute -top-3 -right-3 bg-theme-bg text-redstone-red w-9 h-9 rounded-full flex items-center justify-center border-2 border-redstone-red shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:scale-110 transition-transform"
                     aria-label={`Remove ${snack.name} from collection`}
                   >
@@ -74,9 +95,11 @@ export function SnackCollection({ onClose }: SnackCollectionProps) {
                   </button>
 
                   {snack.image_url ? (
-                    <img
+                    <Image
                       src={snack.image_url}
                       alt={snack.name}
+                      width={80}
+                      height={80}
                       className="w-20 h-20 object-cover rounded-2xl border-2 border-theme-border mb-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                     />
                   ) : (
@@ -104,6 +127,13 @@ export function SnackCollection({ onClose }: SnackCollectionProps) {
           </ul>
         )}
       </div>
+      <ConfirmationModal
+        isOpen={modalConfig.isOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmRemove}
+        title="Remove Snack?"
+        message={`Are you sure you want to remove ${modalConfig.snack?.name || 'this snack'} from your collection?`}
+      />
     </div>
   );
 }

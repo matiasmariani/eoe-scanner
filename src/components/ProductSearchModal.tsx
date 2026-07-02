@@ -67,7 +67,7 @@ export function ProductSearchModal({
         className="bg-theme-bg border-4 border-theme-border shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col p-6 space-y-4 overflow-y-auto"
       >
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-3xl font-display font-black text-theme-text">
             Browse Safe Snacks
           </h2>
@@ -78,6 +78,16 @@ export function ProductSearchModal({
           >
             ✕
           </button>
+        </div>
+
+        {/* Info Description */}
+        <div className="bg-theme-text/5 border-2 border-theme-border/30 rounded-xl p-3 mb-4">
+          <p className="text-xs font-body font-bold text-theme-text/80 leading-relaxed">
+            🔍 Powered by <strong>Open Food Facts</strong>, a community
+            database. Not all U.S. products may be available—if you don&apos;t
+            find something, that&apos;s okay! Use the barcode scanner or manual
+            entry to stay safe.
+          </p>
         </div>
 
         {/* Search Input */}

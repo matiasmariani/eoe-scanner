@@ -3,14 +3,17 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserPlus, Trash2 } from 'lucide-react';
-import { useAllergySettings } from '@/contexts/AllergyContext';
 import { AllergyList } from '@/components/AllergyList';
 import { CustomAllergyInput } from '@/components/CustomAllergyInput';
 import { CustomAllergiesDisplay } from '@/components/CustomAllergiesDisplay';
+import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { PremiumGate } from '@/components/PremiumGate';
+
+import { useAllergySettings } from '@/contexts/AllergyContext';
 import { useIsPremium } from '@/lib/premium';
 import { PROFILE_EMOJIS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { dbService } from '@/lib/db';
 
 export function AllergySettings({ onClose }: { onClose: () => void }) {
   const {
@@ -27,16 +30,39 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
   const isPremium = useIsPremium();
   const [isCreatingProfile, setIsCreatingProfile] = useState(false);
   const [showProfileGate, setShowProfileGate] = useState(false);
-  const [confirmReset, setConfirmReset] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    type: 'RESET_ALLERGIES' | 'DELETE_PROFILE' | null;
+    profile?: { id: string; name: string };
+  }>({ isOpen: false, type: null });
   const [newName, setNewName] = useState('');
   const [newEmoji, setNewEmoji] = useState('🧒');
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
-    await createProfile(newName.trim(), newEmoji);
+    const profile = await createProfile(newName.trim(), newEmoji);
+    if (profile) {
+      await dbService.saveProfile({ ...profile, isAdult: true });
+    }
     setNewName('');
     setNewEmoji('🧒');
     setIsCreatingProfile(false);
+  };
+
+  const handleConfirmReset = async () => {
+    await clearAllergies();
+    setModalConfig({ isOpen: false, type: null });
+  };
+
+  const handleConfirmDeleteProfile = async () => {
+    if (modalConfig.profile?.id) {
+      await deleteProfile(modalConfig.profile.id);
+    }
+    setModalConfig({ isOpen: false, type: null });
+  };
+
+  const handleCloseModal = () => {
+    setModalConfig({ isOpen: false, type: null });
   };
 
   return (
@@ -60,41 +86,17 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
           >
             My Allergies
           </h2>
-          {confirmReset ? (
-            <div className="flex gap-2">
-              <button
-                onClick={async () => {
-                  await clearAllergies();
-                  setConfirmReset(false);
-                }}
-                className="bg-redstone-red border-4 border-theme-border px-4 py-2 rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none transition-all"
-                aria-label="Confirm — clear all allergies"
-              >
-                <span className="text-xs font-black uppercase text-theme-text">
-                  Clear all?
-                </span>
-              </button>
-              <button
-                onClick={() => setConfirmReset(false)}
-                className="bg-theme-bg border-4 border-theme-border px-4 py-2 rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none transition-all"
-                aria-label="Cancel reset"
-              >
-                <span className="text-xs font-black uppercase text-theme-text">
-                  Cancel
-                </span>
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setConfirmReset(true)}
-              className="bg-theme-bg border-4 border-theme-border px-6 py-2 rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[1px] active:shadow-none transition-all"
-              aria-label="Reset all allergies"
-            >
-              <span className="text-xs font-black uppercase text-redstone-red">
-                RESET
-              </span>
-            </button>
-          )}
+          <button
+            onClick={() =>
+              setModalConfig({ isOpen: true, type: 'RESET_ALLERGIES' })
+            }
+            className="bg-theme-bg border-4 border-theme-border px-6 py-2 rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[1px] active:shadow-none transition-all"
+            aria-label="Reset all allergies"
+          >
+            <span className="text-xs font-black uppercase text-redstone-red">
+              RESET
+            </span>
+          </button>
         </div>
 
         {/* Profile Switcher */}
@@ -141,9 +143,11 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (confirm(`Delete ${profile.name}?`)) {
-                        deleteProfile(profile.id);
-                      }
+                      setModalConfig({
+                        isOpen: true,
+                        type: 'DELETE_PROFILE',
+                        profile: { id: profile.id, name: profile.name },
+                      });
                     }}
                     className="absolute -top-2 -right-2 p-2 bg-redstone-red text-theme-text rounded-full border-2 border-theme-border shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
                     aria-label={`Delete ${profile.name}`}
@@ -250,6 +254,25 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
           onClose={() => setShowProfileGate(false)}
         />
       )}
+      <ConfirmationModal
+        isOpen={modalConfig.isOpen}
+        onClose={handleCloseModal}
+        onConfirm={
+          modalConfig.type === 'RESET_ALLERGIES'
+            ? handleConfirmReset
+            : handleConfirmDeleteProfile
+        }
+        title={
+          modalConfig.type === 'RESET_ALLERGIES'
+            ? 'Clear All?'
+            : 'Delete Profile?'
+        }
+        message={
+          modalConfig.type === 'RESET_ALLERGIES'
+            ? 'Are you sure you want to reset all your allergen settings?'
+            : `Are you sure you want to remove ${modalConfig.profile?.name || 'this profile'}?`
+        }
+      />
     </div>
   );
 }

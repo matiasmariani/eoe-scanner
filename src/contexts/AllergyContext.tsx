@@ -37,6 +37,7 @@ export interface Profile {
   emoji: string;
   allergies: Allergy[];
   createdAt: number;
+  isAdult?: boolean;
 }
 
 const AllergyContext = createContext<AllergyContextType | undefined>(undefined);

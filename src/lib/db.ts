@@ -35,6 +35,17 @@ export type Profile = {
   emoji: string;
   allergies: Allergy[];
   createdAt: number;
+  isAdult?: boolean;
+};
+
+export type SafeFood = {
+  id: string;
+  profileId: string;
+  name: string;
+  brand?: string;
+  notes?: string;
+  source: 'scanned' | 'manual';
+  addedAt: number;
 };
 
 export interface HistoryItem {
@@ -49,6 +60,7 @@ export class AllergyScoutDB extends Dexie {
   settings!: Table<SettingsRecord, string>;
   history!: Table<HistoryItem>;
   profiles!: Table<Profile>;
+  safeFoods!: Table<SafeFood>;
 
   constructor() {
     super('AllergyScoutDB');
@@ -96,6 +108,16 @@ export class AllergyScoutDB extends Dexie {
             return undefined;
           });
       });
+
+    // Version 4: Add safeFoods table
+    this.version(4).stores({
+      scans: 'barcode, timestamp',
+      collection: 'barcode, savedAt',
+      settings: 'id',
+      history: 'barcode, timestamp',
+      profiles: '++id, name, createdAt',
+      safeFoods: '++id, profileId',
+    });
   }
 }
 
@@ -212,6 +234,27 @@ export class DBService {
 
   async deleteProfile(id: string) {
     return db.profiles.delete(id);
+  }
+
+  // Safe Foods methods
+  async addSafeFood(safeFood: SafeFood): Promise<string> {
+    return db.safeFoods.add(safeFood);
+  }
+
+  async getSafeFoodsByProfile(profileId: string): Promise<SafeFood[]> {
+    return db.safeFoods
+      .where('profileId')
+      .equals(profileId)
+      .reverse()
+      .sortBy('addedAt');
+  }
+
+  async deleteSafeFood(id: string): Promise<void> {
+    await db.safeFoods.delete(id);
+  }
+
+  async updateSafeFood(id: string, updates: Partial<SafeFood>): Promise<void> {
+    await db.safeFoods.update(id, updates);
   }
 }
 

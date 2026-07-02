@@ -31,7 +31,7 @@ export function BarcodeSearchForm({
   return (
     <form
       onSubmit={handleFormSubmit}
-      className="flex flex-col gap-6 w-full p-10 bg-block-white border-4 border-ink-navy rounded-[3rem] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+      className="flex flex-col gap-4 w-full p-6 bg-block-white border-4 border-ink-navy rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
     >
       <div className="relative flex-1">
         <input
@@ -41,7 +41,7 @@ export function BarcodeSearchForm({
           placeholder="Enter barcode..."
           value={barcode}
           onChange={(e) => setBarcode(e.target.value)}
-          className="w-full p-8 border-4 border-ink-navy text-center text-xl font-data font-bold focus:ring-4 focus:ring-grass-green outline-none bg-deep-stone text-block-white shadow-inner rounded-3xl"
+          className="w-full p-4 border-4 border-ink-navy text-center text-base font-data font-bold focus:ring-4 focus:ring-grass-green outline-none bg-deep-stone text-block-white rounded-xl"
           aria-label="Barcode input"
           aria-describedby={
             error && errorType === 'barcode' ? 'barcode-error' : undefined
@@ -50,7 +50,7 @@ export function BarcodeSearchForm({
         {error && errorType === 'barcode' && (
           <p
             id="barcode-error"
-            className="text-lg text-redstone-red mt-4 font-body font-bold"
+            className="text-sm text-redstone-red mt-2 font-body font-bold"
             role="alert"
           >
             {error}
@@ -59,10 +59,10 @@ export function BarcodeSearchForm({
       </div>
       <button
         type="submit"
-        className="bg-grass-green border-4 border-ink-navy p-8 rounded-[3rem] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] hover:-translate-y-[2px] transition-all flex items-center justify-center"
+        className="bg-grass-green border-4 border-ink-navy px-4 py-3 rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] hover:-translate-y-[2px] transition-all flex items-center justify-center"
         aria-label="Search product"
       >
-        <Search className="w-14 h-14 text-block-white" aria-hidden="true" />
+        <Search className="w-6 h-6 text-block-white" aria-hidden="true" />
       </button>
     </form>
   );

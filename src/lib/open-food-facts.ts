@@ -167,8 +167,7 @@ async function fetchRawProduct(barcode: string): Promise<RawProduct> {
       {
         headers: {
           'User-Agent':
-            process.env.OPENFOODFACTS_USER_AGENT ||
-            'AllergyScout/1.0 (contact@example.com)',
+            process.env.OPENFOODFACTS_USER_AGENT || 'SnackScout/1.0',
         },
         next: { revalidate: 86400 }, // Cache for 24 hours using Next.js native fetch cache
         signal: AbortSignal.timeout(8000), // Don't hang forever on flaky mobile networks

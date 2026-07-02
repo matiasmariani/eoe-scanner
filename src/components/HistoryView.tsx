@@ -1,16 +1,37 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import { useHistory } from '@/hooks/useHistory';
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { SnackScout } from '@/components/SnackScout';
+import { ConfirmationModal } from '@/components/ConfirmationModal';
 
 export function HistoryView({ onClose }: { onClose: () => void }) {
   const { history, removeHistory } = useHistory();
   const { adultMode } = useAllergySettings();
   const [filter, setFilter] = React.useState<'all' | 'good' | 'bad'>('all');
+  const [modalConfig, setModalConfig] = React.useState<{
+    isOpen: boolean;
+    item?: { barcode: string; name: string };
+  }>({ isOpen: false });
+
+  const handleRemoveClick = (item: { barcode: string; name: string }) => {
+    setModalConfig({ isOpen: true, item });
+  };
+
+  const handleConfirmRemove = () => {
+    if (modalConfig.item?.barcode) {
+      removeHistory(modalConfig.item.barcode);
+    }
+    setModalConfig({ isOpen: false });
+  };
+
+  const handleCloseModal = () => {
+    setModalConfig({ isOpen: false });
+  };
 
   if (history === undefined) {
     return (
@@ -87,9 +108,11 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                       aria-hidden="true"
                     >
                       {item.result.image_url ? (
-                        <img
+                        <Image
                           src={item.result.image_url}
                           alt={item.result.name}
+                          width={64}
+                          height={64}
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -130,8 +153,10 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
                       {adultMode && (
                         <button
                           onClick={() =>
-                            item.barcode !== undefined &&
-                            removeHistory(item.barcode)
+                            handleRemoveClick({
+                              barcode: item.barcode,
+                              name: item.result.name,
+                            })
                           }
                           className="w-8 h-8 flex items-center justify-center text-redstone-red hover:bg-redstone-red/10 rounded-lg transition-colors"
                           aria-label="Remove from history"
@@ -146,6 +171,13 @@ export function HistoryView({ onClose }: { onClose: () => void }) {
           </AnimatePresence>
         </ul>
       </div>
+      <ConfirmationModal
+        isOpen={modalConfig.isOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmRemove}
+        title="Remove Item?"
+        message={`Are you sure you want to remove ${modalConfig.item?.name || 'this item'} from your history?`}
+      />
     </div>
   );
 }

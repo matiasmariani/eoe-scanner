@@ -11,6 +11,7 @@ import {
   History,
   UserRound,
   Check,
+  BookOpen,
 } from 'lucide-react';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { Scanner } from '@/components/Scanner';
@@ -25,6 +26,7 @@ import { SnackCollection } from '@/components/SnackCollection';
 import { HistoryView } from '@/components/HistoryView';
 import { AdultModeModal } from '@/components/AdultModeModal';
 import { ProductSearchModal } from '@/components/ProductSearchModal';
+import { SafeFoodsView } from '@/components/SafeFoodsView';
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { useProductLookup } from '@/hooks/useProductLookup';
 import { useHistory } from '@/hooks/useHistory';
@@ -40,8 +42,9 @@ export function HomeClient() {
   const [isAdultModalOpen, setIsAdultModalOpen] = useState(false);
   const [showHistoryGate, setShowHistoryGate] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showSafeFoods, setShowSafeFoods] = useState(false);
   const isPremium = useIsPremium();
-  const { adultMode } = useAllergySettings();
+  const { adultMode, activeProfile } = useAllergySettings();
 
   const {
     mode,
@@ -56,7 +59,7 @@ export function HomeClient() {
     reset,
   } = useProductLookup();
 
-  const { history } = useHistory();
+  const { history, addHistory } = useHistory();
   const { toggleSnack } = useSnackCollection();
 
   const handleScan = (code: string) => {
@@ -73,53 +76,75 @@ export function HomeClient() {
         Skip to main content
       </a>
 
-      <header className="w-full px-6 py-4 flex flex-col items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            className="p-3 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
-            aria-label="Allergy settings"
-          >
-            <ShieldCheck
-              className="w-8 h-8 text-theme-primary"
-              aria-hidden="true"
-            />
-          </button>
-          <button
-            onClick={reset}
-            className="p-3 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
-            aria-label="Reset scanner"
-          >
-            <RefreshCcw
-              className="w-8 h-8 text-redstone-red"
-              aria-hidden="true"
-            />
-          </button>
-          <button
-            onClick={() => setIsCollectionOpen(true)}
-            className="p-3 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
-            aria-label="My safe snacks collection"
-          >
-            <Album className="w-8 h-8 text-theme-accent" aria-hidden="true" />
-          </button>
-          <button
-            onClick={() => {
-              if (!isPremium) {
-                setShowHistoryGate(true);
-                return;
-              }
-              setIsHistoryOpen(true);
-            }}
-            disabled={!history || history.length === 0}
-            className={`p-3 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px] ${!history || history.length === 0 ? 'opacity-40 grayscale cursor-not-allowed hover:translate-y-0' : ''}`}
-            aria-label="Scan history"
-          >
-            <History
-              className="w-8 h-8 text-theme-primary"
-              aria-hidden="true"
-            />
-          </button>
-          <ThemeSelector />
+      <header className="w-full px-4 py-4 flex flex-col items-center justify-between gap-4">
+        <div className="w-full flex items-center justify-between gap-2">
+          {/* Left buttons cluster */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="p-2 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
+              aria-label="Allergy settings"
+              title="Settings"
+            >
+              <ShieldCheck
+                className="w-6 h-6 text-theme-primary"
+                aria-hidden="true"
+              />
+            </button>
+            <button
+              onClick={() => setShowSafeFoods(true)}
+              className="p-2 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
+              aria-label="Safe foods list"
+              title="Safe Foods"
+            >
+              <BookOpen
+                className="w-6 h-6 text-theme-accent"
+                aria-hidden="true"
+              />
+            </button>
+            <button
+              onClick={() => setIsCollectionOpen(true)}
+              className="p-2 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
+              aria-label="My safe snacks collection"
+              title="Collection"
+            >
+              <Album className="w-6 h-6 text-theme-accent" aria-hidden="true" />
+            </button>
+            <button
+              onClick={() => {
+                if (!isPremium) {
+                  setShowHistoryGate(true);
+                  return;
+                }
+                setIsHistoryOpen(true);
+              }}
+              disabled={!history || history.length === 0}
+              className={`p-2 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px] ${!history || history.length === 0 ? 'opacity-40 grayscale cursor-not-allowed hover:translate-y-0' : ''}`}
+              aria-label="Scan history"
+              title="History"
+            >
+              <History
+                className="w-6 h-6 text-theme-primary"
+                aria-hidden="true"
+              />
+            </button>
+          </div>
+
+          {/* Right buttons cluster */}
+          <div className="flex items-center gap-2">
+            <ThemeSelector />
+            <button
+              onClick={reset}
+              className="p-2 bg-theme-bg border-4 border-theme-border rounded-2xl shadow-voxel active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:-translate-y-[2px]"
+              aria-label="Reset scanner"
+              title="Reset"
+            >
+              <RefreshCcw
+                className="w-6 h-6 text-redstone-red"
+                aria-hidden="true"
+              />
+            </button>
+          </div>
         </div>
 
         <SnackScout />
@@ -139,6 +164,8 @@ export function HomeClient() {
               setResult(product);
               setMode('result');
               setShowSearchModal(false);
+              // Save to history
+              addHistory(product.barcode, product);
             }}
           />
         )}
@@ -320,6 +347,13 @@ export function HomeClient() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <HistoryView onClose={() => setIsHistoryOpen(false)} />
         </div>
+      )}
+
+      {showSafeFoods && activeProfile && (
+        <SafeFoodsView
+          profileId={activeProfile.id}
+          onClose={() => setShowSafeFoods(false)}
+        />
       )}
 
       {showHistoryGate && (

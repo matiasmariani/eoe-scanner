@@ -5,6 +5,7 @@ import { useAllergySettings } from '@/contexts/AllergyContext';
 import { useIsPremium } from '@/lib/premium';
 import { cn } from '@/lib/utils';
 import { Plus, X, Trash2, Lock } from 'lucide-react';
+import { ConfirmationModal } from '@/components/ConfirmationModal';
 
 const KID_EMOJIS = ['🐱', '🐶', '🐻', '🦊', '🐼', '🐨', '🐯', '🦁', '🐸', '🐵'];
 
@@ -26,6 +27,10 @@ export function ProfileSelector({ isOpen, onClose }: ProfileSelectorProps) {
   const [newName, setNewName] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState('🐱');
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    profile?: { id: string; name: string };
+  }>({ isOpen: false });
 
   if (!isOpen) return null;
 
@@ -39,6 +44,21 @@ export function ProfileSelector({ isOpen, onClose }: ProfileSelectorProps) {
   const handleDeleteProfile = async (id: string) => {
     if (id === activeProfile?.id) return; // Can't delete active profile
     await deleteProfile(id);
+  };
+
+  const handleRemoveClick = (profile: { id: string; name: string }) => {
+    setModalConfig({ isOpen: true, profile });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (modalConfig.profile?.id) {
+      await handleDeleteProfile(modalConfig.profile.id);
+    }
+    setModalConfig({ isOpen: false });
+  };
+
+  const handleCloseModal = () => {
+    setModalConfig({ isOpen: false });
   };
 
   return (
@@ -92,7 +112,9 @@ export function ProfileSelector({ isOpen, onClose }: ProfileSelectorProps) {
 
               {profile.id !== activeProfile?.id && (
                 <button
-                  onClick={() => handleDeleteProfile(profile.id)}
+                  onClick={() =>
+                    handleRemoveClick({ id: profile.id, name: profile.name })
+                  }
                   className="w-10 h-10 flex items-center justify-center border-4 border-theme-border rounded-full bg-redstone-red/10 text-redstone-red shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-transform"
                   aria-label={`Delete ${profile.name}`}
                 >
@@ -198,6 +220,13 @@ export function ProfileSelector({ isOpen, onClose }: ProfileSelectorProps) {
           </div>
         )}
       </div>
+      <ConfirmationModal
+        isOpen={modalConfig.isOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmDelete}
+        title="Delete Profile?"
+        message={`Are you sure you want to remove ${modalConfig.profile?.name || 'this profile'}?`}
+      />
     </div>
   );
 }
