@@ -33,12 +33,27 @@ export const OpenFoodFactsProductSchema = z.object({
   product_name: z.string().optional(),
   brands: z.string().optional(),
   ingredients_text: z.string().optional(),
+  ingredients: z
+    .array(
+      z
+        .object({
+          id: z.string().optional(),
+          text: z.string().optional(),
+          vegan: z.string().optional(),
+          vegetarian: z.string().optional(),
+        })
+        .passthrough(),
+    )
+    .optional(),
   allergens: z.string().optional(),
   allergens_tags: z.array(z.string()).optional(),
   image_url: z.string().url().optional().nullable(),
   image_front_url: z.string().url().optional().nullable(),
   image_small_url: z.string().url().optional().nullable(),
   categories_tags: z.array(z.string()).optional(),
+  nutriscore_grade: z.string().optional(),
+  nutriscore_score: z.number().optional(),
+  nova_group: z.number().optional(),
 });
 
 export const OpenFoodFactsResponseSchema = z.object({

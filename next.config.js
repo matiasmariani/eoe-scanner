@@ -10,6 +10,14 @@ const nextConfig = {
   experimental: {
     reactCompiler: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.openfoodfacts.org',
+      },
+    ],
+  },
   async headers() {
     return [
       {

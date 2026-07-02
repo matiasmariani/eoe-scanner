@@ -12,6 +12,15 @@ export interface ProductResult {
   source?: string;
   ingredients?: string;
   icon?: string;
+  nutriscore_grade?: string; // "A" | "B" | "C" | "D" | "E"
+  nutriscore_score?: number; // 0–100
+  nova_group?: number; // 1–4
+  ingredientsArray?: Array<{
+    id?: string;
+    text?: string;
+    vegan?: string;
+    vegetarian?: string;
+  }>;
   // The full text allergen matching runs against: ingredients + allergen label
   // + allergen tags. Persisted so cache hits can re-check against the CURRENT
   // user allergies (including custom ones) instead of reusing a stale verdict.
@@ -116,7 +125,7 @@ export interface OpenFoodFactsResponse {
   };
 }
 
-import { checkAllergens } from './allergen-utils';
+import { checkAllergens, checkAllergensStructured } from './allergen-utils';
 import { resolveIcon } from './icon-utils';
 import { logError } from './errorHandling';
 import { OpenFoodFactsResponseSchema } from './schemas';
@@ -125,7 +134,7 @@ const ERROR_MSG = "I can't find that product. Ask a grown-up for help";
 
 // Only the fields we actually consume — keeps the OFF response small/fast.
 const OFF_FIELDS =
-  'product_name,brands,ingredients_text,allergens,allergens_tags,image_url,image_front_url,image_small_url,categories_tags';
+  'product_name,brands,ingredients,ingredients_text,allergens,allergens_tags,image_url,image_front_url,image_small_url,categories_tags,nutriscore_grade,nutriscore_score,nova_group';
 
 // We cache the raw product data (the expensive network result) rather than a
 // computed ProductResult, so allergen matching is re-run against the current
@@ -136,10 +145,19 @@ interface RawProduct {
   name?: string;
   brand?: string;
   ingredients?: string;
+  ingredientsArray?: Array<{
+    id?: string;
+    text?: string;
+    vegan?: string;
+    vegetarian?: string;
+  }>;
   allergensText?: string;
   allergensTags?: string[];
   categoriesTags?: string[];
   image_url?: string;
+  nutriscoreGrade?: string;
+  nutriscoreScore?: number;
+  novaGroup?: number;
 }
 
 async function fetchRawProduct(barcode: string): Promise<RawProduct> {
@@ -195,6 +213,7 @@ async function fetchRawProduct(barcode: string): Promise<RawProduct> {
       name: product.product_name || 'Unknown Product',
       brand: product.brands || 'Unknown Brand',
       ingredients: product.ingredients_text || '',
+      ingredientsArray: product.ingredients || [],
       allergensText: product.allergens || '',
       allergensTags: product.allergens_tags || [],
       categoriesTags: product.categories_tags || [],
@@ -203,6 +222,9 @@ async function fetchRawProduct(barcode: string): Promise<RawProduct> {
         product.image_front_url ??
         product.image_small_url ??
         undefined,
+      nutriscoreGrade: product.nutriscore_grade || undefined,
+      nutriscoreScore: product.nutriscore_score || undefined,
+      novaGroup: product.nova_group || undefined,
     };
   } catch (error) {
     logError('open-food-facts-fetch', error);
@@ -230,20 +252,83 @@ export async function fetchProductFromOpenFoodFacts(
 
   // OFF allergen tags (e.g. "en:milk") are the most reliable signal; combine
   // them with the free-text ingredients and allergens label for matching.
-  const haystack = `${raw.ingredients} ${raw.allergensText} ${(raw.allergensTags ?? []).join(' ')}`;
-  const foundAllergens = checkAllergens(haystack, userAllergies);
+  // Prefer structured ingredients array if available; fall back to text
+  const { isSafe, allergensFound } = raw.ingredientsArray?.length
+    ? checkAllergensStructured(
+        raw.ingredientsArray,
+        raw.allergensText,
+        raw.allergensTags ?? [],
+        userAllergies,
+      )
+    : {
+        isSafe:
+          checkAllergens(
+            `${raw.ingredients} ${raw.allergensText} ${(raw.allergensTags ?? []).join(' ')}`,
+            userAllergies,
+          ).length === 0,
+        allergensFound: checkAllergens(
+          `${raw.ingredients} ${raw.allergensText} ${(raw.allergensTags ?? []).join(' ')}`,
+          userAllergies,
+        ),
+      };
 
   return {
     barcode,
     name: raw.name!,
     brand: raw.brand!,
-    isSafe: foundAllergens.length === 0,
-    allergensFound: foundAllergens,
+    isSafe: isSafe,
+    allergensFound: allergensFound,
     ingredients: raw.ingredients ?? '',
-    matchText: haystack,
+    ingredientsArray: raw.ingredientsArray,
+    matchText: `${raw.ingredients} ${raw.allergensText} ${(raw.allergensTags ?? []).join(' ')}`,
     image_url: raw.image_url,
     icon: resolveIcon(raw.categoriesTags, raw.name!),
+    nutriscore_grade: raw.nutriscoreGrade,
+    nutriscore_score: raw.nutriscoreScore,
+    nova_group: raw.novaGroup,
   };
 }
 
 // USDA types live in `@/services/usdaService` (the single USDA implementation).
+
+/**
+ * Fetches taxonomy suggestions from Open Food Facts for allergen standardization.
+ * Used when user enters a custom allergen to suggest canonical matches.
+ *
+ * @param query The user's custom allergen input (e.g., "pean", "cid")
+ * @returns Array of suggestion objects with label and rank
+ */
+export async function fetchTaxonomySuggestions(
+  query: string,
+): Promise<Array<{ name: string; id: string }>> {
+  if (!query || query.length < 2) return [];
+
+  try {
+    const response = await fetch(
+      `https://us.openfoodfacts.org/api/v3/taxonomy_suggestions?q=${encodeURIComponent(query)}&taxonomy=allergens`,
+      {
+        headers: {
+          'User-Agent':
+            process.env.OPENFOODFACTS_USER_AGENT ||
+            'SnackScout/1.0 (hi@matiasmariani.io)',
+        },
+        signal: AbortSignal.timeout(3000),
+      },
+    );
+
+    if (!response.ok) return [];
+
+    const data = await response.json();
+
+    // OFF returns suggestions as an array; extract name/id pairs
+    // Response shape: { results: [{ name, id }, ...] } or just [{ name, id }, ...]
+    const suggestions = Array.isArray(data) ? data : data.results || [];
+    return suggestions.slice(0, 5).map((s: { name?: string; id?: string }) => ({
+      name: s.name || s.id || '',
+      id: s.id || s.name || '',
+    }));
+  } catch (error) {
+    logError('taxonomy-suggestions-fetch', error);
+    return [];
+  }
+}

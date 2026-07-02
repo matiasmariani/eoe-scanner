@@ -11,11 +11,13 @@ import {
   Volume2,
   Lock,
 } from 'lucide-react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { useIsPremium } from '@/lib/premium';
 import { useSpeakResult } from '@/hooks/useSpeakResult';
 import { PremiumGate } from '@/components/PremiumGate';
+import { NutritionBadges } from '@/components/NutritionBadges';
 import { type ProductResult } from '@/lib/open-food-facts';
 
 interface ResultCardProps {
@@ -108,9 +110,11 @@ export const ResultCard: React.FC<ResultCardProps> = ({
         aria-label={result.name}
       >
         {result.image_url ? (
-          <img
+          <Image
             src={result.image_url}
             alt={result.name}
+            width={256}
+            height={256}
             className="w-64 h-64 object-cover rounded-3xl border-4 border-theme-border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
           />
         ) : (
@@ -177,6 +181,13 @@ export const ResultCard: React.FC<ResultCardProps> = ({
           ))
         )}
       </ul>
+
+      {/* Nutrition Badges (Nutri-Score + NOVA) */}
+      <NutritionBadges
+        nutriscoreGrade={result.nutriscore_grade}
+        nutriscoreScore={result.nutriscore_score}
+        novaGroup={result.nova_group}
+      />
 
       {/* Action Buttons — only safe snacks can join the collection */}
       <div

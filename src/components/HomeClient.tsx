@@ -24,6 +24,7 @@ import { SnackScout } from '@/components/SnackScout';
 import { SnackCollection } from '@/components/SnackCollection';
 import { HistoryView } from '@/components/HistoryView';
 import { AdultModeModal } from '@/components/AdultModeModal';
+import { ProductSearchModal } from '@/components/ProductSearchModal';
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { useProductLookup } from '@/hooks/useProductLookup';
 import { useHistory } from '@/hooks/useHistory';
@@ -38,6 +39,7 @@ export function HomeClient() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isAdultModalOpen, setIsAdultModalOpen] = useState(false);
   const [showHistoryGate, setShowHistoryGate] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
   const isPremium = useIsPremium();
   const { adultMode } = useAllergySettings();
 
@@ -47,6 +49,7 @@ export function HomeClient() {
     barcode,
     setBarcode,
     result,
+    setResult,
     error,
     lookupProduct,
     handleManualSubmit,
@@ -127,6 +130,18 @@ export function HomeClient() {
         id="main-content"
         className="w-full space-y-6 flex flex-col items-center"
       >
+        {showSearchModal && (
+          <ProductSearchModal
+            onClose={() => setShowSearchModal(false)}
+            onSelect={(product) => {
+              // Display search result directly (already has fresh allergen check)
+              setBarcode(product.barcode);
+              setResult(product);
+              setMode('result');
+              setShowSearchModal(false);
+            }}
+          />
+        )}
         <AnimatePresence mode="wait">
           {mode === 'idle' && (
             <motion.div
@@ -158,6 +173,28 @@ export function HomeClient() {
                     className="w-20 h-20 group-hover:scale-110 transition-transform drop-shadow-[4px_4px_0px_rgba(0,0,0,0.8)]"
                     aria-hidden="true"
                   />
+                </button>
+
+                <button
+                  onClick={() => setShowSearchModal(true)}
+                  className={cn(
+                    'w-full flex items-center justify-center gap-3 py-4 px-6 rounded-3xl border-4 border-theme-border font-display font-black text-lg transition-all',
+                    isPremium
+                      ? 'bg-theme-accent text-theme-border shadow-voxel hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]'
+                      : 'bg-theme-bg text-theme-text/40 border-theme-text/20 cursor-not-allowed opacity-60',
+                  )}
+                  disabled={!isPremium}
+                  aria-label={
+                    isPremium ? 'Browse safe snacks' : 'Browse (Premium)'
+                  }
+                >
+                  <span>🔍</span>
+                  <span>Browse Safe Snacks</span>
+                  {!isPremium && (
+                    <span className="text-xs bg-theme-text/20 px-2 py-1 rounded-full">
+                      Premium
+                    </span>
+                  )}
                 </button>
 
                 <div className="flex items-center gap-4">

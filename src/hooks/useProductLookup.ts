@@ -7,7 +7,10 @@ import {
   validateBarcode,
   logError,
 } from '@/lib/errorHandling';
-import { recomputeVerdict } from '@/lib/allergen-utils';
+import {
+  recomputeVerdict,
+  recomputeVerdictStructured,
+} from '@/lib/allergen-utils';
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { lookupProductAction } from '@/app/actions';
 import { dbService } from '@/lib/db';
@@ -35,11 +38,46 @@ export function useProductLookup() {
       //    active profile — never a stale verdict.
       const cachedResult = await dbService.getHistoryByBarcode(code);
       if (cachedResult) {
-        const { isSafe, allergensFound } = recomputeVerdict(
-          cachedResult.result.matchText ?? cachedResult.result.ingredients,
-          allergies,
-        );
-        const refreshed = { ...cachedResult.result, isSafe, allergensFound };
+        // Check if cached result is missing nutrition data (old cache format)
+        const hasMissingNutrition =
+          !cachedResult.result.nutriscore_grade &&
+          !cachedResult.result.nova_group;
+
+        // If nutrition data is missing, fetch fresh data to get it
+        // But keep the cached allergen verdict and other data
+        let enrichedResult = cachedResult.result;
+        if (hasMissingNutrition) {
+          try {
+            const freshData = await lookupProductAction(code, allergies);
+            // Merge: use cached allergen verdict, but get fresh nutrition data
+            enrichedResult = {
+              ...cachedResult.result,
+              nutriscore_grade: freshData.nutriscore_grade,
+              nutriscore_score: freshData.nutriscore_score,
+              nova_group: freshData.nova_group,
+              // Also update these in case API has newer data
+              brand: freshData.brand || cachedResult.result.brand,
+              image_url: freshData.image_url || cachedResult.result.image_url,
+            };
+          } catch (err) {
+            // If API fetch fails, just use cached result as-is
+            logError('fetch-nutrition-enrichment', err);
+          }
+        }
+
+        // Re-compute allergen verdict against current user allergies
+        const { isSafe, allergensFound } = enrichedResult.ingredientsArray
+          ?.length
+          ? recomputeVerdictStructured(
+              enrichedResult.ingredientsArray,
+              enrichedResult.matchText ?? '',
+              allergies,
+            )
+          : recomputeVerdict(
+              enrichedResult.matchText ?? enrichedResult.ingredients,
+              allergies,
+            );
+        const refreshed = { ...enrichedResult, isSafe, allergensFound };
         await addHistory(code, refreshed);
         setResult(refreshed);
         setMode('result');
@@ -88,6 +126,7 @@ export function useProductLookup() {
     barcode,
     setBarcode,
     result,
+    setResult,
     error,
     lookupProduct,
     handleManualSubmit,

@@ -66,6 +66,9 @@ export async function lookupProductAction(
           ingredients: food.ingredients || '',
           matchText: food.ingredients || '',
           icon: resolveIcon(food.foodCategory, food.description),
+          nutriscore_grade: undefined, // USDA doesn't provide
+          nutriscore_score: undefined,
+          nova_group: undefined,
         };
       } else {
         usdaError = 'USDA returned no results';

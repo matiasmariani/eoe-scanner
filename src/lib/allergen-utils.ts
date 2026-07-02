@@ -47,6 +47,53 @@ export function checkAllergens(
 }
 
 /**
+ * Checks structured ingredients array against user allergies. More robust than
+ * string matching — handles nested ingredients, abbreviations, and case variants.
+ * Falls back to free-text allergens_text and allergens_tags if the array is empty.
+ *
+ * @param ingredientsArray Normalized ingredients from OFF API
+ * @param allergensText Free-text allergen label (fallback)
+ * @param allergensTags OFF allergen tags (fallback)
+ * @param userAllergies User-defined allergies
+ * @returns { isSafe, allergensFound }
+ */
+export function checkAllergensStructured(
+  ingredientsArray: Array<{
+    id?: string;
+    text?: string;
+    vegan?: string;
+    vegetarian?: string;
+  }>,
+  allergensText: string = '',
+  allergensTags: string[] = [],
+  userAllergies: string[] = [],
+): { isSafe: boolean; allergensFound: string[] } {
+  if (userAllergies.length === 0) {
+    return { isSafe: true, allergensFound: [] };
+  }
+
+  // Combine all text sources: ingredient texts + allergen label + allergen tags
+  const ingredientTexts = ingredientsArray
+    .map((ing) => ing.text || '')
+    .filter(Boolean);
+  const allText = [
+    ...ingredientTexts,
+    allergensText || '',
+    allergensTags.join(' '),
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  // Use the existing checkAllergens function on the combined text
+  const allergensFound = checkAllergens(allText, userAllergies);
+
+  return {
+    isSafe: allergensFound.length === 0,
+    allergensFound,
+  };
+}
+
+/**
  * Re-evaluates a product's safety verdict against a (possibly changed) allergy
  * list. Used on cache hits so a product scanned before an allergen was added —
  * or by a different profile — is re-checked against BOTH the ingredients and
@@ -58,4 +105,20 @@ export function recomputeVerdict(
 ): { isSafe: boolean; allergensFound: string[] } {
   const allergensFound = checkAllergens(matchText, userAllergies);
   return { isSafe: allergensFound.length === 0, allergensFound };
+}
+
+/**
+ * Re-evaluates a product's safety verdict against allergies using the structured
+ * ingredients array (preferred) with fallback to match text.
+ */
+export function recomputeVerdictStructured(
+  ingredientsArray: Array<{ id?: string; text?: string }>,
+  matchText: string,
+  userAllergies: string[],
+): { isSafe: boolean; allergensFound: string[] } {
+  // If we have the structured array, use it; otherwise fall back to matchText
+  if (ingredientsArray?.length) {
+    return checkAllergensStructured(ingredientsArray, '', [], userAllergies);
+  }
+  return recomputeVerdict(matchText, userAllergies);
 }

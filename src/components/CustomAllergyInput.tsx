@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Crown } from 'lucide-react';
+import { Plus, Crown, Loader } from 'lucide-react';
 import { ALLERGY_OPTIONS, CUSTOM_ALLERGEN_EMOJIS } from '@/lib/constants';
 import { useIsPremium } from '@/lib/premium';
+// import { useTaxonomySuggestions } from '@/hooks/useTaxonomySuggestions'; // TODO: implement this feature
+import { TaxonomySuggestion } from '@/hooks/useTaxonomySuggestions';
 import { PremiumGate } from '@/components/PremiumGate';
 import { cn } from '@/lib/utils';
 
@@ -15,13 +17,24 @@ export function CustomAllergyInput({ onAdd }: CustomAllergyInputProps) {
   const [value, setValue] = useState('');
   const [emoji, setEmoji] = useState('⚠️');
   const [showGate, setShowGate] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const isPremium = useIsPremium();
 
-  const handleAdd = () => {
-    if (!value.trim()) return;
-    onAdd(value.trim(), emoji);
+  // TODO: const { suggestions, isLoading } = useTaxonomySuggestions(value, !isBuiltIn);
+  const suggestions: TaxonomySuggestion[] = []; // Placeholder until feature is implemented
+  const isLoading = false;
+
+  const handleAdd = (text: string = value) => {
+    if (!text.trim()) return;
+    onAdd(text.trim(), emoji);
     setValue('');
     setEmoji('⚠️');
+    setShowSuggestions(false);
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setValue(suggestion);
+    setShowSuggestions(false);
   };
 
   if (!isPremium) {
@@ -63,14 +76,56 @@ export function CustomAllergyInput({ onAdd }: CustomAllergyInputProps) {
       </div>
 
       {/* Input — top */}
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-        placeholder="e.g. Szechuan Pepper"
-        className="w-full bg-theme-bg border-2 border-theme-border p-4 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
-      />
+      <div className="relative">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => {
+            setValue(e.target.value);
+            setShowSuggestions(e.target.value.length >= 2);
+          }}
+          onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+          onFocus={() => value.length >= 2 && setShowSuggestions(true)}
+          placeholder="e.g. Szechuan Pepper or Cider"
+          className="w-full bg-theme-bg border-2 border-theme-border p-4 rounded-2xl font-body font-bold text-theme-text placeholder:text-theme-text/40 focus:outline-none focus:ring-4 focus:ring-theme-accent"
+          aria-label="Enter custom allergen name"
+          aria-autocomplete="list"
+        />
+
+        {/* Suggestions Dropdown */}
+        {showSuggestions && value.length >= 2 && (
+          <div
+            className="absolute z-10 top-full mt-2 left-0 right-0 bg-theme-text border-4 border-theme-border rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden"
+            role="listbox"
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center gap-2 px-4 py-3 text-theme-bg">
+                <Loader className="w-4 h-4 animate-spin" aria-hidden="true" />
+                <span className="text-sm font-bold">Searching...</span>
+              </div>
+            ) : suggestions.length > 0 ? (
+              <ul className="divide-y divide-theme-border/30">
+                {suggestions.map((s, idx) => (
+                  <li key={s.id || idx}>
+                    <button
+                      onClick={() => handleSuggestionClick(s.name)}
+                      className="w-full text-left px-4 py-3 font-body font-bold text-theme-bg hover:bg-theme-bg/20 active:bg-theme-border/30 transition-colors"
+                      role="option"
+                      aria-selected={value === s.name}
+                    >
+                      {s.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="px-4 py-3 text-sm font-body font-bold text-theme-bg/60">
+                No suggestions found
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Emoji picker — middle */}
       <div className="overflow-x-auto p-3 bg-theme-text border-2 border-theme-border rounded-2xl">
@@ -99,7 +154,7 @@ export function CustomAllergyInput({ onAdd }: CustomAllergyInputProps) {
 
       {/* Add button — bottom */}
       <button
-        onClick={handleAdd}
+        onClick={() => handleAdd()}
         disabled={!value.trim()}
         className="w-full flex items-center justify-center gap-2 bg-theme-primary border-4 border-theme-border p-4 rounded-2xl font-display font-black text-lg text-theme-border shadow-voxel active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all disabled:opacity-40"
       >
@@ -108,7 +163,8 @@ export function CustomAllergyInput({ onAdd }: CustomAllergyInputProps) {
       </button>
 
       <p className="text-xs font-body font-bold text-theme-text/50 leading-tight">
-        Enter the allergen exactly as it appears on the ingredients list.
+        Suggestions appear as you type. Enter the allergen exactly as it appears
+        on the ingredients list.
       </p>
     </div>
   );
