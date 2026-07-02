@@ -84,7 +84,7 @@ export function AllergySettings({ onClose }: { onClose: () => void }) {
             id="allergy-settings-title"
             className="text-4xl font-display font-black text-theme-text leading-tight uppercase tracking-tighter"
           >
-            My Allergies
+            Users &amp; Allergies
           </h2>
           <button
             onClick={() =>

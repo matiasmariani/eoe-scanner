@@ -11,9 +11,10 @@ import {
   History,
   UserRound,
   Check,
-  BookOpen,
+  Users,
   Search,
   Gamepad2,
+  Trash2,
 } from 'lucide-react';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { Scanner } from '@/components/Scanner';
@@ -31,6 +32,7 @@ import { ProductSearchModal } from '@/components/ProductSearchModal';
 import { SafeFoodsView } from '@/components/SafeFoodsView';
 import { GameHub } from '@/components/GameHub';
 import { SpeakButton } from '@/components/SpeakButton';
+import { ProfileManagerModal } from '@/components/ProfileManagerModal';
 import { useAllergySettings } from '@/contexts/AllergyContext';
 import { useProductLookup } from '@/hooks/useProductLookup';
 import { useHistory } from '@/hooks/useHistory';
@@ -49,6 +51,7 @@ export function HomeClient() {
   const [showSafeFoods, setShowSafeFoods] = useState(false);
   const [isGameOpen, setIsGameOpen] = useState(false);
   const [showGameGate, setShowGameGate] = useState(false);
+  const [showProfileManager, setShowProfileManager] = useState(false);
   const isPremium = useIsPremium();
   const { adultMode, activeProfile } = useAllergySettings();
 
@@ -115,6 +118,16 @@ export function HomeClient() {
           >
             <UserRound className="w-5 h-5" aria-hidden="true" />
           </button>
+          {adultMode && (
+            <button
+              onClick={() => setShowProfileManager(true)}
+              className="p-2.5 bg-redstone-red text-white hover:bg-redstone-red/90 rounded-full transition-all shadow-lg"
+              aria-label="Manage users"
+              title="Manage users"
+            >
+              <Trash2 className="w-5 h-5" aria-hidden="true" />
+            </button>
+          )}
         </div>
       </header>
 
@@ -225,14 +238,14 @@ export function HomeClient() {
                     </span>
                   </button>
 
-                  {/* Allergy Settings Card */}
+                  {/* Users & Allergies Card */}
                   <button
                     onClick={() => setIsSettingsOpen(true)}
-                    className="bg-redstone-red text-white p-6 rounded-3xl shadow-lg hover:shadow-xl transition-all active:scale-95 flex flex-col items-center gap-3"
+                    className="bg-[#a8e6c1] text-theme-text p-6 rounded-3xl shadow-lg hover:shadow-xl transition-all active:scale-95 flex flex-col items-center gap-3"
                   >
-                    <BookOpen className="w-12 h-12" aria-hidden="true" />
+                    <Users className="w-12 h-12" aria-hidden="true" />
                     <span className="font-display font-black text-center text-sm">
-                      Allergies
+                      Users &amp; Allergies
                     </span>
                   </button>
 
@@ -418,6 +431,10 @@ export function HomeClient() {
         isOpen={isAdultModalOpen}
         onClose={() => setIsAdultModalOpen(false)}
       />
+
+      {showProfileManager && (
+        <ProfileManagerModal onClose={() => setShowProfileManager(false)} />
+      )}
 
       {/* Disclaimer footer — always visible */}
       <footer className="fixed bottom-0 left-0 right-0 z-30 flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 px-4 py-3 bg-theme-bg/95 backdrop-blur-sm border-t border-theme-border/10 text-center">

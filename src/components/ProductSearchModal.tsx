@@ -250,7 +250,7 @@ export function ProductSearchModal({
                         className={cn(
                           'inline-block text-[10px] font-black uppercase mt-1 px-2 py-0.5 rounded-full border-1',
                           product.isSafe
-                            ? 'bg-theme-primary text-theme-border'
+                            ? 'bg-theme-primary text-theme-text'
                             : 'bg-redstone-red text-white',
                         )}
                       >

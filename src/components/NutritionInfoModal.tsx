@@ -185,7 +185,7 @@ export function NutritionInfoModal({
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="w-full py-3 mt-4 bg-theme-primary border-4 border-theme-border rounded-2xl font-display font-black text-lg text-theme-border shadow-voxel active:shadow-none active:translate-y-[2px] transition-all"
+          className="w-full py-3 mt-4 bg-theme-primary rounded-2xl font-display font-black text-lg text-theme-text shadow-lg hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)] active:scale-95 transition-all"
         >
           Got it!
         </button>

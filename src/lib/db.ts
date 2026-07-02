@@ -256,6 +256,22 @@ export class DBService {
   async updateSafeFood(id: string, updates: Partial<SafeFood>): Promise<void> {
     await db.safeFoods.update(id, updates);
   }
+
+  /**
+   * Clears one profile's associated data: its safe foods and its per-profile
+   * game stats (settings keyed `gameStats:<game>:<profileId>`). Called when a
+   * profile is deleted so no orphaned data lingers. (History/collection/scans
+   * are shared across profiles and are left intact.)
+   */
+  async deleteProfileData(profileId: string): Promise<void> {
+    await db.safeFoods.where('profileId').equals(profileId).delete();
+    const settings = await db.settings.toArray();
+    await Promise.all(
+      settings
+        .filter((record) => record.id.endsWith(`:${profileId}`))
+        .map((record) => db.settings.delete(record.id)),
+    );
+  }
 }
 
 export const dbService = new DBService();

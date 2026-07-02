@@ -65,11 +65,11 @@ Used for: Email, Copy, supporting actions
 ### Buttons - Icon
 
 ```
-rounded-full | bg-theme-primary | text-white | shadow-lg
+rounded-full | bg-theme-primary | text-theme-text | shadow-lg
 p-2.5 | hover:bg-theme-primary/90
 ```
 
-Used for: Reset, Adult mode, close
+Used for: Reset, Adult mode, close. Dark text on the blue/pink primary — never white.
 
 ### Cards
 

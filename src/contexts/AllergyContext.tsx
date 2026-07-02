@@ -142,6 +142,8 @@ export function AllergyProvider({ children }: { children: ReactNode }) {
       console.warn('Adult mode required to delete profiles');
       return;
     }
+    // Remove the profile's own data (safe foods, game stats) alongside it.
+    await dbService.deleteProfileData(id);
     await dbService.deleteProfile(id);
     if (activeProfileId !== id) return;
 
